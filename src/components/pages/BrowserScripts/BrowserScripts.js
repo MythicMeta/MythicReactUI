@@ -1,0 +1,194 @@
+import React  from 'react';
+import { gql, useMutation, useSubscription } from '@apollo/client';
+import { useReactiveVar } from '@apollo/client';
+import { meState } from '../../../cache';
+import {BrowserScriptsTable} from './BrowserScriptsTable';
+import {BrowserScriptsOperationsTable} from './BrowserScriptsOperationsTable';
+import {snackActions} from '../../utilities/Snackbar';
+
+
+const SUB_BrowserScripts = gql`
+subscription SubscribeBrowserScripts($operator_id: Int!) {
+  browserscript(where: {operator_id: {_eq: $operator_id}, for_new_ui: {_eq: true}}) {
+    active
+    author
+    user_modified
+    script
+    payloadtype {
+      ptype
+      id
+    }
+    name
+    id
+    creation_time
+    container_version_author
+    container_version
+    command {
+      cmd
+      id
+    }
+    browserscriptoperations {
+      operation_id
+      id
+    }
+  }
+}
+ `;
+const SUB_OperationBrowserScripts = gql`
+subscription SubscribeOperationBrowserScripts($operation_id: Int!) {
+  browserscriptoperation(where: {operation_id: {_eq: $operation_id}, browserscript: {for_new_ui: {_eq: true}}}){
+    browserscript{
+        active
+        author
+        user_modified
+        script
+        payloadtype {
+          ptype
+          id
+        }
+        name
+        id
+        creation_time
+        container_version_author
+        container_version
+        command {
+          cmd
+          id
+        }
+      }
+   operation{
+    admin{
+        username
+    }
+   }
+  }
+}
+ `;
+const updateBrowserScriptActive = gql`
+mutation updateBrowserScriptActive($browserscript_id: Int!, $active: Boolean!) {
+  update_browserscript_by_pk(pk_columns: {id: $browserscript_id}, _set: {active: $active}) {
+    id
+  }
+}
+`;
+const updateBrowserScriptScript = gql`
+mutation updateBrowserScriptScript($browserscript_id: Int!, $script: String!, $command_id: Int!, $payload_type_id: Int!, $author: String!) {
+  update_browserscript_by_pk(pk_columns: {id: $browserscript_id}, _set: {script: $script, author: $author, user_modified: true, command_id: $command_id, payload_type_id: $payload_type_id}) {
+    id
+  }
+}
+`;
+const updateBrowserScriptRevert = gql`
+mutation updateBrowserScriptRevert($browserscript_id: Int!, $script: String!) {
+  update_browserscript_by_pk(pk_columns: {id: $browserscript_id}, _set: {script: $script, user_modified: false}) {
+    id
+  }
+}
+`;
+const addBrowserScript = gql`
+mutation insertNewBrowserScript($script: String!, $author: String!, $payload_type_id: Int!, $command_id: Int!){
+  insert_browserscript_one(object: {script: $script, author: $author, payload_type_id: $payload_type_id, command_id: $command_id}){
+    id
+  }
+}
+`;
+const deleteBrowserScriptMutation = gql`
+mutation deleteBrowserScriptMutation($browserscript_id: Int!){
+  delete_browserscript_by_pk(id: $browserscript_id){
+    id
+  }
+}
+`;
+
+
+export function BrowserScripts(props){
+    const me = useReactiveVar(meState);
+    const [browserScripts, setBrowserScripts] = React.useState({"browserscript": []});
+    const [operationBrowserScripts, setOperationBrowserScripts] = React.useState({"browserscriptoperation": []});
+    useSubscription(SUB_BrowserScripts, {
+      variables: {operator_id: me.user.id}, fetchPolicy: "no-cache",
+      shouldResubscribe: true,
+      onSubscriptionData: ({subscriptionData}) => {
+        console.log(subscriptionData)
+        setBrowserScripts(subscriptionData.data);
+      }
+    });
+      useSubscription(SUB_OperationBrowserScripts, {
+        variables: {operation_id: me.user.current_operation_id}, fetchPolicy: "no-cache",
+        shouldResubscribe: true,
+        onSubscriptionData: ({subscriptionData}) => {
+          setOperationBrowserScripts(subscriptionData.data);
+        }
+    });
+    const [toggleActive] = useMutation(updateBrowserScriptActive, {
+        onCompleted: data => {
+            snackActions.success("Successfully Updated!", {autoHideDuration: 1000});
+        },
+        onError: data => {
+            console.error(data);
+        }
+    });
+    const [updateScript] = useMutation(updateBrowserScriptScript, {
+        onCompleted: data => {
+            snackActions.success("Successfully Updated!", {autoHideDuration: 1000});
+        },
+        onError: data => {
+            console.error(data);
+        }
+    });
+    const [revertScript] = useMutation(updateBrowserScriptRevert, {
+        onCompleted: data => {
+            snackActions.success("Successfully Updated!", {autoHideDuration: 1000});
+        },
+        onError: data => {
+            console.error(data);
+        }
+    });
+    const [createBrowserScript] = useMutation(addBrowserScript, {
+      onCompleted: data => {
+        snackActions.success("Successfully created new browser script!");
+      },
+      onError: data => {
+        snackActions.error("Failed to create new script: " + data);
+      }
+    });
+    const [deleteBrowserScript] = useMutation(deleteBrowserScriptMutation, {
+      onCompleted: data => {
+        snackActions.success("Successfully deleted browser script");
+      },
+      onError: data => {
+        snackActions.error("Failed to delete browser script: " + data);
+      }
+    })
+    const onToggleActive = ({browserscript_id, active}) => {
+        toggleActive({variables: {browserscript_id, active}});
+    }
+    const onSubmitEdit = ({browserscript_id, script, command_id, payload_type_id, author}) => {
+        updateScript({variables: {browserscript_id, script, command_id, payload_type_id, author}});
+    }
+    const onRevert = ({browserscript_id, script}) => {
+        revertScript({variables:{browserscript_id, script}});
+    }
+    const onSubmitApplyToOperation = ({browserscript_id}) => {
+        snackActions.warning("Not Implemented Yet!", {autoHideDuration: 1000});
+    }
+    const onSubmitRemoveFromOperation = ({browserscript_id}) => {
+        snackActions.warning("Not Implemented Yet!", {autoHideDuration: 1000});
+    }
+    const onSubmitCreateNewBrowserScript = ({script, author, payload_type_id, command_id}) => {
+      createBrowserScript({variables: {author, script, payload_type_id, command_id}});
+    }
+    const onDelete = ({browserscript_id}) => {
+      deleteBrowserScript({variables: {browserscript_id}});
+    }
+    return (
+    <React.Fragment>
+        <BrowserScriptsTable {...browserScripts} operation_id={me.user.current_operation_id} onToggleActive={onToggleActive} 
+          onSubmitEdit={onSubmitEdit} onRevert={onRevert} onSubmitNew={onSubmitCreateNewBrowserScript} onDelete={onDelete}
+          onSubmitApplyToOperation={onSubmitApplyToOperation} 
+          onSubmitRemoveFromOperation={onSubmitRemoveFromOperation}
+        />
+        <BrowserScriptsOperationsTable {...operationBrowserScripts} />
+    </React.Fragment>
+    );
+}
