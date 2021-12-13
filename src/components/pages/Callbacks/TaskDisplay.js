@@ -366,9 +366,6 @@ const TaskRow = ({task, filterOptions, nodesSelected, toggleSelection}) => {
       setDropdownOpen(!dropdownOpen);
     }, [dropdownOpen]);
     
-    const onLabelClick = React.useCallback( (evt) => {
-      evt.preventDefault();
-    }, []);
     useEffect( () => {
       if(!isFetchingSubtasks && task.tasks.length > 0){
         getSubTasks();
@@ -376,8 +373,7 @@ const TaskRow = ({task, filterOptions, nodesSelected, toggleSelection}) => {
     }, [task.tasks])
     return (
       shouldDisplay ? (
-        <StyledTreeItem nodeId={"treenode:" + task.id} 
-          onLabelClick={onLabelClick} 
+        <StyledTreeItem nodeId={"treenode:" + task.id}
           onIconClick={getSubTasks}
           icon={
             nodesSelected.includes("treenode:" + task.id) ? (<MinusSquare />) : (task.tasks.length > 0 ? (<PlusSquare />) : (null) )
