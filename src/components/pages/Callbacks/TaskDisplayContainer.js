@@ -73,12 +73,16 @@ const useStyles = makeStyles((theme) => ({
       bottom: theme.spacing(1),
       left: theme.spacing(2),
     },
+    zIndex: 3
   },
   tooltip: {
     backgroundColor: theme.palette.common.white,
     color: 'rgba(0,0,0,0.87)',
     boxShadow: theme.shadows[1],
     fontSize: 13
+  },
+  arrow: {
+    color: theme.palette.common.white,
   }
 }));
 
@@ -199,7 +203,7 @@ export const TaskDisplayContainer = ({task}) => {
     return (
       <React.Fragment>
         <Grid container spacing={0} style={{maxWidth: "100%"}}>
-          <Backdrop open={openSpeedDial} onClick={()=>{setOpenSpeedDial(false);}} style={{zIndex: 100, position: "absolute"}}/>
+          <Backdrop open={openSpeedDial} onClick={()=>{setOpenSpeedDial(false);}} style={{zIndex: 2, position: "absolute"}}/>
               {openTokenDialog ? 
                 (<MythicDialog fullWidth={true} maxWidth="md" open={openTokenDialog} 
                   onClose={()=>{setOpenTokenDialog(false);}} 
@@ -254,70 +258,79 @@ export const TaskDisplayContainer = ({task}) => {
                   <SpeedDialAction
                     icon={<CodeIcon/>}
                     arrow
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"Toggle BrowserScript"}
                     onClick={() => {setViewBrowserScript(!viewBrowserScript);setOpenSpeedDial(false);}}
                   />
                   <SpeedDialAction
                     icon={<FontAwesomeIcon icon={faExpandArrowsAlt} size="lg" />}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"View All Output"}
                     onClick={() => {setSelectAllOutput(!selectAllOutput);setOpenSpeedDial(false);}}
                   />
                   <SpeedDialAction
                     icon={<SearchIcon />}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"Search Output"}
                     onClick={() => {setSearchOutput(!searchOutput);setOpenSpeedDial(false);}}
                   />
                   <SpeedDialAction
                     icon={<GetAppIcon/>}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"Download output"}
                     onClick={onDownloadResponses}
                   />
                   <SpeedDialAction
                     icon={<LocalOfferOutlinedIcon/>}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"Edit Tags"}
                     onClick={()=>{setOpenTaskTagDialog(true);setOpenSpeedDial(false);}}
                   />
                   <SpeedDialAction
                     icon={<FontAwesomeIcon icon={faExternalLinkAlt} size="lg" />}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"Open Task in New Window"}
                     onClick={()=> {window.open('/new/task/' + task.id, "_blank")}}
                   />
                   <SpeedDialAction
                     icon={<FileCopyOutlinedIcon/>}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"Copy original params to clipboard"}
                     onClick={copyToClipboard}
                   />
                   <SpeedDialAction
                     icon={<RateReviewOutlinedIcon/>}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"Edit Comment"}
                     onClick={()=>{setOpenCommentDialog(true);setOpenSpeedDial(false);}}
                   />
                   <SpeedDialAction
                     icon={<KeyboardIcon/>}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"View All Parameters"}
                     onClick={()=>{setOpenParametersDialog(true);setOpenSpeedDial(false);}}
                   />
                   <SpeedDialAction
                     icon={<FontAwesomeIcon icon={faBook} size="lg" />}
-                    TooltipClasses={{tooltip: classes.tooltip}}
+                    arrow
+                    TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"View Stdout/Stderr of Task"}
                     onClick={()=>{setOpenStdoutStderrDialog(true);setOpenSpeedDial(false);}}
@@ -327,7 +340,8 @@ export const TaskDisplayContainer = ({task}) => {
                   ) : (  task.opsec_pre_bypassed === false ? (
                           <SpeedDialAction
                             icon={<LockIcon style={{color: theme.palette.error.main}}/>}
-                            TooltipClasses={{tooltip: classes.tooltip}}
+                            arrow
+                            TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                             tooltipPlacement={tooltipPlacement}
                             tooltipTitle={"Submit OPSEC PreCheck Bypass Request"}
                             onClick={()=>{setOpenOpsecDialog(true);setOpenSpeedDial(false);}}
@@ -335,7 +349,8 @@ export const TaskDisplayContainer = ({task}) => {
                           ): (
                             <SpeedDialAction
                             icon={<LockOpenIcon style={{color: theme.palette.success.main}}/>}
-                            TooltipClasses={{tooltip: classes.tooltip}}
+                            arrow
+                            TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                             tooltipPlacement={tooltipPlacement}
                             tooltipTitle={"View OPSEC PreCheck Data"}
                             onClick={()=>{setOpenOpsecDialog(true);setOpenSpeedDial(false);}}
@@ -348,7 +363,8 @@ export const TaskDisplayContainer = ({task}) => {
                   ) : (  task.opsec_post_bypassed === false ? (
                           <SpeedDialAction
                             icon={<LockIcon style={{color: theme.palette.error.main}}/>}
-                            TooltipClasses={{tooltip: classes.tooltip}}
+                            arrow
+                            TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                             tooltipPlacement={tooltipPlacement}
                             tooltipTitle={"Submit OPSEC PostCheck Bypass Request"}
                             onClick={()=>{setOpenOpsecDialog(true);setOpenSpeedDial(false);}}
@@ -356,7 +372,8 @@ export const TaskDisplayContainer = ({task}) => {
                           ): (
                             <SpeedDialAction
                               icon={<LockOpenIcon style={{color: theme.palette.success.main}}/>}
-                              TooltipClasses={{tooltip: classes.tooltip}}
+                              arrow
+                              TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                               tooltipPlacement={tooltipPlacement}
                               tooltipTitle={"View OPSEC PostCheck Data"}
                               onClick={()=>{setOpenOpsecDialog(true);setOpenSpeedDial(false);}}
@@ -369,7 +386,8 @@ export const TaskDisplayContainer = ({task}) => {
                   ) : (
                       <SpeedDialAction
                         icon={<ConfirmationNumberIcon />}
-                        TooltipClasses={{tooltip: classes.tooltip}}
+                        arrow
+                        TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                         tooltipPlacement={tooltipPlacement}
                         tooltipTitle={"View Token Information"}
                         onClick={()=>{setOpenTokenDialog(true);setOpenSpeedDial(false);}}
@@ -378,7 +396,8 @@ export const TaskDisplayContainer = ({task}) => {
                   {task.status.toLowerCase().includes("error: container") ? (
                     <SpeedDialAction
                       icon={<ReplayIcon style={{color: theme.palette.warning.main}}/>}
-                      TooltipClasses={{tooltip: classes.tooltip}}
+                      arrow
+                      TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                       tooltipPlacement={tooltipPlacement}
                       tooltipTitle={"Resubmit Tasking"}
                       onClick={onReissueTask}
@@ -387,7 +406,8 @@ export const TaskDisplayContainer = ({task}) => {
                   {task.status.toLowerCase().includes("error: task") ? (
                     <SpeedDialAction
                       icon={<ReplayIcon style={{color: theme.palette.warning.main}}/>}
-                      TooltipClasses={{tooltip: classes.tooltip}}
+                      arrow
+                      TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                       tooltipPlacement={tooltipPlacement}
                       tooltipTitle={"Resubmit Task Handler"}
                       onClick={onReissueTaskHandler}

@@ -68,4 +68,7 @@ tspan {
 .MuiTreeItem-root:hover > .MuiTreeItem-content .MuiTreeItem-label {
     background-color: transparent;
 }
+.MuiAppBar-root{
+    z-index: 1
+}
 `

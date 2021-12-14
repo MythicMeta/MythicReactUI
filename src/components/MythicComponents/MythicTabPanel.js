@@ -32,7 +32,7 @@ export function MythicTabLabel(props){
     }
     return (
         <Tab label={
-            <span onContextMenu={onContextMenu} style={{display: "inline-block"}}>
+            <span onContextMenu={onContextMenu} style={{display: "inline-block", zIndex: 1}}>
                 {label}<IconButton component="div" size="small" onClick={onClick} {...other}><CloseIcon /></IconButton>
             </span>
         } {...a11yProps(index)} {...other}/>

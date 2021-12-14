@@ -201,7 +201,7 @@ export function TopAppBar(props) {
                     <PhoneCallbackIcon className="mythicElement"/>
                   </Tooltip>
                 </IconButton>
-                <Button style={{display: "inline-flex", alignItems: "center", paddingRight: "10px"}} component={Link} to="/new/operations">
+                <Button style={{display: "inline-flex", alignItems: "center", paddingRight: "10px", color: "white"}} component={Link} to="/new/operations">
                     <Typography >
                         {me?.user?.current_operation || "No Operation Set"}
                     </Typography>

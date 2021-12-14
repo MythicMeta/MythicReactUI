@@ -27,6 +27,15 @@ import {CallbacksTop} from './CallbacksTop';
       right: theme.spacing(2),
     },
   },
+  tooltip: {
+    backgroundColor: theme.palette.common.white,
+    color: 'rgba(0,0,0,0.87)',
+    boxShadow: theme.shadows[1],
+    fontSize: 13
+  },
+  arrow: {
+    color: theme.palette.common.white,
+  }
 }));
 export function Callbacks(){
     const [topDisplay, setTopDisplay] = React.useState("table");
@@ -147,7 +156,9 @@ function SpeedDialWrapperPreMemo({setTopDisplay, onSubmitHeights, heights}) {
         >
           {actions.map((action) => (
             <SpeedDialAction
+              arrow
               key={action.name}
+              TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
               icon={action.icon}
               tooltipTitle={action.name}
               onClick={action.onClick}
