@@ -95,7 +95,6 @@ const useStyles = makeStyles((theme) => ({
     fontSize: theme.typography.pxToRem(12),
     color: theme.palette.text.secondary,
     overflow: "hidden", 
-    display: "block", 
     textOverflow: "ellipsis", 
     maxWidth: "100%", 
     width: "100%",

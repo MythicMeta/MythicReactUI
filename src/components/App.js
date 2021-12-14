@@ -1,6 +1,5 @@
 import { LoginForm } from './pages/Login/LoginForm';
 import { Settings } from './pages/Settings/Settings';
-import { Logout } from './pages/Logout/Logout';
 import { PayloadTypesC2Profiles } from './pages/PayloadTypesC2Profiles/PayloadTypesC2Profiles';
 import { CreatePayload } from './pages/CreatePayload/CreatePayload';
 import { CreatePayloadWrapper } from './pages/CreateWrapper/CreatePayload';

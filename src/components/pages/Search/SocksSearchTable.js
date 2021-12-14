@@ -10,8 +10,6 @@ import Paper from '@material-ui/core/Paper';
 import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
 import { gql, useMutation } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
 import {useTheme} from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -71,7 +69,6 @@ export function SocksSearchTable(props){
 }
 
 function CallbackSearchTableRow(props){
-    const me = useReactiveVar(meState);
     const theme = useTheme();
     const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
 

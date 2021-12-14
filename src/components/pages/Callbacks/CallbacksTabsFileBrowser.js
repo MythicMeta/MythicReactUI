@@ -356,7 +356,7 @@ export const CallbacksTabsFileBrowserPanel = ({index, value, tabInfo}) =>{
             return true;
         }
         // this current search isn't all_object's parent, so check search's children for our parent
-       for(const [key, value] of Object.entries(search.filebrowserobjs)){
+       for(const [_, value] of Object.entries(search.filebrowserobjs)){
            if(all_objects[0].parent_path_text.startsWith(value.full_path_text)){
                let found = mergeData(value, parent_id, all_objects);
                if(found){return true};
@@ -365,7 +365,7 @@ export const CallbacksTabsFileBrowserPanel = ({index, value, tabInfo}) =>{
         return false;
     }, []);
     const [createTask] = useMutation(createTaskingMutation, {
-        update: (cache, {data}) => {
+        update: (_, {data}) => {
             if(data.createTask.status === "error"){
                 snackActions.error(data.createTask.error);
             }else{
@@ -568,13 +568,13 @@ const FileBrowserTableTop = ({selectedFolderData, onListFilesButton, initialCall
     const [callbackID, setCallbackID] = React.useState(initialCallbackID);
     const [showDeletedFiles, setLocalShowDeletedFiles] = React.useState(false);
     const [manuallySetCallbackID, setManuallySetCallbackID] = React.useState(true);
-    const onChangeHost = (name, value, error) => {
+    const onChangeHost = (_, value) => {
         setHostname(value);
     }
-    const onChangePath = (name, value, error) => {
+    const onChangePath = (_, value) => {
         setFullPath(value);
     }
-    const onChangeID = (name, value, error) => {
+    const onChangeID = (_, value) => {
         setManuallySetCallbackID(true);
         setCallbackID(parseInt(value));
     }

@@ -129,7 +129,7 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         const percentDelta = deltaX / widthRef.current.offsetWidth;
         let nextHeader = "";
         let getNext = false;
-        for(const [key, val] of Object.entries(columnWidths)){
+        for(const key of Object.keys(columnWidths)){
             if(getNext){
                 nextHeader = key;
                 break;
@@ -176,7 +176,7 @@ export const CallbacksTabsFileBrowserTable = (props) => {
           </React.Fragment>
         )
       }, [resizeRow, columns]);
-    const onRowDoubleClick = ({event, index, rowData}) => {
+    const onRowDoubleClick = ({ rowData}) => {
         if(rowData.is_file){
             return;
         }

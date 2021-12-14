@@ -97,7 +97,6 @@ export function ExpandedCallbackSideDetailsTable(props){
     const [openEditDescriptionDialog, setOpenEditDescriptionDialog] = React.useState(false);
     const [activeEgress, setActiveEgress] = React.useState(theme.palette.success.main);
     const [activeEgressBool, setActiveEgressBool] = React.useState(true);
-    const [dropdownOpen, setDropdownOpen] = React.useState(false);
     const [openC2Dialog, setOpenC2Dialog] = React.useState(false);
     const [callbackgraphedges, setCallbackgraphedges] = React.useState([]);
     const [callbackgraphedgesAll, setCallbackgraphedgesAll] = React.useState([]);
@@ -116,10 +115,6 @@ export function ExpandedCallbackSideDetailsTable(props){
     useInterval( () => {
         updateTime(props.last_checkin);
     });
-    const handleDropdownToggle = (evt) => {
-        evt.stopPropagation();
-        setDropdownOpen((prevOpen) => !prevOpen);
-    };
     useEffect( () => {
         const routes = callbackgraphedgesAll.filter( (edge) => {
             if(!edge.c2profile.is_p2p && edge.source.id === props.id && edge.destination.id === props.id){
@@ -198,17 +193,6 @@ export function ExpandedCallbackSideDetailsTable(props){
             setActiveEgressBool(true);
         }
     }, [callbackgraphedges, theme.palette.success.main, theme.palette.error.main]);
-    const handleMenuItemClick = (event, index) => {
-        options[index].click(event);
-        setDropdownOpen(false);
-    };
-    const handleClose = (event) => {
-        if (dropdownAnchorRef.current && dropdownAnchorRef.current.contains(event.target)) {
-          return;
-        }
-
-        setDropdownOpen(false);
-      };
 
     const toggleLock = () => {
         props.toggleLock({id: props.id, locked: props.locked})
@@ -232,7 +216,7 @@ export function ExpandedCallbackSideDetailsTable(props){
                         <TableCell>Elevation Level</TableCell>
                         <TableCell>{props.integrity_level}
                             {props.integrity_level > 2 ? (" ( Elevated Access )") : ""}
-                            {props.integrity_level == 2 ? (" ( Medium Integrity ) ") : ""}
+                            {props.integrity_level === 2 ? (" ( Medium Integrity ) ") : ""}
                             {props.integrity_level < 2 ? (" ( Low Integrity )") : ""}
                         </TableCell>
                     </TableRow>

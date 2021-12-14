@@ -129,7 +129,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         }
     });
     React.useEffect( () => {
-        console.log("filter updated")
+        //console.log("filter updated")
         const filteredOptions = taskOptions.filter( c => applyFilteringToTasks(c));
         setFilteredTaskOptions(filteredOptions);
     }, [props.filterOptions])
@@ -440,7 +440,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                     "camel-case-expansion": false
                 }
             });
-            console.log(yargs_parsed, cmd.commandparameters);
+            //console.log(yargs_parsed, cmd.commandparameters);
             return yargs_parsed;
         }catch(error){
             snackActions.warning("Failed to parse command line: " + error, snackMessageStyles);
@@ -457,7 +457,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }
             return [...prev, cur.parameter_group_name];
         }, []);
-        for(const [key, value] of Object.entries(parsed)){
+        for(const key of Object.keys(parsed)){
             // for all of the things we've parsed out so far, determin their parameter groups
             if( key !== "_"){
                 // we don't care about positional arguments at the moment
@@ -581,7 +581,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             setUnmodifiedHistoryValue("parsed_cli");
             return;
         }
-        console.log("positional args added in:", parsedWithPositionalParameters);
+        //console.log("positional args added in:", parsedWithPositionalParameters);
         props.onSubmitCommandLine(message, cmd, parsedWithPositionalParameters, Boolean(force_parsed_popup), cmdGroupName, unmodifiedHistoryValue);
         setMessage("");
         setTaskOptionsIndex(-1);

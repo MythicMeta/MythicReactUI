@@ -111,7 +111,7 @@ export const CallbacksTabsFileBrowserTree = ({treeRoot, fetchFolderData, setTabl
         }
         while(true){
             const parent = yield;
-           for( const[key, value] of Object.entries(parent.node.filebrowserobjs)){
+           for( const value of Object.values(parent.node.filebrowserobjs)){
                 if(value.is_file){continue}
                 yield getNodeData(value, parent.nestingLevel + 1, fetchFolderData, setTableData, theme);
            }

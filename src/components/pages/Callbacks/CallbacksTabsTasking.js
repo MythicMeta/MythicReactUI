@@ -131,7 +131,6 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =
         "parameterString": "",
         "everythingButList": []
     });
-    const loader = useRef(null);
     const [canScroll, setCanScroll] = React.useState(true);
     useEffect( () => {
         taskingDataRef.current = taskingData;

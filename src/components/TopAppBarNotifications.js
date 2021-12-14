@@ -24,7 +24,7 @@ subscription MySubscription($operation_id: Int!) {
 export function TopAppBarNotifications(props) {
     const me = useReactiveVar(meState);
   const { loading, error, data } = useSubscription(SUB_Event_Logs, {
-      variables: {operation_id: me.user && me.user.current_operation_id ? me.user.current_operation_id : 0},
+      variables: {operation_id: me?.user?.current_operation_id || 0},
     onError: data => {
         snackActions.error("Mythic encountered an error getting event log messages: " + data.toString());
         console.error(data);

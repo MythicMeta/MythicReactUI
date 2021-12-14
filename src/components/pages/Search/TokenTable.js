@@ -9,11 +9,8 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
-import { toLocalTime } from '../../utilities/Time';
 import { gql, useMutation } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
 import {useTheme} from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
@@ -22,7 +19,6 @@ import ConfirmationNumberIcon from '@material-ui/icons/ConfirmationNumber';
 import EditIcon from '@material-ui/icons/Edit';
 import {TaskTokenDialog} from '../Callbacks/TaskTokenDialog';
 import {TokenDescriptionDialog} from './TokenDescriptionDialog';
-import { getThemeProps } from '@material-ui/styles';
 
 const updateCredentialDeleted = gql`
 mutation updateCredentialDeletedMutation($token_id: Int!, $deleted: Boolean!){
@@ -89,7 +85,6 @@ export function TokenTable(props){
 }
 
 function TokenTableRow(props){
-    const me = useReactiveVar(meState);
     const theme = useTheme();
     const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
     const [viewTokenDialog, setViewTokenDialog] = React.useState(false);
@@ -170,10 +165,9 @@ function TokenTableRow(props){
                             {props.task.id}
                     </Link>
                 </TableCell>
-                <TableCell>{props.callbacktokens === null ? (null) : (
-                    props.callbacktokens.map( (cbt) => (
+                <TableCell>{props.callbacktokens?.map( (cbt) => (
                         cbt.callback_id
-                    )))
+                    )) || null
                 }</TableCell>
                 <TableCell>{props.host}</TableCell>
             </TableRow>

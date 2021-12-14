@@ -1,8 +1,4 @@
 import React, { useEffect } from 'react';
-import {Link, Typography} from '@material-ui/core';
-import { toLocalTime } from '../../utilities/Time';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
 import Grid from '@material-ui/core/Grid';
 
 export function KeylogsTable(props){

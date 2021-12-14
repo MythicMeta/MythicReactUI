@@ -279,7 +279,7 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
   const headerRenderer = React.useCallback( ({columnData, dataKey, disableSort, label, sortBy, sortDirection}) => {
     return (
       <React.Fragment key={"header" + dataKey}>
-        <span style={{alignContent: "center", display: "inline-flex", flexDirection: "row", alignContent: "stretch", justifyContent: "flex-start"}}>
+        <span style={{display: "inline-flex", flexDirection: "row", alignContent: "stretch", justifyContent: "flex-start"}}>
           {label}
           {sortBy === label ? (
             sortDirection === "ASC" ? (

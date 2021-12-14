@@ -28,8 +28,7 @@ export const ResponseDisplayPlaintext = (props) =>{
         focus={true}
         width={"100%"}
         minLines={2}
-        onLoad={(editorInstance => {document.addEventListener("mouseup", () => editorInstance.resize())})}
-        style={{resize: "vertical"}}
+        maxLines={50}
         readOnly
         setOptions={{
           showLineNumbers: true,

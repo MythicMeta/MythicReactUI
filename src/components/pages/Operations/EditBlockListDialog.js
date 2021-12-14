@@ -262,13 +262,13 @@ export function EditBlockListDialog({dialogTitle, onSubmit, blockListName: propB
     // now diff selectedCommands with props.currentSelected to see which should be added or removed
     let toAdd = [];
     let toRemove = [];
-    for(const [_, value] of Object.entries(selectedCommands)){
+    for(const value of Object.values(selectedCommands)){
       //key is the payload type name, value is an array of commands
       for(let i = 0; i < value.length; i++){
         toAdd.push({command_id: value[i].id, name:blockListName.trim()});
       }
     }
-    for(const [_, value] of Object.entries(currentSelected)){
+    for(const value of Object.values(currentSelected)){
       for(let i = 0; i < value.length; i++){
         // if value[i] in add, then remove it from add because it was selected before and is selected now
         // if value[i] is not in add, then add it to toRemove because it was selected and is no longer selected

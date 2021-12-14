@@ -198,7 +198,7 @@ export const CallbacksTabsProcessBrowserTable = (props) => {
         const percentDelta = deltaX / widthRef.current.offsetWidth;
         let nextHeader = "";
         let getNext = false;
-        for(const [key, val] of Object.entries(columnWidths)){
+        for(const key of Object.keys(columnWidths)){
             if(getNext){
                 nextHeader = key;
                 break;

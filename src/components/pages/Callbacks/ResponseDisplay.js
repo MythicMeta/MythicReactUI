@@ -73,7 +73,7 @@ export const ResponseDisplay = (props) =>{
     const [totalFetched, setTotalFetched] = React.useState(0);
     const [search, setSearch] = React.useState("");
     const [selectAllOutput, setSelectAllOutput] = React.useState(false);
-    const {error} = useSubscription(subResponsesQuery, {variables: {task_id: props.task.id, fetchLimit: props.fetchLimit}, fetchPolicy: "network_only",
+    useSubscription(subResponsesQuery, {variables: {task_id: props.task.id, fetchLimit: props.fetchLimit}, fetchPolicy: "network_only",
     onSubscriptionData: ({subscriptionData}) => {
       if(totalFetched === 0 && subscriptionData.data.response.length === props.fetchLimit){
         fetchMoreResponses({variables: {task_id: props.task.id, fetchLimit: props.fetchLimit, offset: 0, search: "%_%"}});
@@ -123,7 +123,7 @@ export const ResponseDisplay = (props) =>{
           const tableUpdates = scriptData.table.map( t => {
             const filteredRows = t.rows.filter( r => {
               let foundMatch = false;
-              for (const [key, entry] of Object.entries(r)) {
+              for (const entry of Object.values(r)) {
                 if(entry["plaintext"] !== undefined){
                   if(String(entry["plaintext"]).includes(search)){foundMatch = true;}
                 }
@@ -320,15 +320,11 @@ export const ResponseDisplay = (props) =>{
     const onSubmitSearch = React.useCallback( () => {
       props.onSubmitSearch(search)
     }, [search]);
-    if (error) {
-     console.error(error);
-     return <div>Error!</div>;
-    }
 
   return (
     <React.Fragment>
       {props.searchOutput &&
-        <MythicTextField value={search} onEnter={onSubmitSearch} onChange={(n,v,e) => setSearch(v)} placeholder="Search Output of This Task" name="Search..."
+        <MythicTextField value={search} autoFocus onEnter={onSubmitSearch} onChange={(n,v,e) => setSearch(v)} placeholder="Search Output of This Task" name="Search..."
           InputProps={{
             endAdornment: 
             <React.Fragment>
@@ -341,26 +337,22 @@ export const ResponseDisplay = (props) =>{
         ></MythicTextField>
       }
       <div style={{overflow: "auto", maxWidth: "100%", width: "100%"}}>
-        {viewBrowserScript ? (
+        {viewBrowserScript && browserScriptData ? (
           <React.Fragment>
-              {browserScriptData["screenshot"] &&
-                browserScriptData["screenshot"].map( (scr, index) => (
+              {browserScriptData?.screenshot?.map( (scr, index) => (
                   <ResponseDisplayScreenshot key={"screenshot" + index + 'fortask' + props.task.id} {...scr} />
-                ))
+                )) || null
               }
-              {browserScriptData["plaintext"] &&
+              {browserScriptData?.plaintext &&
                 <ResponseDisplayPlaintext plaintext={browserScriptData["plaintext"]} />
               }
-              {browserScriptData["table"] &&
-                browserScriptData["table"].map( (table, index) => (
+              {browserScriptData?.table?.map( (table, index) => (
                   <ResponseDisplayTable callback_id={props.task.callback_id} table={table} key={"tablefortask" + props.task.id + "table" + index} />
-                ))
-                
+                )) || null
               }
-              {browserScriptData["download"] &&
-                browserScriptData["download"].map( (dl, index) => (
+              {browserScriptData?.download?.map( (dl, index) => (
                   <ResponseDisplayDownload download={dl} key={"download" + index + "fortask" + props.task.id} />
-                ))
+                )) || null
               }
           </React.Fragment>
         ) : (

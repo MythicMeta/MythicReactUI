@@ -219,7 +219,7 @@ export function Settings(props){
       onCompleted: (data) => {
         const updatedOperators = operators.map( o => {
           if(o.id === data.delete_apitokens_by_pk.operator_id){
-            return {...o, apitokens: o.apitokens.filter(api => api.id != data.delete_apitokens_by_pk.id)}
+            return {...o, apitokens: o.apitokens.filter(api => api.id !== data.delete_apitokens_by_pk.id)}
           }else{
             return {...o}
           }
@@ -266,7 +266,7 @@ export function Settings(props){
     });
     const [updatePassword] = useMutation(operatorsUpdatePassword, {
       onCompleted: (result) => {
-        if(result.updatePassword.status == "success"){
+        if(result.updatePassword.status === "success"){
           snackActions.success("Successfully updated password");
         }else{
           snackActions.warning(result.updatePassword.error);

@@ -246,8 +246,7 @@ export const TaskDisplayContainer = ({task}) => {
                 ariaLabel="Task Speeddial"
                 className={classes.speedDial}
                 icon={<SpeedDialIcon />}
-                onClose={()=>{setOpenSpeedDial(false);}}
-                onOpen={()=>{setOpenSpeedDial(true);}}
+                onClick={()=>{setOpenSpeedDial(!openSpeedDial)}}
                 FabProps={{ color: "primary", size: "small" }}
                 open={openSpeedDial}
                 direction="right"

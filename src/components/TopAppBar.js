@@ -157,10 +157,10 @@ export function TopAppBar(props) {
   return (
     <React.Fragment >
 
-      {me.user?.current_operation_id ? (<EventFeedNotifications />) : (null) }
+      {me?.user?.current_operation_id ? (<EventFeedNotifications />) : (null) }
       <AppBar className={clsx(classes.appBar, {[classes.appBarShift]: isOpen,})}>
         
-        { me.loggedIn ? (
+        { me?.loggedIn ? (
         <Toolbar variant="dense" >
             <IconButton edge="start" className={clsx(classes.menuButton, isOpen && classes.hide)} color="inherit" aria-label="menu" onClick={handleDrawerOpen}>
                 <MenuIcon />
@@ -203,7 +203,7 @@ export function TopAppBar(props) {
                 </IconButton>
                 <Button style={{display: "inline-flex", alignItems: "center", paddingRight: "10px"}} component={Link} to="/new/operations">
                     <Typography >
-                        {me.user.current_operation}
+                        {me?.user?.current_operation || "No Operation Set"}
                     </Typography>
                 </Button>
                 <Menu
@@ -276,10 +276,11 @@ export function TopAppBar(props) {
                     <MenuItem component={Link} href="https://docs.mythic-c2.net" target="_blank" onClick={handleDocumentationClose}>Mythic Documentation</MenuItem>
                 </Menu>
                 <TopAppBarNotifications />
-                { me.user === undefined || me.user === null ? <Redirect to='/new/login'/> : (
+                { me?.user?.username ? 
                   <Typography style={{display: "flex", alignItems: "center", paddingRight: "10px"}} >
-                    {me.user.username}
-                  </Typography>
+                    {me?.user?.username }
+                  </Typography> : (
+                  <Redirect to='/new/login'/>
                 )}
                 </div>
             </div>

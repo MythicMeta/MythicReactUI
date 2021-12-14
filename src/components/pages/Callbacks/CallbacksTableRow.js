@@ -263,7 +263,7 @@ export function CallbacksTableRowPreMemo(props){
                     <ArrowDropDownIcon />
                   </Button>
                 </ButtonGroup>
-                <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal style={{zIndex: 4}}>
+                <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal style={{zIndex: 200}}>
                   {({ TransitionProps, placement }) => (
                     <Grow
                       {...TransitionProps}

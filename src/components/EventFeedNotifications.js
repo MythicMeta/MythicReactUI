@@ -25,7 +25,7 @@ export function EventFeedNotifications(props) {
     const fromNow = React.useRef( (new Date()).toISOString() );
 
     const { loading, error, data } = useSubscription(subscribe_payloads, {
-        variables: {fromNow: fromNow.current, operation_id: me.user && me.user.current_operation_id ? me.user.current_operation_id: 0}, 
+        variables: {fromNow: fromNow.current, operation_id: me?.user?.current_operation_id || 0}, 
         fetchPolicy: "no-cache",
         onError: (errorData) => {
             snackActions.warning("Failed to get event notifications");
