@@ -23,6 +23,7 @@ import { GlobalStyles } from "../themes/GlobalStyles";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {SnackbarUtilsConfigurator, } from './utilities/Snackbar';
 import { meState } from '../cache';
+import {Reporting} from './pages/Reporting/Reporting';
 
 //background-color: #282c34;
 import {
@@ -114,6 +115,7 @@ export function App(props) {
                                 <LoggedInRoute exact path='/new/tasks/by_range' component={SingleTaskView} />
                                 <LoggedInRoute exact path='/new/operations' component={Operations} />
                                 <LoggedInRoute exact path='/new/callbacks/:callbackId' component={ExpandedCallback} />
+                                <LoggedInRoute exact path='/new/reporting' component={Reporting} />
                             </Switch>
                         </div>
                     </div>

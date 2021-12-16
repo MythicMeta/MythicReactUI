@@ -44,7 +44,7 @@ import BarChartIcon from '@material-ui/icons/BarChart';
 import HeadsetIcon from '@material-ui/icons/Headset';
 import CodeIcon from '@material-ui/icons/Code';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faBiohazard} from '@fortawesome/free-solid-svg-icons';
+import {faBiohazard, faFlagCheckered} from '@fortawesome/free-solid-svg-icons';
 import AttachmentIcon from '@material-ui/icons/Attachment';
 import FingerprintIcon from '@material-ui/icons/Fingerprint';
 import {faSocks} from '@fortawesome/free-solid-svg-icons';
@@ -200,6 +200,9 @@ export function TopAppBar(props) {
                   <Tooltip title="Active Callbacks">
                     <PhoneCallbackIcon className="mythicElement"/>
                   </Tooltip>
+                </IconButton>
+                <IconButton component={Link} to='/new/reporting' color="inherit">
+                    <FontAwesomeIcon icon={faFlagCheckered} title="Reporting" />
                 </IconButton>
                 <Button style={{display: "inline-flex", alignItems: "center", paddingRight: "10px", color: "white"}} component={Link} to="/new/operations">
                     <Typography >

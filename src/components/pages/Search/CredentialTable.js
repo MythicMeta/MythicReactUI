@@ -133,7 +133,7 @@ export function CredentialTable(props){
     }
 
     return (
-        <TableContainer component={Paper} className="mythicElement" style={{height: "calc(78vh)"}}>
+        <TableContainer component={Paper} className="mythicElement" >
             <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>

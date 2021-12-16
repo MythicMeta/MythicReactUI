@@ -117,7 +117,7 @@ export function FileMetaDownloadTable(props){
         setFiles(updated);
     }
     return (
-        <TableContainer component={Paper} className="mythicElement" style={{height: "calc(78vh)"}}>   
+        <TableContainer component={Paper} className="mythicElement" >   
             <Button size="small" onClick={onDownloadBulk} style={{float: "right"}} color="primary" variant="contained"><ArchiveIcon/>Zip & Download Selected</Button>
             <Table stickyHeader size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
@@ -344,7 +344,7 @@ export function FileMetaUploadTable(props){
         setFiles(updated);
     }
     return (
-        <TableContainer component={Paper} className="mythicElement" style={{height: "calc(78vh)"}}>   
+        <TableContainer component={Paper} className="mythicElement" >   
             <Button size="small" onClick={onDownloadBulk} style={{float: "right"}} color="primary" variant="contained"><ArchiveIcon/>Zip & Download Selected</Button>
             <Table stickyHeader size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
