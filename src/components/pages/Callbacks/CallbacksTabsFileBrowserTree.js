@@ -88,16 +88,18 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const getNodeData = (node, nestingLevel, fetchFolderData, setTableData, theme) => ({
+const getNodeData = (node, nestingLevel, fetchFolderData, setTableData, theme, openState, setOpenState) => ({
     data: {
         id: node.id.toString(), // mandatory
         isLeaf: node.filebrowserobjs === undefined || Object.keys(node.filebrowserobjs).length === 0,
-        isOpenByDefault: true, //mandatory
+        isOpenByDefault: nestingLevel === 0 || Boolean(openState[node.id.toString()]), //mandatory
         name: node.name_text,
         nestingLevel,
         fetchFolderData,
         setTableData,
         theme,
+        openState,
+        setOpenState,
         ...node,
     },
     nestingLevel,
@@ -105,9 +107,10 @@ const getNodeData = (node, nestingLevel, fetchFolderData, setTableData, theme) =
 });
 export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTableData }) => {
     const theme = useTheme();
+    const [openState, setOpenState] = React.useState({});
     function* treeWalker() {
         for (let i = 0; i < treeRoot.length; i++) {
-            yield getNodeData(treeRoot[i], 0, fetchFolderData, setTableData, theme);
+            yield getNodeData(treeRoot[i], 0, fetchFolderData, setTableData, theme, openState, setOpenState);
         }
         while (true) {
             const parent = yield;
@@ -115,7 +118,15 @@ export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTab
                 if (value.is_file) {
                     continue;
                 }
-                yield getNodeData(value, parent.nestingLevel + 1, fetchFolderData, setTableData, theme);
+                yield getNodeData(
+                    value,
+                    parent.nestingLevel + 1,
+                    fetchFolderData,
+                    setTableData,
+                    theme,
+                    openState,
+                    setOpenState
+                );
             }
         }
     }
@@ -140,7 +151,6 @@ export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTab
                     width={width - 10}
                     itemSize={30}
                     overscanCount={20}
-                    async
                     placeholder={<div>Loading....</div>}>
                     {FileBrowserNode}
                 </FixedSizeTree>
@@ -169,28 +179,31 @@ const FileBrowserNode = ({ data, isOpen, style, setOpen }) => {
 const FileBrowserRow = (props) => {
     const classes = useStyles();
     const theme = useTheme();
+
     const fetchItems = () => {
         snackActions.info('fetching elements...', { persist: true });
         props.filebrowserobj.fetchFolderData(props.filebrowserobj);
-        if (!props.isOpen) {
-            props.filebrowserobj.fetchFolderData(props.filebrowserobj);
-        }
-        //props.setOpen(!props.isOpen);
-        //props.toggleSelection(props.filebrowserobj.id, !isOpen);
     };
+
     const setTableData = () => {
         props.filebrowserobj.setTableData(props.filebrowserobj);
     };
-    const clickIcon = (evt) => {
-        evt.stopPropagation();
+
+    const clickIcon = () => {
         fetchItems();
         if (props.isOpen) {
-            props.setOpen(!props.isOpen);
+            props.filebrowserobj.setOpenState({
+                ...props.filebrowserobj.openState,
+                [props.filebrowserobj.id.toString()]: false,
+            });
         } else {
-            fetchItems();
-            props.setOpen(!props.isOpen);
+            props.filebrowserobj.setOpenState({
+                ...props.filebrowserobj.openState,
+                [props.filebrowserobj.id.toString()]: true,
+            });
         }
     };
+
     return (
         <Paper
             className={classes.root}
@@ -201,7 +214,7 @@ const FileBrowserRow = (props) => {
                 <ComputerIcon style={{ marginLeft: '3px', marginRight: '5px' }} />
             ) : props.filebrowserobj.is_file ? (
                 <DescriptionIcon style={{ marginLeft: '3px', marginRight: '5px' }} />
-            ) : props.isOpen ? (
+            ) : props.filebrowserobj.openState[props.filebrowserobj.id.toString()] ? (
                 <FolderOpenIcon
                     style={{
                         marginLeft: '3px',
