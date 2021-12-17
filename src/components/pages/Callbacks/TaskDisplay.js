@@ -80,7 +80,8 @@ const useStyles = makeStyles((theme) => ({
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
-    display: "inline"
+    display: "inline",
+    cursor: "default"
   },
   secondaryHeading: {
     fontSize: theme.typography.pxToRem(15),
@@ -467,7 +468,7 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
                         
         </AccordionSummary>
 
-        <AccordionDetails >
+        <AccordionDetails style={{cursor: "default"}}>
           <TaskDisplayContainer task={task}/>
         </AccordionDetails>
       </Accordion>

@@ -2,10 +2,6 @@ import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicCo
 import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import AttachmentIcon from '@material-ui/icons/Attachment';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import Grid from '@material-ui/core/Grid';
 import SearchIcon from '@material-ui/icons/Search';
@@ -17,9 +13,11 @@ import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import Pagination from '@material-ui/lab/Pagination';
-import { Typography } from '@material-ui/core';
+import { Button, Typography } from '@material-ui/core';
 import {FileMetaDownloadTable, FileMetaUploadTable, FileMetaScreenshotTable} from './FileMetaTable';
 import {FileBrowserTable} from './FileBrowserTable';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 
 const fileMetaFragment = gql`
 fragment filemetaData on filemeta{
@@ -275,6 +273,47 @@ const SearchTabFilesSearchPanel = (props) => {
                 break;
         }
     }
+    const uploadFile = (file) => {
+        try {
+            let xhr = new XMLHttpRequest();
+            let fd = new FormData();
+            xhr.open("POST", window.location.origin + "/api/v1.4/files/manual", true);
+            //xhr.withCredentials = true;
+            xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("access_token"));
+            //xhr.setRequestHeader("refresh_token", localStorage.getItem("refresh_token"));
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try{
+                        let response = JSON.parse(xhr.responseText);
+                        if(response["status"] === "success"){
+                            snackActions.success("Successfuly hosted file! Now searchable on the 'Uploads' search");
+                        }else{
+                            snackActions.error("Failed to host file! " + response["error"]);
+                        }
+                    }catch(error){
+                        snackActions.error("Failed to process response from upload: " + error);
+                        console.log(error);
+                    }
+                } else if (xhr.readyState === 4 && (xhr.status === 302 || xhr.status === 405)) {
+                    // either got redirected or try to post/put to a bad path
+                    console.log("httpGetAsync was 302 or 405 from url ");
+                    snackActions.error("Got HTTP 302 or 405 when trying to host file");
+                } else if (xhr.readyState === 4) {
+                    console.log("httpGetAsync Error with data: " + fd);
+                    snackActions.error("Mythic hit an error trying to hos the file: " + xhr.status + ": " + xhr.statusText);
+                }
+            };
+            fd.append("upload_file", file);
+            xhr.send(fd);
+        } catch (error) {
+            snackActions.error("HTTP Browser error trying to upload file: " + error.toString());
+            console.error("HTTP Browser error: " + error.toString());
+        }
+    
+    }
+    const onFileChange = (evt) => {  
+        uploadFile(evt.target.files[0]);
+    }
     React.useEffect(() => {
         if(props.value === props.index){
             let queryParams = new URLSearchParams(window.location.search);
@@ -326,25 +365,36 @@ const SearchTabFilesSearchPanel = (props) => {
                         style: {padding: 0}
                     }}/>
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={2}>
                 <FormLabel component="legend">Search File's</FormLabel>
-                <FormControl component="fieldset">
-                    <RadioGroup row aria-label="file_component" name="searchField" value={searchField} onChange={handleSearchFieldChange}>
-                        {searchFieldOptions.map( (opt) => (
-                            <FormControlLabel value={opt} key={"searchopt" + opt} control={<Radio />} label={opt} />
-                        ))}
-                    </RadioGroup>
-                </FormControl>
+                <Select
+                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    value={searchField}
+                    onChange={handleSearchFieldChange}
+                >
+                    {
+                        searchFieldOptions.map((opt, i) => (
+                            <MenuItem key={"searchopt" + opt} value={opt}>{opt}</MenuItem>
+                        ))
+                    }
+                </Select>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={2}>
             <FormLabel component="legend">Search Location</FormLabel>
-                <FormControl component="fieldset">
-                    <RadioGroup row aria-label="file_component" name="searchLocation" value={searchLocation} onChange={handleSearchLocationChange}>
-                        {searchLocationOptions.map( (opt) => (
-                            <FormControlLabel value={opt} key={"searchlocopt" + opt} control={<Radio />} label={opt} />
-                        ))}
-                    </RadioGroup>
-                </FormControl>
+                <Select
+                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    value={searchLocation}
+                    onChange={handleSearchLocationChange}
+                >
+                    {
+                        searchLocationOptions.map((opt, i) => (
+                            <MenuItem key={"searchlocopt" + opt} value={opt}>{opt}</MenuItem>
+                        ))
+                    }
+                </Select>
+            </Grid>
+            <Grid item xs={2}>
+                <Button variant="contained" color="primary" component="label">Host File in Mythic <input onChange={onFileChange} type="file" hidden /></Button>
             </Grid>
         </Grid>
     )

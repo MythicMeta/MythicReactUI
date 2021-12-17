@@ -7,6 +7,7 @@ import {ResponseDisplayScreenshot} from './ResponseDisplayScreenshot';
 import {ResponseDisplayPlaintext} from './ResponseDisplayPlaintext';
 import {ResponseDisplayTable} from './ResponseDisplayTable';
 import {ResponseDisplayDownload} from './ResponseDisplayDownload';
+import {ResponseDisplaySearch} from './ResponseDisplaySearch';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import SearchIcon from '@material-ui/icons/Search';
 import {useTheme} from '@material-ui/core/styles';
@@ -353,6 +354,10 @@ export const ResponseDisplay = (props) =>{
               {browserScriptData?.download?.map( (dl, index) => (
                   <ResponseDisplayDownload download={dl} key={"download" + index + "fortask" + props.task.id} />
                 )) || null
+              }
+              {browserScriptData?.search?.map( (s, index) => (
+                  <ResponseDisplaySearch search={s} key={"searchlink" + index + "fortask" + props.task.id} />
+              )) || null
               }
           </React.Fragment>
         ) : (

@@ -15,11 +15,106 @@ import Popper from '@material-ui/core/Popper';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import { copyStringToClipboard } from '../../utilities/Clipboard';
+import IconButton from '@material-ui/core/IconButton';
+import {snackActions} from '../../utilities/Snackbar';
+import { Tooltip } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faFolder, faFolderOpen, faFileArchive, faFilePrescription, faFileWord, faFileExcel, faFilePowerpoint, faFilePdf, faDatabase, faKey, faFileCode, faDownload, faUpload, faFileImage, faCopy, faBoxOpen, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 
+const useStyles = makeStyles((theme) => ({
+  tooltip: {
+    backgroundColor: theme.palette.background.contrast,
+    color: theme.palette.text.contrast,
+    boxShadow: theme.shadows[1],
+    fontSize: 13
+  },
+  arrow: {
+    color: theme.palette.background.contrast,
+  }
+}));
+const onCopyToClipboard = (data) => {
+  let result = copyStringToClipboard(data);
+  if(result){
+    snackActions.success("Copied text!");
+  }else{
+    snackActions.error("Failed to copy text");
+  }
+}
+const getIconName = (iconName) => {
+  switch(iconName.toLowerCase()){
+    case "openfolder":
+    case "folder":
+      return faFolderOpen;
+    case "closedfolder":
+      return faFolder;
+    case "archive":
+    case "zip":
+      return faFileArchive;
+    case "diskimage":
+      return faBoxOpen;
+    case "executable":
+      return faFilePrescription;
+    case "word":
+      return faFileWord;
+    case "excel":
+      return faFileExcel;
+    case "powerpoint":
+      return faFilePowerpoint;
+    case "pdf":
+    case "adobe":
+      return faFilePdf;
+    case "database":
+      return faDatabase;
+    case "key":
+      return faKey;
+    case "code":
+    case "source":
+      return faFileCode;
+    case "download":
+      return faDownload;
+    case "upload":
+      return faUpload;
+    case "png":
+    case "jpg":
+    case "image":
+      return faFileImage;
+    default:
+      return faFileAlt;
+  }
+}
 const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
+  const classes = useStyles();
   return (
     <div style={{...cellData["cellStyle"]}}>
-      {cellData["plaintext"]}
+      {cellData?.copyIcon? 
+        <IconButton onClick={() => onCopyToClipboard(cellData["plaintext"])}>
+            <FontAwesomeIcon icon={faCopy} />
+        </IconButton> : null}
+      {cellData?.startIcon? 
+        <Tooltip title={cellData?.startIconHoverText || ""} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}><span>
+            <FontAwesomeIcon icon={getIconName(cellData?.startIcon)} style={{marginRight: "5px"}}/></span>
+        </Tooltip>
+         : null
+      }
+      {cellData.plaintextHoverText? (
+        <Tooltip title={cellData.plaintextHoverText} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+          <pre style={{display: "inline-block"}}>
+            {cellData?.plaintext || " "}
+          </pre>
+          
+        </Tooltip>
+      ) : (
+        <pre style={{display: "inline-block"}}>
+            {cellData?.plaintext || " "}
+          </pre>
+      )}
+      {cellData?.endIcon? 
+       <Tooltip title={cellData?.endIconHoverText || ""} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}><span>
+        <FontAwesomeIcon icon={getIconName(cellData?.endIcon)} /> </span> 
+        </Tooltip>: null
+      }
     </div>
           
   )
@@ -29,17 +124,10 @@ const getStringSize = ({cellData}) => {
       // process for getting human readable string from bytes: https://stackoverflow.com/a/18650828
       let bytes = parseInt(cellData["plaintext"]);
       if (cellData["plaintext"] === ''){
-        return (
-          <div style={{...cellData["cellStyle"]}}>
-          </div>
-        )
+        return ""
       }
       if (bytes === 0){
-        return (
-          <div style={{...cellData["cellStyle"]}}>
-            {"0 Bytes"}
-          </div>
-        )
+        return "0 Bytes";
       };
       const decimals = 2;
       const k = 1024;
@@ -48,23 +136,30 @@ const getStringSize = ({cellData}) => {
 
       const i = Math.floor(Math.log(bytes) / Math.log(k));
       const size = parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-      return (
-        <div style={{...cellData["cellStyle"]}}>
-          {size}
-        </div>
-      )
+      return size;
   }catch(error){
-    return (
-      <div style={{...cellData["cellStyle"]}}>
-        {cellData["plaintext"]}
-      </div>
-    )
+    return cellData?.plaintext || ""
+    
   }
 }
 const ResponseDisplayTableSizeCell = ({cellData}) => {
-  
+  const classes = useStyles();
   return (
-          getStringSize({cellData})
+    <div style={{...cellData["cellStyle"]}}>
+        {cellData.plaintextHoverText? (
+        <Tooltip title={cellData.plaintextHoverText} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+          <pre style={{display: "inline-block"}}>
+            {getStringSize({cellData})}
+          </pre>
+          
+        </Tooltip>
+      ) : (
+        <pre style={{display: "inline-block"}}>
+            {getStringSize({cellData})}
+          </pre>
+      )}
+     </div>
+          
   )
 }
 const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
@@ -74,6 +169,7 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
   const dropdownAnchorRef = useRef(null);
   const [openDropdownButton, setOpenDropdownButton] = React.useState(false);
   const [taskingData, setTaskingData] = React.useState({});
+  const classes = useStyles();
   const handleClose = (event) => {
     if (dropdownAnchorRef.current && dropdownAnchorRef.current.contains(event.target)) {
       return;
@@ -106,29 +202,39 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
       case "dictionary":
         return (
           <React.Fragment>
-              <Button size="small" title="Display Data"
-                variant="contained" color="primary" onClick={() => setOpenButton(true)} disabled={cellData.button.disabled}>{cellData.button.name}</Button>
-                {openButton &&
-                  <MythicDialog fullWidth={true} maxWidth="lg" open={openButton} 
-                      onClose={()=>{setOpenButton(false);}} 
-                      innerDialog={<MythicViewJSONAsTableDialog title={cellData.button.title} leftColumn={cellData.button.leftColumnTitle} 
-                      rightColumn={cellData.button.rightColumnTitle} value={cellData.button.value} onClose={()=>{setOpenButton(false);}} />}
-                  />
-                }
+            <Tooltip title={cellData?.button?.hoverText || "Display Data"} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+              <Button size="small" 
+                variant="contained" color="primary" onClick={() => setOpenButton(true)} disabled={cellData?.button?.disabled || false}>{cellData?.button?.name || " "}</Button>
+            </Tooltip>
+            {openButton &&
+                <MythicDialog fullWidth={true} maxWidth="lg" open={openButton} 
+                    onClose={()=>{setOpenButton(false);}} 
+                    innerDialog={<MythicViewJSONAsTableDialog title={cellData?.button?.title || "Title Here"} leftColumn={cellData?.button?.leftColumnTitle || "Left Column"} 
+                    rightColumn={cellData?.button?.rightColumnTitle || "Right Column"} value={cellData?.button?.value || {}} onClose={()=>{setOpenButton(false);}} />}
+                />
+              }
             </React.Fragment>
         )
       case "task":
         return (
           <React.Fragment>
-                   <Button size="small" title="Issues a task"
-                    onClick={() => setOpenTaskingButton(true)} disabled={cellData.button.disabled} variant="contained" color="secondary" >{cellData.button.name}</Button>
-                   {openTaskingButton && 
-                      <TaskFromUIButton ui_feature={cellData.button.ui_feature} 
-                        callback_id={callback_id} 
-                        parameters={cellData.button.parameters}
-                        onTasked={() => setOpenTaskingButton(false)}/>
-                    }
-                </React.Fragment>
+            <Tooltip title={cellData?.button?.hoverText || "Issues Task to Agent"} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+              <Button size="small" 
+              onClick={() => setOpenTaskingButton(true)} disabled={cellData?.button?.disabled || false} variant="contained" color="secondary" >{cellData?.button?.name || " "}</Button>
+            </Tooltip>
+            {openTaskingButton && 
+              <TaskFromUIButton ui_feature={cellData?.button?.ui_feature || " "} 
+                callback_id={callback_id} 
+                parameters={cellData?.button?.parameters || ""}
+                onTasked={() => setOpenTaskingButton(false)}/>
+            }
+          </React.Fragment>
+        )
+      case "link":
+        return (
+          <React.Fragment>
+
+          </React.Fragment>
         )
       case "menu":
         return (
@@ -179,9 +285,6 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
   }
   return (
     <div style={{...cellData["cellStyle"]}}>
-      {cellData.button && cellData.button.type.toLowerCase() === "clipboard" ? (
-        null
-      ): (null) }
       {cellData.plaintext ? cellData.plaintext : null}
       {cellData.button ? (getButtonObject()) : (null)}
     </div>

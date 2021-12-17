@@ -76,13 +76,13 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 3
   },
   tooltip: {
-    backgroundColor: theme.palette.common.white,
-    color: 'rgba(0,0,0,0.87)',
+    backgroundColor: theme.palette.background.contrast,
+    color: theme.palette.text.contrast,
     boxShadow: theme.shadows[1],
     fontSize: 13
   },
   arrow: {
-    color: theme.palette.common.white,
+    color: theme.palette.background.contrast,
   }
 }));
 

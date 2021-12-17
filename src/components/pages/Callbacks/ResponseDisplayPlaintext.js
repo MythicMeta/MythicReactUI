@@ -23,6 +23,7 @@ export const ResponseDisplayPlaintext = (props) =>{
         theme={theme.palette.type === "dark" ? "monokai" : "xcode"}
         fontSize={14}
         showGutter={true}
+        height={"100px"}
         highlightActiveLine={true}
         value={plaintextView}
         focus={true}

@@ -3,10 +3,6 @@ import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {TaskDisplay} from '../Callbacks/TaskDisplay';
 import AssignmentIcon from '@material-ui/icons/Assignment';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import Grid from '@material-ui/core/Grid';
 import SearchIcon from '@material-ui/icons/Search';
@@ -20,6 +16,8 @@ import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import Pagination from '@material-ui/lab/Pagination';
 import { Typography } from '@material-ui/core';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 
 const fetchLimit = 20;
 const responseSearch = gql`
@@ -146,15 +144,19 @@ const SearchTabTasksSearchPanel = (props) => {
                         style: {padding: 0}
                     }}/>
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={2}>
                 <FormLabel component="legend">Search Task's</FormLabel>
-                <FormControl component="fieldset">
-                    <RadioGroup row aria-label="task_component" name="searchField" value={searchField} onChange={handleSearchFieldChange}>
-                        {searchFieldOptions.map( (opt) => (
-                            <FormControlLabel value={opt} key={"searchopt" + opt} control={<Radio />} label={opt} />
-                        ))}
-                    </RadioGroup>
-                </FormControl>
+                <Select
+                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    value={searchField}
+                    onChange={handleSearchFieldChange}
+                >
+                    {
+                        searchFieldOptions.map((opt, i) => (
+                            <MenuItem key={"searchopt" + opt} value={opt}>{opt}</MenuItem>
+                        ))
+                    }
+                </Select>
             </Grid>
             <Grid item xs={2}>
                 <MythicTextField placeholder="Filter Task Status..." value={filterTaskStatus}

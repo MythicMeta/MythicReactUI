@@ -9,6 +9,7 @@ import ErrorIcon from '@material-ui/icons/Error';
 import {snackActions} from './utilities/Snackbar';
 import { meState } from '../cache';
 import { useReactiveVar } from '@apollo/client';
+import { makeStyles } from '@material-ui/core/styles';
 
 const SUB_Event_Logs = gql`
 subscription MySubscription($operation_id: Int!) {
@@ -20,9 +21,20 @@ subscription MySubscription($operation_id: Int!) {
 }
  `;
  
- 
+ const useStyles = makeStyles((theme) => ({
+    tooltip: {
+      backgroundColor: theme.palette.background.contrast,
+      color: theme.palette.text.contrast,
+      boxShadow: theme.shadows[1],
+      fontSize: 13
+    },
+    arrow: {
+      color: theme.palette.background.contrast,
+    }
+  }));
 export function TopAppBarNotifications(props) {
     const me = useReactiveVar(meState);
+    const classes = useStyles();
   const { loading, error, data } = useSubscription(SUB_Event_Logs, {
       variables: {operation_id: me?.user?.current_operation_id || 0},
     onError: data => {
@@ -33,7 +45,7 @@ export function TopAppBarNotifications(props) {
 
     return (    
         <IconButton color="inherit" component={Link} to='/new/EventFeed' style={{float: "right"}}>
-            <Tooltip title="Event Feed">
+            <Tooltip title="Event Feed" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
             { 
                 loading ? (
                     <Badge color="secondary" badgeContent={0}>

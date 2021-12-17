@@ -125,7 +125,7 @@ export function ReportingTable(props){
                               autoFocus
                               style={{width: "100%", marginBottom: "10px"}}
                               value={selectedOutputFormat}
-                              label="Select an Output FOrmat"
+                              label="Select an Output Format"
                               onChange={setOutputFormat}
                             >
                             {

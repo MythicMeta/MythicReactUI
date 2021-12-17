@@ -97,7 +97,16 @@ const useStyles = makeStyles((theme) => ({
   nested: {
     paddingLeft: theme.spacing(4),
   },
-  mythicElement: {}
+  mythicElement: {},
+  tooltip: {
+    backgroundColor: theme.palette.background.contrast,
+    color: theme.palette.text.contrast,
+    boxShadow: theme.shadows[1],
+    fontSize: 13
+  },
+  arrow: {
+    color: theme.palette.background.contrast,
+  }
 }));
 
 export function TopAppBar(props) {
@@ -168,42 +177,50 @@ export function TopAppBar(props) {
             <div style={{width: "100%"}}>
                 
                 <IconButton component={Link} to='/new/payloadtypes' color="inherit">
-                  <Tooltip title="C2 Profiles and Payload Types">
+                  <Tooltip title="C2 Profiles and Payload Types" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
                     <HeadsetIcon className="mythicElement"/>
                   </Tooltip>
                 </IconButton>
-                <IconButton component={Link} to='/new/payloads' color="inherit">
-                    <FontAwesomeIcon icon={faBiohazard} title="Payloads" />
-                </IconButton>
+                <Tooltip title="Payloads" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+                    <IconButton component={Link} to='/new/payloads' color="inherit">
+                      <FontAwesomeIcon icon={faBiohazard} />
+                  </IconButton>
+                </Tooltip>
                 <IconButton component={Link} to='/new/search' color="inherit">
-                  <Tooltip title="Search Operation">
+                  <Tooltip title="Search Operation" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
                     <SearchIcon className="mythicElement"/>
                   </Tooltip>
                 </IconButton>
                 <IconButton component={Link} to='/new/search?searchField=Filename&tab=files&location=Downloads' color="inherit">
-                  <Tooltip title="Files">
+                  <Tooltip title="Files" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
                     <AttachmentIcon className="mythicElement"/>
                   </Tooltip>
                 </IconButton>
                 <IconButton component={Link} to='/new/search?searchField=Artifact&tab=artifacts' color="inherit">
-                  <Tooltip title="Artifacts">
+                  <Tooltip title="Artifacts" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
                     <FingerprintIcon className="mythicElement"/>
                   </Tooltip>
                 </IconButton>
-                <IconButton component={Link} to='/new/search?tab=socks' color="inherit">
-                    <FontAwesomeIcon icon={faSocks} title="SOCKS" />
-                </IconButton>
-                <IconButton component={Link} to='/new/search?searchField=Filename&tab=files&location=Screenshots' color="inherit">
-                    <FontAwesomeIcon icon={faCamera} title="Screenshots" />
-                </IconButton>
+                <Tooltip title="SOCKS" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+                  <IconButton component={Link} to='/new/search?tab=socks' color="inherit">
+                      <FontAwesomeIcon icon={faSocks} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Screenshots" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+                  <IconButton component={Link} to='/new/search?searchField=Filename&tab=files&location=Screenshots' color="inherit">
+                      <FontAwesomeIcon icon={faCamera} />
+                  </IconButton>
+                </Tooltip>
                 <IconButton component={Link} to='/new/callbacks' color="inherit">
-                  <Tooltip title="Active Callbacks">
+                  <Tooltip title="Active Callbacks"  arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
                     <PhoneCallbackIcon className="mythicElement"/>
                   </Tooltip>
                 </IconButton>
-                <IconButton component={Link} to='/new/reporting' color="inherit">
-                    <FontAwesomeIcon icon={faFlagCheckered} title="Reporting" />
-                </IconButton>
+                <Tooltip title="Reporting" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+                  <IconButton component={Link} to='/new/reporting' color="inherit">
+                      <FontAwesomeIcon icon={faFlagCheckered} />
+                  </IconButton>
+                </Tooltip>
                 <Button style={{display: "inline-flex", alignItems: "center", paddingRight: "10px", color: "white"}} component={Link} to="/new/operations">
                     <Typography >
                         {me?.user?.current_operation || "No Operation Set"}
@@ -239,7 +256,7 @@ export function TopAppBar(props) {
                     color="inherit"
                     style={{float: "right"}}
                 >
-                  <Tooltip title="Settings or Logout">
+                  <Tooltip title="Settings or Logout"  arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
                     <AccountCircle />
                   </Tooltip>
                 </IconButton>
@@ -252,7 +269,7 @@ export function TopAppBar(props) {
                     color="inherit"
                     style={{float:"right"}}
                 >
-                  <Tooltip title="Help Documentation">
+                  <Tooltip title="Help Documentation"  arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
                     <HelpIcon />  
                   </Tooltip>
                 </IconButton>

@@ -2,10 +2,6 @@ import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicCo
 import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import ConfirmationNumberIcon from '@material-ui/icons/ConfirmationNumber';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import Grid from '@material-ui/core/Grid';
 import SearchIcon from '@material-ui/icons/Search';
@@ -19,6 +15,8 @@ import {useReactiveVar} from '@apollo/client';
 import Pagination from '@material-ui/lab/Pagination';
 import { Typography } from '@material-ui/core';
 import {TokenTable} from './TokenTable';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 
 const tokenFragment = gql`
 fragment tokenData on token{
@@ -177,15 +175,19 @@ const SearchTabTokensSearchPanel = (props) => {
                         style: {padding: 0}
                     }}/>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={2}>
                 <FormLabel component="legend">Search Tokens by</FormLabel>
-                <FormControl component="fieldset">
-                    <RadioGroup row aria-label="file_component" name="searchField" value={searchField} onChange={handleSearchFieldChange}>
-                        {searchFieldOptions.map( (opt) => (
-                            <FormControlLabel value={opt} key={"searchopt" + opt} control={<Radio />} label={opt} />
-                        ))}
-                    </RadioGroup>
-                </FormControl>
+                <Select
+                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    value={searchField}
+                    onChange={handleSearchFieldChange}
+                >
+                    {
+                        searchFieldOptions.map((opt, i) => (
+                            <MenuItem key={"searchopt" + opt} value={opt}>{opt}</MenuItem>
+                        ))
+                    }
+                </Select>
             </Grid>
         </Grid>
     )

@@ -59,10 +59,12 @@ export function App(props) {
           background: {
               default: themeMode === 'dark' ? 'rgb(37, 41, 51)' : '#ffffff',
               paper: themeMode === 'dark' ? 'rgb(50, 60, 69)' : '#ffffff',
+              contrast: themeMode === 'dark' ? '#ffffff' : 'rgb(37, 41, 51)'
           },
           text: {
             primary: themeMode === 'dark' ? '#fff' : '#000',
-            secondary: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.7)': 'rgba(0, 0, 0, 0.54)'
+            secondary: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.7)': 'rgba(0, 0, 0, 0.54)',
+            contrast: themeMode === "dark" ? '#000' : '#fff'
           },
           textBackgroundColor: themeMode === 'dark' ? '#74828b' : '#d9dbdc',
           textBackgroundColorMythic: themeMode === 'dark' ? '#436b9f': '#aadcf5',
