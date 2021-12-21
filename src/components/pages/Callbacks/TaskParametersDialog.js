@@ -373,9 +373,9 @@ export function TaskParametersDialog(props) {
             let choice;
             if(choices.length > 0){
                 if(choices[0]["source"]["id"] === props.callback_id){
-                    choice = choices[0]["source"];
-                }else{
                     choice = choices[0]["destination"];
+                }else{
+                    choice = choices[0]["source"];
                 }
                 const c2profileparameters = choice["c2profileparametersinstances"].reduce( (prev, opt) => {
                     if(opt.c2_profile_id === choices[0]["c2profile"]["id"]){

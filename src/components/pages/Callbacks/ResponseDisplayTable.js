@@ -21,7 +21,7 @@ import {snackActions} from '../../utilities/Snackbar';
 import { Tooltip } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faFolder, faFolderOpen, faFileArchive, faFilePrescription, faFileWord, faFileExcel, faFilePowerpoint, faFilePdf, faDatabase, faKey, faFileCode, faDownload, faUpload, faFileImage, faCopy, faBoxOpen, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import {faList, faTrashAlt, faSkullCrossbones, faCamera, faSyringe, faFolder, faFolderOpen, faFileArchive, faCog, faFileWord, faFileExcel, faFilePowerpoint, faFilePdf, faDatabase, faKey, faFileCode, faDownload, faUpload, faFileImage, faCopy, faBoxOpen, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 
 const useStyles = makeStyles((theme) => ({
   tooltip: {
@@ -55,7 +55,7 @@ const getIconName = (iconName) => {
     case "diskimage":
       return faBoxOpen;
     case "executable":
-      return faFilePrescription;
+      return faCog;
     case "word":
       return faFileWord;
     case "excel":
@@ -80,6 +80,16 @@ const getIconName = (iconName) => {
     case "jpg":
     case "image":
       return faFileImage;
+    case "list":
+      return faList;
+    case "delete":
+      return faTrashAlt;
+    case "inject":
+      return faSyringe;
+    case "kill":
+      return faSkullCrossbones;
+    case "camera":
+      return faCamera;
     default:
       return faFileAlt;
   }
@@ -89,12 +99,14 @@ const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
   return (
     <div style={{...cellData["cellStyle"]}}>
       {cellData?.copyIcon? 
-        <IconButton onClick={() => onCopyToClipboard(cellData["plaintext"])}>
-            <FontAwesomeIcon icon={faCopy} />
-        </IconButton> : null}
+        <Tooltip title={"Copy to clipboard"} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+            <IconButton onClick={() => onCopyToClipboard(cellData["plaintext"])} size="small">
+                <FontAwesomeIcon icon={faCopy} />
+            </IconButton>
+        </Tooltip> : null}
       {cellData?.startIcon? 
         <Tooltip title={cellData?.startIconHoverText || ""} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}><span>
-            <FontAwesomeIcon icon={getIconName(cellData?.startIcon)} style={{marginRight: "5px"}}/></span>
+            <FontAwesomeIcon icon={getIconName(cellData?.startIcon)} style={{marginRight: "5px", color: cellData?.startIconColor  || ""}}/></span>
         </Tooltip>
          : null
       }
@@ -112,7 +124,7 @@ const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
       )}
       {cellData?.endIcon? 
        <Tooltip title={cellData?.endIconHoverText || ""} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}><span>
-        <FontAwesomeIcon icon={getIconName(cellData?.endIcon)} /> </span> 
+          <FontAwesomeIcon icon={getIconName(cellData?.endIcon)} style={{color: cellData?.endIconColor  || ""}}/> </span> 
         </Tooltip>: null
       }
     </div>
@@ -203,8 +215,10 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
         return (
           <React.Fragment>
             <Tooltip title={cellData?.button?.hoverText || "Display Data"} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
-              <Button size="small" 
-                variant="contained" color="primary" onClick={() => setOpenButton(true)} disabled={cellData?.button?.disabled || false}>{cellData?.button?.name || " "}</Button>
+              <Button size="small" variant="contained" color="primary" 
+                onClick={() => setOpenButton(true)} disabled={cellData?.button?.disabled || false}
+                startIcon={cellData?.button?.startIcon ? <FontAwesomeIcon icon={getIconName(cellData?.button?.startIcon)} style={{color: cellData?.button?.startIconColor  || ""}}/> : null}
+                >{cellData?.button?.name || " "}</Button>
             </Tooltip>
             {openButton &&
                 <MythicDialog fullWidth={true} maxWidth="lg" open={openButton} 
@@ -219,8 +233,9 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
         return (
           <React.Fragment>
             <Tooltip title={cellData?.button?.hoverText || "Issues Task to Agent"} arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
-              <Button size="small" 
-              onClick={() => setOpenTaskingButton(true)} disabled={cellData?.button?.disabled || false} variant="contained" color="secondary" >{cellData?.button?.name || " "}</Button>
+              <Button size="small" onClick={() => setOpenTaskingButton(true)} disabled={cellData?.button?.disabled || false} variant="contained" color="secondary" 
+                startIcon={cellData?.button?.startIcon ? <FontAwesomeIcon icon={getIconName(cellData?.button?.startIcon)} style={{color: cellData?.button?.startIconColor  || ""}}/> : null}
+              >{cellData?.button?.name || " "}</Button>
             </Tooltip>
             {openTaskingButton && 
               <TaskFromUIButton ui_feature={cellData?.button?.ui_feature || " "} 
@@ -228,12 +243,6 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
                 parameters={cellData?.button?.parameters || ""}
                 onTasked={() => setOpenTaskingButton(false)}/>
             }
-          </React.Fragment>
-        )
-      case "link":
-        return (
-          <React.Fragment>
-
           </React.Fragment>
         )
       case "menu":

@@ -308,7 +308,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                                 // what the user typed isn't an exact match, so find things that start with what they're trying to type
                                 paramOptions = cmd.commandparameters.reduce( (prev, cur) => {
                                     if(cmdGroupNames.includes(cur.parameter_group_name) && 
-                                        cur.cli_name.startsWith(lastFlag.slice(1)) &&
+                                        cur.cli_name.toLowerCase().startsWith(lastFlag.slice(1).toLocaleLowerCase()) &&
                                         !(cur.cli_name in parsed)){
                                         return [...prev, cur.cli_name];
                                     }else{
@@ -348,7 +348,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }else{
                 // somebody hit tab with either a blank message or a partial word
                 if(tabOptions.length === 0){
-                    let opts = loadedOptions.filter( l => l.cmd.startsWith(message) && (l.attributes.supported_os.length === 0 || l.attributes.supported_os.includes(props.callback_os)));
+                    let opts = loadedOptions.filter( l => l.cmd.toLowerCase().startsWith(message.toLocaleLowerCase()) && (l.attributes.supported_os.length === 0 || l.attributes.supported_os.includes(props.callback_os)));
                     setTabOptions(opts);
                     setTabOptionsIndex(0);
                     if(opts.length > 0){
@@ -430,6 +430,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         }
         try{
             const argv = arrgv(command_line);
+            //console.log("argv", argv);
             const yargs_parsed = parser(argv, {
                 string: stringArgs,
                 boolean: booleanArgs,
@@ -437,7 +438,9 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 array: arrayArgs,
                 configuration: {
                     "short-option-groups": false,
-                    "camel-case-expansion": false
+                    "camel-case-expansion": false,
+                    "dot-notation": false,
+                    "unknown-options-as-args": false
                 }
             });
             //console.log(yargs_parsed, cmd.commandparameters);
@@ -477,7 +480,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 }, [])
                 if(intersection.length === 0){
                     // this is a bad thing, we did an intersection and there's no similar paramter groups, but parameters have been supplied
-                    return undefined;
+                    return [];
                 }
                 cmdGroupOptions = [...intersection];
             }
@@ -563,7 +566,6 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             snackActions.warning("Two or more of the specified parameters can't be used together", snackMessageStyles);
             return;
         }else if(cmdGroupName.length > 1){
-            console.log("cmdGroupNames > 1");
             if(Boolean(force_parsed_popup)){
                 props.onSubmitCommandLine(message, cmd, parsedWithPositionalParameters, Boolean(force_parsed_popup), cmdGroupName, unmodifiedHistoryValue);
             }else{
@@ -581,7 +583,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             setUnmodifiedHistoryValue("parsed_cli");
             return;
         }
-        //console.log("positional args added in:", parsedWithPositionalParameters);
+        console.log("positional args added in:", parsedWithPositionalParameters);
         props.onSubmitCommandLine(message, cmd, parsedWithPositionalParameters, Boolean(force_parsed_popup), cmdGroupName, unmodifiedHistoryValue);
         setMessage("");
         setTaskOptionsIndex(-1);

@@ -145,7 +145,7 @@ export function TaskParametersDialogRow(props){
                 }
                 setAgentConnectHostOptions(props.choices);
                 let payloadNum = 0;
-                if(agentConnectPayload < props.choices[hostNum].length){
+                if(agentConnectPayload < props.choices[hostNum]["payloads"].length){
                     payloadNum = agentConnectPayload;
                 }else{
                     setAgentConnectPayload(0);
@@ -201,9 +201,9 @@ export function TaskParametersDialogRow(props){
     const onChangeLinkInfo = (index) => {
         let choice;
         if(props.choices[index]["source"]["id"] === props.callback_id){
-            choice = props.choices[index]["source"];
-        }else{
             choice = props.choices[index]["destination"];
+        }else{
+            choice = props.choices[index]["source"];
         }
         const c2profileparameters = choice["c2profileparametersinstances"].reduce( (prev, opt) => {
             if(opt.c2_profile_id === props.choices[index]["c2profile"]["id"]){
