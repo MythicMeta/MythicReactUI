@@ -70,8 +70,8 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
         clearSelectedTab();
     }, [clickedTabId, openTabs, clearSelectedTab]);
     return (
-        <div className={classes.root} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <AppBar position='static' color='default'>
+        <div className={classes.root} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+            <AppBar color='default' position='static'>
                 <Tabs
                     value={value}
                     onChange={handleChange}
@@ -125,7 +125,11 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
                     case 'interact':
                         return (
                             <CallbacksTabsTaskingPanel
-                                style={{ position: 'relative', height: '100%', maxHeight: '100%' }}
+                                style={{
+                                    position: 'relative',
+                                    height: '100%',
+                                    maxHeight: '100%',
+                                }}
                                 key={'tabpanel' + tab.tabID + tab.tabType}
                                 onCloseTab={onCloseTabLocal}
                                 tabInfo={tab}
@@ -137,7 +141,12 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
                     case 'fileBrowser':
                         return (
                             <CallbacksTabsFileBrowserPanel
-                                style={{ height: '100%', maxHeight: '100%', position: 'relative', overflow: 'auto' }}
+                                style={{
+                                    height: '100%',
+                                    maxHeight: '100%',
+                                    position: 'relative',
+                                    overflow: 'auto',
+                                }}
                                 onCloseTab={onCloseTabLocal}
                                 key={'tabpanel' + tab.tabID + tab.tabType}
                                 tabInfo={tab}
@@ -148,7 +157,12 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
                     case 'processBrowser':
                         return (
                             <CallbacksTabsProcessBrowserPanel
-                                style={{ height: '100%', maxHeight: '100%', position: 'relative', overflow: 'auto' }}
+                                style={{
+                                    height: '100%',
+                                    maxHeight: '100%',
+                                    position: 'relative',
+                                    overflow: 'auto',
+                                }}
                                 onCloseTab={onCloseTabLocal}
                                 key={'tabpanel' + tab.tabID + tab.tabType}
                                 tabInfo={tab}

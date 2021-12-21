@@ -629,8 +629,8 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
     };
     return (
         <MythicTabPanel index={index} value={value}>
-            <div style={{ display: 'flex', flexGrow: 1, overflowY: 'auto' }}>
-                <div style={{ width: '30%', overflow: 'auto', flexGrow: 1 }}>
+            <div style={{ display: 'flex', flexGrow: 1 }}>
+                <div style={{ width: '40%', flexGrow: 1 }}>
                     <CallbacksTabsFileBrowserTree
                         showDeletedFiles={showDeletedFiles}
                         treeRoot={fileBrowserRootsState}
@@ -638,31 +638,35 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                         setTableData={onSetTableData}
                     />
                 </div>
-                <div style={{ width: '60%', display: 'flex', flexDirection: 'column', overflow: 'auto', flexGrow: 1 }}>
-                    <FileBrowserTableTop
-                        selectedFolderData={selectedFolderData}
-                        onListFilesButton={onListFilesButton}
-                        onUploadFileButton={onUploadFileButton}
-                        onChangeCallbackID={onChangeCallbackID}
-                        toggleShowDeletedFiles={toggleShowDeletedFiles}
-                        initialCallbackID={tabInfo.callbackID}
-                        subscribeToNewFileBrowserObjs={() =>
-                            subscribeToMore({
-                                document: fileDataSubscription,
-                                variables: {
-                                    now: new Date().toISOString(),
-                                    operation_id: me.user.current_operation_id,
-                                },
-                                updateQuery: subscribeToMoreCallback,
-                            })
-                        }
-                    />
-                    <CallbacksTabsFileBrowserTable
-                        showDeletedFiles={showDeletedFiles}
-                        onRowDoubleClick={fetchFolderData}
-                        selectedFolder={selectedFolder}
-                        onTaskRowAction={onTaskRowAction}
-                    />
+                <div style={{ width: '60%', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                    <div style={{ flexGrow: 0 }}>
+                        <FileBrowserTableTop
+                            selectedFolderData={selectedFolderData}
+                            onListFilesButton={onListFilesButton}
+                            onUploadFileButton={onUploadFileButton}
+                            onChangeCallbackID={onChangeCallbackID}
+                            toggleShowDeletedFiles={toggleShowDeletedFiles}
+                            initialCallbackID={tabInfo.callbackID}
+                            subscribeToNewFileBrowserObjs={() =>
+                                subscribeToMore({
+                                    document: fileDataSubscription,
+                                    variables: {
+                                        now: new Date().toISOString(),
+                                        operation_id: me.user.current_operation_id,
+                                    },
+                                    updateQuery: subscribeToMoreCallback,
+                                })
+                            }
+                        />
+                    </div>
+                    <div style={{ flexGrow: 1 }}>
+                        <CallbacksTabsFileBrowserTable
+                            showDeletedFiles={showDeletedFiles}
+                            onRowDoubleClick={fetchFolderData}
+                            selectedFolder={selectedFolder}
+                            onTaskRowAction={onTaskRowAction}
+                        />
+                    </div>
                 </div>
             </div>
             {openSelectCommandDialog && (

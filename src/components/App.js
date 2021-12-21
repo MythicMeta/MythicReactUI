@@ -94,20 +94,13 @@ export function App(props) {
                     horizontal: 'center',
                 }}>
                 <SnackbarUtilsConfigurator />
-                <div style={{ maxHeight: '100%', height: '100%' }}>
-                    <div style={{ height: '48px' }}>
+                <div style={{ maxHeight: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ minHeight: '48px', flexGrow: 0 }}>
                         {me.loggedIn && me.user !== undefined && me.user !== null ? (
                             <TopAppBar theme={themeMode} toggleTheme={themeToggler} />
                         ) : null}
                     </div>
-                    <div
-                        style={{
-                            margin: '0px 16px 0px 16px',
-                            height: 'calc(100% - 48px)',
-                            maxHeight: 'calc(100% - 48px)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                        }}>
+                    <div style={{ margin: '0px 16px 0px 16px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                         <Switch>
                             <LoggedInRoute exact path='/new' component={Home} />
                             <Route exact path='/new/login' component={LoginForm} />

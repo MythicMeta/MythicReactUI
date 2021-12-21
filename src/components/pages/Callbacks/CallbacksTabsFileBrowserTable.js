@@ -35,6 +35,7 @@ import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import { copyStringToClipboard } from '../../utilities/Clipboard';
+import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
 
 const getPermissionsDataQuery = gql`
     query getPermissionsQuery($filebrowserobj_id: Int!) {
@@ -90,162 +91,38 @@ const CellRenderer = ({ columnData, dataKey, rowData }) => {
 };
 export const CallbacksTabsFileBrowserTable = (props) => {
     const [allData, setAllData] = React.useState([]);
-    const widthRef = React.useRef(null);
-    const [sortDirection, setSortDirection] = React.useState('ASC');
-    const [sortBy, setSortBy] = React.useState('name_text');
-    const [columnWidths, setColumnWidths] = React.useState({
-        actions: 0.065,
-        name_text: 0.45,
-        size: 0.08,
-        modify_time: 0.18,
-        comment: 0.2,
-    });
-    const [columns, setColumns] = React.useState([]);
+    // const widthRef = React.useRef(null);
+    // const [sortDirection, setSortDirection] = React.useState('ASC');
+    // const [sortBy, setSortBy] = React.useState('name_text');
 
-    const sortTable = ({ sortBy, sortDirection }) => {
-        const tmpData = [...allData];
-        const sortType = columns.filter((h) => h.dataKey === sortBy)[0]['columnData']['format'];
-        if (sortType === 'number' || sortType === 'size') {
-            tmpData.sort((a, b) => (parseInt(a[sortBy]) > parseInt(b[sortBy]) ? 1 : -1));
-        } else if (sortType === 'date') {
-            tmpData.sort((a, b) => (new Date(a[sortBy]) > new Date(b[sortBy]) ? 1 : -1));
-        } else {
-            tmpData.sort((a, b) => (a[sortBy].toLowerCase() > b[sortBy].toLowerCase() ? 1 : -1));
-        }
-        if (sortDirection === 'DESC') {
-            tmpData.reverse();
-        }
-        setAllData([...tmpData]);
-        setSortBy(sortBy);
-        setSortDirection(sortDirection);
-    };
-    const rowGetter = ({ index }) => {
-        return allData[index];
-    };
-    const resizeRow = React.useCallback(
-        ({ event, dataKey, deltaX }) => {
-            event.preventDefault();
-            event.stopPropagation();
-            const prevWidths = { ...columnWidths };
-            const percentDelta = deltaX / widthRef.current.offsetWidth;
-            let nextHeader = '';
-            let getNext = false;
-            for (const key of Object.keys(columnWidths)) {
-                if (getNext) {
-                    nextHeader = key;
-                    break;
-                } else if (key === dataKey) {
-                    getNext = true;
-                }
-            }
-            if (nextHeader === '') {
-                console.log('next header not found');
-                return;
-            }
-            const updatedWidths = {
-                ...prevWidths,
-                [dataKey]: prevWidths[dataKey] + percentDelta,
-                [nextHeader]: prevWidths[nextHeader] - percentDelta,
-            };
-            setColumnWidths(updatedWidths);
-        },
-        [columnWidths]
-    );
-    const headerRenderer = React.useCallback(
-        ({ columnData, dataKey, disableSort, label, sortBy, sortDirection }) => {
-            return (
-                <React.Fragment key={'header' + dataKey}>
-                    <span
-                        style={{
-                            display: 'inline-flex',
-                            flexDirection: 'row',
-                            alignContent: 'stretch',
-                            justifyContent: 'flex-start',
-                        }}>
-                        {label}
-                        {sortBy === dataKey ? (
-                            sortDirection === 'ASC' ? (
-                                <ArrowDownwardIcon />
-                            ) : (
-                                <ArrowUpwardIcon />
-                            )
-                        ) : null}
-                    </span>
-                    {columnData.format !== 'button' && label !== 'Comment' && (
-                        <Draggable
-                            axis='x'
-                            defaultClassName='DragHandle'
-                            defaultClassNameDragging='DragHandleActive'
-                            onDrag={(event, { deltaX }) => resizeRow({ event, dataKey, deltaX })}
-                            position={{ x: 0 }}
-                            zIndex={999}>
-                            <span
-                                onClick={(evt) => {
-                                    evt.preventDefault();
-                                    evt.stopPropagation();
-                                }}
-                                className='DragHandleIcon'
-                                style={{ width: '20px', textAlign: 'center' }}>
-                                ⋮
-                            </span>
-                        </Draggable>
-                    )}
-                </React.Fragment>
-            );
-        },
-        [resizeRow, columns]
-    );
-    const onRowDoubleClick = ({ rowData }) => {
-        if (rowData.is_file) {
-            return;
-        }
-        snackActions.info('Fetching contents of folder...');
-        props.onRowDoubleClick(rowData);
-    };
-    useEffect(() => {
-        setColumns([
-            {
-                columnData: { format: 'button', onTaskRowAction: props.onTaskRowAction },
-                dataKey: 'actions',
-                label: 'Actions',
-                cellRenderer: CellRenderer,
-                width: columnWidths.actions * widthRef.current.offsetWidth,
-                headerRenderer: headerRenderer,
-            },
-            {
-                columnData: { format: 'name' },
-                dataKey: 'name_text',
-                label: 'Name',
-                cellRenderer: CellRenderer,
-                width: columnWidths.name_text * widthRef.current.offsetWidth,
-                headerRenderer: headerRenderer,
-            },
-            {
-                columnData: { format: 'size' },
-                dataKey: 'size',
-                label: 'Size',
-                cellRenderer: CellRenderer,
-                width: columnWidths.size * widthRef.current.offsetWidth,
-                headerRenderer: headerRenderer,
-            },
-            {
-                columnData: { format: 'date' },
-                dataKey: 'modify_time',
-                label: 'Last Modified',
-                cellRenderer: CellRenderer,
-                width: columnWidths.modify_time * widthRef.current.offsetWidth,
-                headerRenderer: headerRenderer,
-            },
-            {
-                columnData: { format: 'string' },
-                dataKey: 'comment',
-                label: 'Comment',
-                cellRenderer: CellRenderer,
-                width: columnWidths.comment * widthRef.current.offsetWidth,
-                headerRenderer: headerRenderer,
-            },
-        ]);
-    }, [columnWidths, props.onTaskRowAction]);
+    // const sortTable = ({ sortBy, sortDirection }) => {
+    //     const tmpData = [...allData];
+    //     const sortType = columns.filter((h) => h.dataKey === sortBy)[0]['columnData']['format'];
+    //     if (sortType === 'number' || sortType === 'size') {
+    //         tmpData.sort((a, b) => (parseInt(a[sortBy]) > parseInt(b[sortBy]) ? 1 : -1));
+    //     } else if (sortType === 'date') {
+    //         tmpData.sort((a, b) => (new Date(a[sortBy]) > new Date(b[sortBy]) ? 1 : -1));
+    //     } else {
+    //         tmpData.sort((a, b) => (a[sortBy].toLowerCase() > b[sortBy].toLowerCase() ? 1 : -1));
+    //     }
+    //     if (sortDirection === 'DESC') {
+    //         tmpData.reverse();
+    //     }
+    //     setAllData([...tmpData]);
+    //     setSortBy(sortBy);
+    //     setSortDirection(sortDirection);
+    // };
+    // const rowGetter = ({ index }) => {
+    //     return allData[index];
+    // };
+
+    // const onRowDoubleClick = ({ rowData }) => {
+    //     if (rowData.is_file) {
+    //         return;
+    //     }
+    //     snackActions.info('Fetching contents of folder...');
+    //     props.onRowDoubleClick(rowData);
+    // };
 
     useEffect(() => {
         //console.log("setting selected folder", props.selectedFolder);
@@ -257,28 +134,52 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         }
     }, [props.selectedFolder, props.showDeletedFiles]);
 
+    const columns = [
+        { name: 'Actions' },
+        { name: 'Name' },
+        { name: 'Size' },
+        { name: 'Last Modified' },
+        { name: 'Comment' },
+    ];
+
+    const gridData = React.useMemo(
+        () =>
+            allData.map((row) => [
+                <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />,
+                row.name_text,
+                row.size,
+                row.modify_time,
+                row.comment,
+            ]),
+        [allData, props.onTaskRowAction]
+    );
+
     return (
-        <div ref={widthRef} style={{ width: '100%', height: '90%', overflow: 'hidden' }}>
-            <AutoSizer>
-                {({ height, width }) => (
-                    <Table
-                        headerHeight={25}
-                        rowCount={allData.length}
-                        rowGetter={rowGetter}
-                        rowHeight={35}
-                        height={height}
-                        width={width}
-                        sort={sortTable}
-                        sortBy={sortBy}
-                        onRowDoubleClick={onRowDoubleClick}
-                        sortDirection={sortDirection}>
-                        {columns.map((col) => (
-                            <Column key={'col' + col.dataKey} {...col} />
-                        ))}
-                    </Table>
-                )}
-            </AutoSizer>
+        <div style={{ width: '100%', height: '100%' }}>
+            <MythicResizableGrid columns={columns} items={gridData} />
         </div>
+        // <div ref={widthRef} style={{width: "100%", height: "90%", overflow: 'hidden'}}>
+        //     <AutoSizer>
+        //         {({height, width}) => (
+        //             <Table
+        //                 headerHeight={25}
+        //                 rowCount={allData.length}
+        //                 rowGetter={ rowGetter }
+        //                 rowHeight={35}
+        //                 height={height}
+        //                 width={width}
+        //                 sort={sortTable}
+        //                 sortBy={sortBy}
+        //                 onRowDoubleClick={onRowDoubleClick}
+        //                 sortDirection={sortDirection}
+        //                 >
+        //                 {columns.map( (col) => (
+        //                     <Column key={"col" + col.dataKey} {...col} />
+        //                 ))}
+        //             </Table>
+        //         )}
+        //     </AutoSizer>
+        // </div>
     );
 };
 const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
