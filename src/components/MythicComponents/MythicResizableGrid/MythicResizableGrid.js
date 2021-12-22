@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import useScrollbarSize from 'react-scrollbar-size';
 import { VariableSizeGrid } from 'react-window';
@@ -187,6 +188,22 @@ const MythicResizableGrid = ({
             )}
         </AutoSizer>
     );
+};
+
+MythicResizableGrid.propTypes = {
+    columns: PropTypes.arrayOf(
+        PropTypes.shape({
+            name: PropTypes.string.isRequired,
+            initialWidth: PropTypes.number,
+            disableAutosize: PropTypes.bool,
+        })
+    ).isRequired,
+    sortIndicatorIndex: PropTypes.number,
+    sortDirection: PropTypes.oneOf(['ASC', 'DESC']),
+    items: PropTypes.arrayOf(PropTypes.array).isRequired,
+    onClickHeader: PropTypes.func,
+    onDoubleClickRow: PropTypes.func,
+    rowHeight: PropTypes.number,
 };
 
 export default MythicResizableGrid;
