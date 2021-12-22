@@ -135,11 +135,11 @@ export const CallbacksTabsFileBrowserTable = (props) => {
     }, [props.selectedFolder, props.showDeletedFiles]);
 
     const columns = [
-        { name: 'Actions', initialWidth: 80, disableAutosize: true },
-        { name: 'Name' },
-        { name: 'Size' },
-        { name: 'Last Modified' },
-        { name: 'Comment' },
+        { name: 'Actions', initialWidth: 100, disableAutosize: true },
+        { name: 'Name', initialWidth: 200 },
+        { name: 'Size', initialWidth: 200 },
+        { name: 'Last Modified', initialWidth: 200 },
+        { name: 'Comment', initialWidth: 200 },
     ];
 
     const gridData = React.useMemo(
