@@ -52,7 +52,7 @@ const Cell = ({ VariableSizeGridProps: { style, rowIndex, columnIndex, data, ...
     const item = data[rowIndex][columnIndex];
 
     return (
-        <div style={{ ...style, backgroundColor: rowIndex % 2 === 0 ? '#ddd' : '#eee' }} className={classes.cell}>
+        <div style={style} className={classes.cell}>
             <div className={classes.cellInner}>{item}</div>
         </div>
     );
@@ -93,7 +93,11 @@ const CellRenderer = (VariableSizeGridProps) => {
 
 const ResizableGridWrapper = ({ columns, items, ...AutoSizerProps }) => {
     /* Hooks */
-    const [columnWidths, setColumnWidths] = useState(Array(columns.length).fill(100));
+    const [columnWidths, setColumnWidths] = useState(
+        Array(columns.length)
+            .fill()
+            .map((_, i) => columns[i].initialWidth || 100)
+    );
 
     const gridRef = useRef(null);
 
