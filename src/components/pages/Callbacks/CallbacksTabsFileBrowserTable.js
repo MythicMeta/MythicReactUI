@@ -135,7 +135,7 @@ export const CallbacksTabsFileBrowserTable = (props) => {
     }, [props.selectedFolder, props.showDeletedFiles]);
 
     const columns = [
-        { name: 'Actions' },
+        { name: 'Actions', disableAutosize: true },
         { name: 'Name' },
         { name: 'Size' },
         { name: 'Last Modified' },
