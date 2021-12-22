@@ -13,7 +13,16 @@ const CellRenderer = (VariableSizeGridProps) => {
     return VariableSizeGridProps.rowIndex === 0 ? null : <Cell VariableSizeGridProps={VariableSizeGridProps} />;
 };
 
-const ResizableGridWrapper = ({ columns, items, onClickHeader, onDoubleClickRow, rowHeight, ...AutoSizerProps }) => {
+const ResizableGridWrapper = ({
+    columns,
+    sortIndicatorIndex,
+    sortDirection,
+    items,
+    onClickHeader,
+    onDoubleClickRow,
+    rowHeight,
+    ...AutoSizerProps
+}) => {
     /* Hooks */
     const { width: scrollbarWidth } = useScrollbarSize();
 
@@ -74,7 +83,7 @@ const ResizableGridWrapper = ({ columns, items, onClickHeader, onDoubleClickRow,
         setColumnWidths(updatedWidths);
     };
 
-    const itemsWithHeader = [columns.map((column) => column.name), ...items];
+    const itemsWithHeader = [columns, ...items];
 
     const innerElementType = React.forwardRef(({ children, ...rest }, ref) => {
         const classes = useStyles();
@@ -96,6 +105,8 @@ const ResizableGridWrapper = ({ columns, items, onClickHeader, onDoubleClickRow,
                                     if (column.disableAutosize) return;
                                     autosizeColumn(columnIndex);
                                 }}
+                                sortIndicatorIndex={sortIndicatorIndex}
+                                sortDirection={sortDirection}
                                 VariableSizeGridProps={{
                                     style: {
                                         position: 'absolute',
@@ -151,12 +162,22 @@ const ResizableGridWrapper = ({ columns, items, onClickHeader, onDoubleClickRow,
     );
 };
 
-const MythicResizableGrid = ({ columns, items, onClickHeader, onDoubleClickRow, rowHeight = 32 }) => {
+const MythicResizableGrid = ({
+    columns,
+    sortIndicatorIndex,
+    sortDirection,
+    items,
+    onClickHeader,
+    onDoubleClickRow,
+    rowHeight = 32,
+}) => {
     return (
         <AutoSizer>
             {(AutoSizerProps) => (
                 <ResizableGridWrapper
                     columns={columns}
+                    sortIndicatorIndex={sortIndicatorIndex}
+                    sortDirection={sortDirection}
                     items={items}
                     rowHeight={rowHeight}
                     onClickHeader={onClickHeader}

@@ -69,6 +69,14 @@ const updateFileComment = gql`
     }
 `;
 
+const columns = [
+    { name: 'Actions', initialWidth: 100, disableAutosize: true },
+    { name: 'Name', type: 'string', key: 'name_text', initialWidth: 200, disableAutosize: true },
+    { name: 'Size', type: 'number', key: 'size', initialWidth: 200 },
+    { name: 'Last Modified', type: 'date', key: 'modify_time', initialWidth: 200 },
+    { name: 'Comment', type: 'string', key: 'comment', initialWidth: 200 },
+];
+
 export const CallbacksTabsFileBrowserTable = (props) => {
     const [allData, setAllData] = React.useState([]);
     const [sortDirection, setSortDirection] = React.useState(null);
@@ -150,18 +158,14 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         }
     };
 
-    const columns = [
-        { name: 'Actions', initialWidth: 100, disableAutosize: true },
-        { name: 'Name', type: 'string', key: 'name_text', initialWidth: 200, disableAutosize: true },
-        { name: 'Size', type: 'number', key: 'size', initialWidth: 200 },
-        { name: 'Last Modified', type: 'date', key: 'modify_time', initialWidth: 200 },
-        { name: 'Comment', type: 'string', key: 'comment', initialWidth: 200 },
-    ];
+    const sortColumn = columns.findIndex((column) => column.key === sortKey);
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
             <MythicResizableGrid
                 columns={columns}
+                sortIndicatorIndex={sortColumn}
+                sortDirection={sortDirection}
                 items={gridData}
                 rowHeight={35}
                 onClickHeader={onClickHeader}
