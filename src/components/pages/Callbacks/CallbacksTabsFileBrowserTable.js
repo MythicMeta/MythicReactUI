@@ -28,11 +28,7 @@ import ListIcon from '@material-ui/icons/List';
 import DeleteIcon from '@material-ui/icons/Delete';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import { Typography } from '@material-ui/core';
-import { Table, Column, AutoSizer } from 'react-virtualized';
 import 'react-virtualized/styles.css';
-import Draggable from 'react-draggable';
-import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import { copyStringToClipboard } from '../../utilities/Clipboard';
 import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
@@ -75,42 +71,42 @@ const updateFileComment = gql`
 
 export const CallbacksTabsFileBrowserTable = (props) => {
     const [allData, setAllData] = React.useState([]);
-    // const widthRef = React.useRef(null);
-    // const [sortDirection, setSortDirection] = React.useState('ASC');
-    // const [sortBy, setSortBy] = React.useState('name_text');
+    const [sortDirection, setSortDirection] = React.useState(null);
+    const [sortKey, setSortKey] = React.useState(null);
+    const [sortType, setSortType] = React.useState(null);
 
-    // const sortTable = ({ sortBy, sortDirection }) => {
-    //     const tmpData = [...allData];
-    //     const sortType = columns.filter((h) => h.dataKey === sortBy)[0]['columnData']['format'];
-    //     if (sortType === 'number' || sortType === 'size') {
-    //         tmpData.sort((a, b) => (parseInt(a[sortBy]) > parseInt(b[sortBy]) ? 1 : -1));
-    //     } else if (sortType === 'date') {
-    //         tmpData.sort((a, b) => (new Date(a[sortBy]) > new Date(b[sortBy]) ? 1 : -1));
-    //     } else {
-    //         tmpData.sort((a, b) => (a[sortBy].toLowerCase() > b[sortBy].toLowerCase() ? 1 : -1));
-    //     }
-    //     if (sortDirection === 'DESC') {
-    //         tmpData.reverse();
-    //     }
-    //     setAllData([...tmpData]);
-    //     setSortBy(sortBy);
-    //     setSortDirection(sortDirection);
-    // };
-    // const rowGetter = ({ index }) => {
-    //     return allData[index];
-    // };
-
-    const onRowDoubleClick = (rowIndex) => {
-        const rowData = allData[rowIndex];
-        if (rowData.is_file) {
-            return;
+    const sortedData = React.useMemo(() => {
+        if (sortKey === null || sortType === null) {
+            return allData;
         }
-        snackActions.info('Fetching contents of folder...');
-        props.onRowDoubleClick(rowData);
-    };
+        const tempData = [...allData];
+
+        if (sortType === 'number' || sortType === 'size') {
+            tempData.sort((a, b) => (parseInt(a[sortKey]) > parseInt(b[sortKey]) ? 1 : -1));
+        } else if (sortType === 'date') {
+            tempData.sort((a, b) => (new Date(a[sortKey]) > new Date(b[sortKey]) ? 1 : -1));
+        } else if (sortType === 'string') {
+            tempData.sort((a, b) => (a[sortKey].toLowerCase() > b[sortKey].toLowerCase() ? 1 : -1));
+        }
+        if (sortDirection === 'DESC') {
+            tempData.reverse();
+        }
+        return tempData;
+    }, [allData, sortKey, sortType, sortDirection]);
+
+    const gridData = React.useMemo(
+        () =>
+            sortedData.map((row) => [
+                <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />,
+                <FileBrowserTableRowNameCell rowData={row} cellData={row.name_text} />,
+                FileBrowserTableRowSizeCell({ cellData: row.size }),
+                FileBrowserTableRowStringCell({ cellData: row.modify_time }),
+                FileBrowserTableRowStringCell({ cellData: row.comment }),
+            ]),
+        [sortedData, props.onTaskRowAction]
+    );
 
     useEffect(() => {
-        //console.log("setting selected folder", props.selectedFolder);
         if (props.showDeletedFiles) {
             setAllData([...props.selectedFolder]);
         } else {
@@ -119,25 +115,48 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         }
     }, [props.selectedFolder, props.showDeletedFiles]);
 
+    const onRowDoubleClick = (e, rowIndex) => {
+        const rowData = allData[rowIndex];
+        if (rowData.is_file) {
+            return;
+        }
+        snackActions.info('Fetching contents of folder...');
+        props.onRowDoubleClick(rowData);
+
+        setSortKey(null);
+        setSortType(null);
+        setSortDirection('ASC');
+    };
+
+    const onClickHeader = (e, columnIndex) => {
+        const column = columns[columnIndex];
+        if (!column.key) {
+            setSortKey(null);
+            setSortType(null);
+            setSortDirection('ASC');
+        }
+        if (sortKey === column.key) {
+            if (sortDirection === 'ASC') {
+                setSortDirection('DESC');
+            } else {
+                setSortKey(null);
+                setSortType(null);
+                setSortDirection('ASC');
+            }
+        } else {
+            setSortDirection('ASC');
+            setSortKey(column.key);
+            setSortType(column.type);
+        }
+    };
+
     const columns = [
         { name: 'Actions', initialWidth: 100, disableAutosize: true },
-        { name: 'Name', initialWidth: 200, disableAutosize: true },
-        { name: 'Size', initialWidth: 200 },
-        { name: 'Last Modified', initialWidth: 200 },
-        { name: 'Comment', initialWidth: 200 },
+        { name: 'Name', type: 'string', key: 'name_text', initialWidth: 200, disableAutosize: true },
+        { name: 'Size', type: 'number', key: 'size', initialWidth: 200 },
+        { name: 'Last Modified', type: 'date', key: 'modify_time', initialWidth: 200 },
+        { name: 'Comment', type: 'string', key: 'comment', initialWidth: 200 },
     ];
-
-    const gridData = React.useMemo(
-        () =>
-            allData.map((row) => [
-                <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />,
-                <FileBrowserTableRowNameCell rowData={row} cellData={row.name_text} />,
-                FileBrowserTableRowSizeCell({ cellData: row.size }),
-                FileBrowserTableRowStringCell({ cellData: row.modify_time }),
-                FileBrowserTableRowStringCell({ cellData: row.comment }),
-            ]),
-        [allData, props.onTaskRowAction]
-    );
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
@@ -145,36 +164,10 @@ export const CallbacksTabsFileBrowserTable = (props) => {
                 columns={columns}
                 items={gridData}
                 rowHeight={35}
-                onClickHeader={(e, columnIndex) => {
-                    console.log(columns[columnIndex]);
-                }}
-                onDoubleClickRow={(e, rowIndex) => {
-                    onRowDoubleClick(rowIndex);
-                }}
+                onClickHeader={onClickHeader}
+                onDoubleClickRow={onRowDoubleClick}
             />
         </div>
-        // <div ref={widthRef} style={{width: "100%", height: "90%", overflow: 'hidden'}}>
-        //     <AutoSizer>
-        //         {({height, width}) => (
-        //             <Table
-        //                 headerHeight={25}
-        //                 rowCount={allData.length}
-        //                 rowGetter={ rowGetter }
-        //                 rowHeight={35}
-        //                 height={height}
-        //                 width={width}
-        //                 sort={sortTable}
-        //                 sortBy={sortBy}
-        //                 onRowDoubleClick={onRowDoubleClick}
-        //                 sortDirection={sortDirection}
-        //                 >
-        //                 {columns.map( (col) => (
-        //                     <Column key={"col" + col.dataKey} {...col} />
-        //                 ))}
-        //             </Table>
-        //         )}
-        //     </AutoSizer>
-        // </div>
     );
 };
 const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
