@@ -156,7 +156,13 @@ export const CallbacksTabsFileBrowserTable = (props) => {
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
-            <MythicResizableGrid columns={columns} items={gridData} />
+            <MythicResizableGrid
+                columns={columns}
+                items={gridData}
+                onClick={(e, columnIndex) => {
+                    console.log(columns[columnIndex]);
+                }}
+            />
         </div>
         // <div ref={widthRef} style={{width: "100%", height: "90%", overflow: 'hidden'}}>
         //     <AutoSizer>
