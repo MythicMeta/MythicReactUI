@@ -8,7 +8,7 @@ export default makeStyles((theme) => ({
         top: '0',
         left: '0',
         right: '0',
-        zIndex: 2,
+        zIndex: 1,
     },
     headerCell: {
         display: 'flex',
@@ -47,16 +47,13 @@ export default makeStyles((theme) => ({
         position: 'absolute',
         top: 0,
         overflowX: 'hidden',
-        overflowY: 'hidden',
     },
     draggableHandlesClickArea: {
         position: 'absolute',
         top: 0,
         width: '16px',
-        zIndex: 3,
         cursor: 'col-resize',
         pointerEvents: 'initial',
-        overflowY: 'visible',
     },
     draggableHandlesIndicator: {
         position: 'absolute',
@@ -64,6 +61,5 @@ export default makeStyles((theme) => ({
         left: 8,
         width: '1px',
         backgroundImage: 'linear-gradient(#7f93c0, #00000000)',
-        zIndex: 3,
     },
 }));
