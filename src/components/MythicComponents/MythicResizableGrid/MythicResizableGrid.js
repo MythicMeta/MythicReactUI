@@ -13,7 +13,7 @@ const CellRenderer = (VariableSizeGridProps) => {
     return VariableSizeGridProps.rowIndex === 0 ? null : <Cell VariableSizeGridProps={VariableSizeGridProps} />;
 };
 
-const ResizableGridWrapper = ({ columns, items, onClick, rowHeight, ...AutoSizerProps }) => {
+const ResizableGridWrapper = ({ columns, items, onClickHeader, onDoubleClickRow, rowHeight, ...AutoSizerProps }) => {
     /* Hooks */
     const { width: scrollbarWidth } = useScrollbarSize();
 
@@ -91,7 +91,7 @@ const ResizableGridWrapper = ({ columns, items, onClick, rowHeight, ...AutoSizer
                         return (
                             <HeaderCell
                                 key={i}
-                                onClick={onClick}
+                                onClick={onClickHeader}
                                 onDoubleClick={(e, columnIndex) => {
                                     if (column.disableAutosize) return;
                                     autosizeColumn(columnIndex);
@@ -106,7 +106,7 @@ const ResizableGridWrapper = ({ columns, items, onClick, rowHeight, ...AutoSizer
                                     },
                                     rowIndex: 0,
                                     columnIndex: i,
-                                    data: itemsWithHeader,
+                                    data: { items: itemsWithHeader },
                                 }}
                             />
                         );
@@ -127,7 +127,7 @@ const ResizableGridWrapper = ({ columns, items, onClick, rowHeight, ...AutoSizer
                 columnWidth={getColumnWidth}
                 rowCount={itemsWithHeader.length}
                 rowHeight={getRowHeight}
-                itemData={itemsWithHeader}
+                itemData={{ items: itemsWithHeader, onDoubleClickRow }}
                 innerElementType={innerElementType}
                 overscanRowCount={20}
                 onScroll={({ scrollLeft }) => {
@@ -151,7 +151,7 @@ const ResizableGridWrapper = ({ columns, items, onClick, rowHeight, ...AutoSizer
     );
 };
 
-const MythicResizableGrid = ({ columns, items, onClick, rowHeight = 32 }) => {
+const MythicResizableGrid = ({ columns, items, onClickHeader, onDoubleClickRow, rowHeight = 32 }) => {
     return (
         <AutoSizer>
             {(AutoSizerProps) => (
@@ -159,7 +159,8 @@ const MythicResizableGrid = ({ columns, items, onClick, rowHeight = 32 }) => {
                     columns={columns}
                     items={items}
                     rowHeight={rowHeight}
-                    onClick={onClick}
+                    onClickHeader={onClickHeader}
+                    onDoubleClickRow={onDoubleClickRow}
                     {...AutoSizerProps}
                 />
             )}

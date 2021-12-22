@@ -8,7 +8,6 @@ const HeaderCell = ({
     onDoubleClick = () => {},
     VariableSizeGridProps: { style, rowIndex, columnIndex, data, ...other },
 }) => {
-    console.log(rowIndex, columnIndex);
     const classes = useStyles();
 
     const handleClick = useCallback(
@@ -27,7 +26,7 @@ const HeaderCell = ({
 
     const handleClicks = useSingleAndDoubleClick(handleClick, handleDoubleClick);
 
-    const item = data[rowIndex][columnIndex];
+    const item = data.items[rowIndex][columnIndex];
 
     return (
         <div style={style} className={classes.headerCell} onClick={handleClicks}>

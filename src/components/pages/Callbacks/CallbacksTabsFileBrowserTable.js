@@ -72,23 +72,7 @@ const updateFileComment = gql`
         }
     }
 `;
-const CellRenderer = ({ columnData, dataKey, rowData }) => {
-    const DisplayData = () => {
-        switch (columnData.format) {
-            case 'string':
-                return <FileBrowserTableRowStringCell cellData={rowData[dataKey]} rowData={rowData} />;
-            case 'name':
-                return <FileBrowserTableRowNameCell cellData={rowData[dataKey]} rowData={rowData} />;
-            case 'size':
-                return <FileBrowserTableRowSizeCell cellData={rowData[dataKey]} />;
-            case 'button':
-                return <FileBrowserTableRowActionCell rowData={rowData} onTaskRowAction={columnData.onTaskRowAction} />;
-            default:
-                return <FileBrowserTableRowStringCell cellData={rowData[dataKey]} rowData={rowData} />;
-        }
-    };
-    return DisplayData();
-};
+
 export const CallbacksTabsFileBrowserTable = (props) => {
     const [allData, setAllData] = React.useState([]);
     // const widthRef = React.useRef(null);
@@ -116,13 +100,14 @@ export const CallbacksTabsFileBrowserTable = (props) => {
     //     return allData[index];
     // };
 
-    // const onRowDoubleClick = ({ rowData }) => {
-    //     if (rowData.is_file) {
-    //         return;
-    //     }
-    //     snackActions.info('Fetching contents of folder...');
-    //     props.onRowDoubleClick(rowData);
-    // };
+    const onRowDoubleClick = (rowIndex) => {
+        const rowData = allData[rowIndex];
+        if (rowData.is_file) {
+            return;
+        }
+        snackActions.info('Fetching contents of folder...');
+        props.onRowDoubleClick(rowData);
+    };
 
     useEffect(() => {
         //console.log("setting selected folder", props.selectedFolder);
@@ -136,7 +121,7 @@ export const CallbacksTabsFileBrowserTable = (props) => {
 
     const columns = [
         { name: 'Actions', initialWidth: 100, disableAutosize: true },
-        { name: 'Name', initialWidth: 200 },
+        { name: 'Name', initialWidth: 200, disableAutosize: true },
         { name: 'Size', initialWidth: 200 },
         { name: 'Last Modified', initialWidth: 200 },
         { name: 'Comment', initialWidth: 200 },
@@ -146,10 +131,10 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         () =>
             allData.map((row) => [
                 <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />,
-                row.name_text,
-                row.size,
-                row.modify_time,
-                row.comment,
+                <FileBrowserTableRowNameCell rowData={row} cellData={row.name_text} />,
+                FileBrowserTableRowSizeCell({ cellData: row.size }),
+                FileBrowserTableRowStringCell({ cellData: row.modify_time }),
+                FileBrowserTableRowStringCell({ cellData: row.comment }),
             ]),
         [allData, props.onTaskRowAction]
     );
@@ -159,8 +144,12 @@ export const CallbacksTabsFileBrowserTable = (props) => {
             <MythicResizableGrid
                 columns={columns}
                 items={gridData}
-                onClick={(e, columnIndex) => {
+                rowHeight={35}
+                onClickHeader={(e, columnIndex) => {
                     console.log(columns[columnIndex]);
+                }}
+                onDoubleClickRow={(e, rowIndex) => {
+                    onRowDoubleClick(rowIndex);
                 }}
             />
         </div>
@@ -236,11 +225,11 @@ const FileBrowserTableRowSizeCell = ({ cellData }) => {
             // process for getting human readable string from bytes: https://stackoverflow.com/a/18650828
             let bytes = parseInt(cellData);
             if (cellData === '') return '';
-            if (bytes === 0) return '0 Bytes';
+            if (bytes === 0) return '0 B';
             const decimals = 2;
             const k = 1024;
             const dm = decimals < 0 ? 0 : decimals;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
             const i = Math.floor(Math.log(bytes) / Math.log(k));
 
@@ -249,7 +238,7 @@ const FileBrowserTableRowSizeCell = ({ cellData }) => {
             return cellData;
         }
     };
-    return <div>{getStringSize(cellData)}</div>;
+    return getStringSize(cellData);
 };
 const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
     const dropdownAnchorRef = React.useRef(null);
