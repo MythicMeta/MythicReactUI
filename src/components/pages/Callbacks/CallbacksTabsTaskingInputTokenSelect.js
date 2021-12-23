@@ -35,7 +35,7 @@ export function CallbacksTabsTaskingInputTokenSelect(props) {
       }
     }
   return (
-      <FormControl style={{maxWidth: "50%"}}>
+      <FormControl style={{width: "20%"}}>
         <InputLabel ref={inputRef}>Tokens</InputLabel>
         <Select
           labelId="demo-dialog-select-label"

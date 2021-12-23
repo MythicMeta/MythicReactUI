@@ -411,7 +411,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         let numberArgs = [];
         for(let i = 0; i < cmd.commandparameters.length; i++){
             switch(cmd.commandparameters[i].parameter_type){
-                case "ChooseOne":
+                case "Choice":
                 case "String":
                     stringArgs.push(cmd.commandparameters[i].cli_name);
                 case "Number":
@@ -421,7 +421,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                     booleanArgs.push(cmd.commandparameters[i].cli_name);
                     break;
                 case "Array":
-                case "ChooseMultiple":
+                case "ChoiceMultiple":
                     arrayArgs.push(cmd.commandparameters[i].cli_name);
                     break;
                 default:
@@ -431,6 +431,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         try{
             const argv = arrgv(command_line);
             //console.log("argv", argv);
+            //console.log("arrayArgs", arrayArgs);
             const yargs_parsed = parser(argv, {
                 string: stringArgs,
                 boolean: booleanArgs,
@@ -440,7 +441,8 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                     "short-option-groups": false,
                     "camel-case-expansion": false,
                     "dot-notation": false,
-                    "unknown-options-as-args": false
+                    "unknown-options-as-args": false,
+                    "greedy-arrays": true
                 }
             });
             //console.log(yargs_parsed, cmd.commandparameters);
@@ -583,7 +585,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             setUnmodifiedHistoryValue("parsed_cli");
             return;
         }
-        console.log("positional args added in:", parsedWithPositionalParameters);
+        //console.log("positional args added in:", parsedWithPositionalParameters);
         props.onSubmitCommandLine(message, cmd, parsedWithPositionalParameters, Boolean(force_parsed_popup), cmdGroupName, unmodifiedHistoryValue);
         setMessage("");
         setTaskOptionsIndex(-1);

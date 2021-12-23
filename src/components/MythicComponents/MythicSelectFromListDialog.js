@@ -20,6 +20,9 @@ export function MythicSelectFromListDialog(props) {
       };
     const handleSubmit = () => {
         props.onSubmit(selected);
+        if(props.dontCloseOnSubmit){
+          return;
+        }
         props.onClose();
     }
     useEffect( () => {
