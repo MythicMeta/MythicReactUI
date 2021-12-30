@@ -241,13 +241,13 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             const roots = data.filebrowserobj.reduce((prev, cur) => {
                 for (let i = 0; i < prev.length; i++) {
                     if (prev[i]['host'] === cur.host) {
-                        prev[i].filebrowserobjs.push({ ...cur, parent_id: cur.host, filebrowserobjs: [] });
+                        prev[i].chilren.push({ ...cur, parent_id: cur.host, children: [] });
                         return [...prev];
                     }
                 }
                 return [
                     ...prev,
-                    { ...cur, id: cur.host, filebrowserobjs: [{ ...cur, parent_id: cur.host, filebrowserobjs: [] }] },
+                    { ...cur, id: cur.host, children: [{ ...cur, parent_id: cur.host, children: [] }] },
                 ];
             }, []);
             setFileBrowserRootsState(roots);
@@ -266,7 +266,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                         if (root['host'] === obj['host']) {
                             foundHost = true;
                             //console.log(root, obj);
-                            root.filebrowserobjs.forEach((rootEntry) => {
+                            root.children.forEach((rootEntry) => {
                                 if (rootEntry['name_text'] === obj['name_text']) {
                                     found = true;
                                     rootEntry.comment = obj.comment;
@@ -284,7 +284,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                         // there's a host entry that matches obj, but this is a new root, so find the match again
                         updatingData.forEach((root) => {
                             if (root['host'] === obj['host']) {
-                                root.filebrowserobjs.push({ ...obj, parent_id: obj['host'], filebrowserobjs: [] });
+                                root.children.push({ ...obj, parent_id: obj['host'], children: [] });
                             }
                         });
                     }
@@ -302,7 +302,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                     updatingData.push({
                         ...obj,
                         id: obj['host'],
-                        filebrowserobjs: [{ ...obj, parent_id: obj['host'], filebrowserobjs: [] }],
+                        children: [{ ...obj, parent_id: obj['host'], children: [] }],
                     });
                 }
             });
@@ -316,7 +316,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             ) {
                 // this means we got updated data for something in the folder we're currently looking at in the table, so we need to make sure to update the table
                 //console.log("updating table");
-                setSelectedFolder(Object.values(selectedFolderDataRef.current.filebrowserobjs));
+                setSelectedFolder(Object.values(selectedFolderDataRef.current.children));
             }
         },
         onError: (data) => {
@@ -344,7 +344,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                 } else {
                     snackActions.info('Empty folder');
                 }
-                setSelectedFolder(Object.values(selectedFolderData.filebrowserobjs));
+                setSelectedFolder(Object.values(selectedFolderData.children));
                 return;
             }
             snackActions.dismiss();
@@ -367,7 +367,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             }
             //console.log("setting new roots");
             setFileBrowserRootsState(newRoots);
-            setSelectedFolder(Object.values(selectedFolderData.filebrowserobjs));
+            setSelectedFolder(Object.values(selectedFolderData.children));
         },
     });
     const [getCallbackData] = useLazyQuery(getCallbackDataQuery, {
@@ -401,12 +401,12 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             // iterate for each child we're trying to update/insert
             //console.log("found parent, setting children");
             for (let i = 0; i < all_objects.length; i++) {
-                if (search.filebrowserobjs[all_objects[i].id] === undefined) {
-                    search.filebrowserobjs[all_objects[i].id] = { ...all_objects[i], filebrowserobjs: {} };
+                if (search.children[all_objects[i].id] === undefined) {
+                    search.children[all_objects[i].id] = { ...all_objects[i], children: {} };
                 } else {
-                    search.filebrowserobjs[all_objects[i].id] = {
+                    search.children[all_objects[i].id] = {
                         ...all_objects[i],
-                        filebrowserobjs: search.filebrowserobjs[all_objects[i].id].filebrowserobjs,
+                        children: search.children[all_objects[i].id].children,
                     };
                 }
             }
@@ -414,7 +414,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             return true;
         }
         // this current search isn't all_object's parent, so check search's children for our parent
-        for (const [_, value] of Object.entries(search.filebrowserobjs)) {
+        for (const [_, value] of Object.entries(search.children)) {
             if (all_objects[0].parent_path_text.startsWith(value.full_path_text)) {
                 let found = mergeData(value, parent_id, all_objects);
                 if (found) {
@@ -553,7 +553,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
         }
     }, [searchCallback]);
     const onSetTableData = useCallback((filebrowserobj) => {
-        setSelectedFolder(Object.values(filebrowserobj.filebrowserobjs));
+        setSelectedFolder(Object.values(filebrowserobj.children));
         setSelectedFolderData(filebrowserobj);
     }, []);
     const fetchFolderData = useCallback((filebrowserobj) => {
@@ -629,8 +629,8 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
     };
     return (
         <MythicTabPanel index={index} value={value}>
-            <div style={{ display: 'flex', flexGrow: 1 }}>
-                <div style={{ width: '40%', flexGrow: 1 }}>
+            <div style={{ display: 'flex', flexGrow: 1, overflowY: 'auto' }}>
+                <div style={{ width: '30%', overflow: 'auto' }}>
                     <CallbacksTabsFileBrowserTree
                         showDeletedFiles={showDeletedFiles}
                         treeRoot={fileBrowserRootsState}
