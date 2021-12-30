@@ -1,135 +1,28 @@
 import React from 'react';
-import { snackActions } from '../../utilities/Snackbar';
-import { makeStyles, fade } from '@material-ui/core/styles';
-import FolderIcon from '@material-ui/icons/Folder';
-import FolderOpenIcon from '@material-ui/icons/FolderOpen';
-import ComputerIcon from '@material-ui/icons/Computer';
-import Paper from '@material-ui/core/Paper';
-import DescriptionIcon from '@material-ui/icons/Description';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ErrorIcon from '@material-ui/icons/Error';
-import { useTheme } from '@material-ui/core/styles';
-import { FixedSizeTree } from 'react-vtree';
-import Autosizer from 'react-virtualized-auto-sizer';
-import Tooltip from '@material-ui/core/Tooltip';
-import Badge from '@material-ui/core/Badge';
-import { Typography } from '@material-ui/core';
+import FileBrowserVirtualTree from '../../MythicComponents/MythicFileBrowserVirtualTree';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        width: '99%',
-        marginTop: '3px',
-        marginBottom: '2px',
-        marginLeft: '3px',
-        marginRight: '0px',
-        height: 'auto',
-    },
-    heading: {
-        fontSize: theme.typography.pxToRem(15),
-        whiteSpace: 'pre-line',
-    },
-    secondaryHeading: {
-        fontSize: theme.typography.pxToRem(15),
-        //color: theme.palette.text.secondary,
-        overflow: 'hidden',
-        display: 'block',
-        textOverflow: 'ellipsis',
-        maxWidth: 'calc(90vw)',
-        whiteSpace: 'nowrap',
-    },
-    taskAndTimeDisplay: {
-        fontSize: theme.typography.pxToRem(12),
-        color: theme.palette.text.secondary,
-        overflow: 'hidden',
-        display: 'block',
-        textOverflow: 'ellipsis',
-        maxWidth: 'calc(90vw)',
-        whiteSpace: 'nowrap',
-    },
-    secondaryHeadingExpanded: {
-        fontSize: theme.typography.pxToRem(15),
-        //color: theme.palette.text.secondary,
-        display: 'block',
-        overflow: 'auto',
-        maxWidth: 'calc(90vw)',
-        whiteSpace: 'break-word',
-    },
-    icon: {
-        verticalAlign: 'middle',
-        height: 20,
-        width: 20,
-    },
-    details: {
-        alignItems: 'center',
-    },
-    column: {
-        padding: '0 5px 0 0',
-        display: 'inline-block',
-        margin: 0,
-        height: 'auto',
-    },
-    paper: {
-        width: '100%',
-        marginBottom: theme.spacing(2),
-    },
-    table: {
-        minWidth: 750,
-    },
-    visuallyHidden: {
-        border: 0,
-        clip: 'rect(0 0 0 0)',
-        height: 1,
-        margin: -1,
-        overflow: 'hidden',
-        padding: 0,
-        position: 'absolute',
-        top: 20,
-        width: 1,
-    },
-}));
 
-const getNodeData = (node, nestingLevel, fetchFolderData, setTableData, theme, openState, setOpenState) => ({
-    data: {
-        id: node.id.toString(), // mandatory
-        isLeaf: node.filebrowserobjs === undefined || Object.keys(node.filebrowserobjs).length === 0,
-        isOpenByDefault: nestingLevel === 0 || Boolean(openState[node.id.toString()]), //mandatory
-        name: node.name_text,
-        nestingLevel,
-        fetchFolderData,
-        setTableData,
-        theme,
-        openState,
-        setOpenState,
-        ...node,
-    },
-    nestingLevel,
-    node,
-});
 export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTableData }) => {
-    const theme = useTheme();
-    const [openState, setOpenState] = React.useState({});
-    function* treeWalker() {
-        for (let i = 0; i < treeRoot.length; i++) {
-            yield getNodeData(treeRoot[i], 0, fetchFolderData, setTableData, theme, openState, setOpenState);
-        }
-        while (true) {
-            const parent = yield;
-            for (const value of Object.values(parent.node.filebrowserobjs)) {
-                if (value.is_file) {
-                    continue;
-                }
-                yield getNodeData(
-                    value,
-                    parent.nestingLevel + 1,
-                    fetchFolderData,
-                    setTableData,
-                    theme,
-                    openState,
-                    setOpenState
-                );
-            }
-        }
-    }
+    const [openNodes, setOpenNodes] = React.useState({});
+    const toggleNodeExpanded = (nodeId, nodeData) => {
+        console.log("toggleNodeExpanded", nodeId, nodeData);
+        setTableData(nodeData.data);
+        fetchFolderData(nodeData.data);
+        setOpenNodes({
+          ...openNodes,
+          [nodeId]: true
+        });
+      };
+    const toggleNodeCollapsed = (nodeId, nodeData) => {
+        setOpenNodes({
+          ...openNodes,
+          [nodeId]: false
+        });
+      };
+    const onSelectNode = (nodeId, nodeData) => {
+        setTableData(nodeData.data);
+        console.log("onSelectNode", nodeId, nodeData);
+    };
     return treeRoot.length === 0 ? (
         <div
             style={{
@@ -143,124 +36,13 @@ export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTab
             No File Browser Data Collected
         </div>
     ) : (
-        <Autosizer>
-            {({ height, width }) => (
-                <FixedSizeTree
-                    treeWalker={treeWalker}
-                    height={height}
-                    width={width - 10}
-                    itemSize={30}
-                    overscanCount={20}
-                    placeholder={<div>Loading....</div>}>
-                    {FileBrowserNode}
-                </FixedSizeTree>
-            )}
-        </Autosizer>
-    );
-};
-const FileBrowserNode = ({ data, isOpen, style, setOpen }) => {
-    return (
-        <div style={{ ...style, width: 'calc(100vw)', display: 'inline-flex', overflow: 'auto' }}>
-            {[...Array(data.nestingLevel)].map((o, i) => (
-                <div
-                    key={'folder' + data.id + 'lines' + i}
-                    style={{
-                        borderLeft: `1px dashed ${fade(data.theme.palette.text.primary, 0.4)}`,
-                        marginLeft: 15,
-                        paddingRight: 15,
-                        height: '100%',
-                        display: 'inline-block',
-                    }}></div>
-            ))}
-            <FileBrowserRow filebrowserobj={data} isOpen={isOpen} setOpen={setOpen} />
-        </div>
-    );
-};
-const FileBrowserRow = (props) => {
-    const classes = useStyles();
-    const theme = useTheme();
-
-    const fetchItems = () => {
-        snackActions.info('fetching elements...', { persist: true });
-        props.filebrowserobj.fetchFolderData(props.filebrowserobj);
-    };
-
-    const setTableData = () => {
-        props.filebrowserobj.setTableData(props.filebrowserobj);
-    };
-
-    const clickIcon = () => {
-        fetchItems();
-        if (props.isOpen) {
-            props.filebrowserobj.setOpenState({
-                ...props.filebrowserobj.openState,
-                [props.filebrowserobj.id.toString()]: false,
-            });
-        } else {
-            props.filebrowserobj.setOpenState({
-                ...props.filebrowserobj.openState,
-                [props.filebrowserobj.id.toString()]: true,
-            });
-        }
-    };
-
-    return (
-        <Paper
-            className={classes.root}
-            elevation={5}
-            style={{ backgroundColor: theme.body, color: theme.text, alignItems: 'center', display: 'flex' }}
-            onClick={setTableData}>
-            {props.filebrowserobj.parent_id === null ? (
-                <ComputerIcon style={{ marginLeft: '3px', marginRight: '5px' }} />
-            ) : props.filebrowserobj.is_file ? (
-                <DescriptionIcon style={{ marginLeft: '3px', marginRight: '5px' }} />
-            ) : props.filebrowserobj.openState[props.filebrowserobj.id.toString()] ? (
-                <FolderOpenIcon
-                    style={{
-                        marginLeft: '3px',
-                        marginRight: '5px',
-                        color:
-                            props.filebrowserobj.filebrowserobjs_aggregate.aggregate.count > 0 ||
-                            props.filebrowserobj.success !== null
-                                ? theme.folderColor
-                                : 'grey',
-                    }}
-                    onClick={clickIcon}
-                />
-            ) : (
-                <FolderIcon style={{ paddingTop: '5px', marginLeft: '3px', marginRight: '5px' }} onClick={clickIcon} />
-            )}
-            {props.filebrowserobj.nestingLevel > 0 &&
-            props.filebrowserobj.filebrowserobjs_aggregate.aggregate.count > 99 ? (
-                <Tooltip title='Number of known children'>
-                    <Badge
-                        style={{ left: -50 }}
-                        max={99}
-                        badgeContent={props.filebrowserobj.filebrowserobjs_aggregate.aggregate.count}
-                        color='primary'
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}></Badge>
-                </Tooltip>
-            ) : null}
-            <Typography
-                style={{
-                    color:
-                        props.filebrowserobj.filebrowserobjs_aggregate.aggregate.count > 0 ||
-                        props.filebrowserobj.success !== null
-                            ? theme.palette.text.primary
-                            : theme.palette.text.secondary,
-                }}>
-                {props.filebrowserobj.parent_id === null ? props.filebrowserobj.host : props.filebrowserobj.name_text}
-            </Typography>
-
-            {props.filebrowserobj.success === true && props.filebrowserobj.nestingLevel > 0 ? (
-                <Tooltip title='Successfully listed contents of folder'>
-                    <CheckCircleIcon fontSize='small' style={{ color: theme.palette.success.main }} />
-                </Tooltip>
-            ) : props.filebrowserobj.success === false && props.filebrowserobj.nestingLevel > 0 ? (
-                <Tooltip title='Failed to list contents of folder'>
-                    <ErrorIcon fontSize='small' style={{ color: theme.palette.error.main }} />
-                </Tooltip>
-            ) : null}
-        </Paper>
+        <FileBrowserVirtualTree
+            nodes={treeRoot}
+            display_name={"name_text"}
+            openNodes={openNodes}
+            onSelectNode={onSelectNode}
+            onExpandNode={toggleNodeExpanded}
+            onCollapseNode={toggleNodeCollapsed}
+        />
     );
 };
