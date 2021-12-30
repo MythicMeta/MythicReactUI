@@ -12,7 +12,7 @@ export function PayloadsTableRowC2Status(props){
         <React.Fragment>
             {
                 props.payloadc2profiles.map( (c2) => (
-                    <Typography key={c2.c2profile.name + props.uuid}> 
+                    <Typography key={c2.c2profile.name + props.uuid} style={{display: "flex"}}> 
                         {c2.c2profile.is_p2p ?
                             ( c2.c2profile.container_running ? 
                                 <Tooltip title="C2 Container online">

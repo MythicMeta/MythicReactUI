@@ -127,7 +127,7 @@ const FileBrowserRow = (props) => {
       <Paper
           className={classes.root}
           elevation={5}
-          style={{ backgroundColor: theme.body, color: theme.text, alignItems: 'center', display: 'flex' }}
+          style={{ backgroundColor: theme.body, color: theme.text, alignItems: 'center', display: 'flex', paddingRight: "10px" }}
           onClick={props.handleOnClickRow}>
           {props.filebrowserobj.parent_id === null ? (
               <ComputerIcon style={{ marginLeft: '3px', marginRight: '5px' }} onClick={props.onClickButton} />
