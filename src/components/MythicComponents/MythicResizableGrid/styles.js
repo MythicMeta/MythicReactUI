@@ -17,7 +17,7 @@ export default makeStyles((theme) => ({
         boxSizing: 'border-box',
         justifyContent: 'space-between',
         userSelect: 'none',
-        backgroundColor: '#fff',
+        backgroundColor: theme.palette.background.paper,
         borderTop: '1px solid #e0e0e0',
         borderRight: '1px solid #e0e0e0',
         borderBottom: '1px solid #e0e0e0',
@@ -25,7 +25,7 @@ export default makeStyles((theme) => ({
             borderLeft: '1px solid #e0e0e0',
         },
         '&:hover': {
-            backgroundColor: '#eee',
+            backgroundColor: theme.tableHover,
             cursor: 'pointer',
         },
     },
@@ -36,6 +36,10 @@ export default makeStyles((theme) => ({
         boxSizing: 'border-box',
         fontFamily: 'monospace',
         borderBottom: '1px solid #e0e0e0',
+        '&:hover': {
+            backgroundColor: theme.tableHover,
+            cursor: 'pointer',
+        },
     },
     cellInner: {
         width: '100%',

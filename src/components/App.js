@@ -73,7 +73,7 @@ export function App(props) {
                 folderColor: '#f1d592',
                 tableHeader: '#484848',
                 tableBorder: themeMode === 'dark' ? 'rgba(81,81,81,1)' : 'rgba(224,224,224,1)',
-                tableHover: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
+                tableHover: themeMode === 'dark' ? 'rgba(61, 69, 75)' : 'rgba(245, 245, 245)',
                 pageHeader: {
                     main: '#827E80',
                 },

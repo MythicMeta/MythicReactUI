@@ -2,6 +2,7 @@ import { Box, Typography } from '@material-ui/core';
 import { useCallback } from 'react';
 import useSingleAndDoubleClick from '../../utilities/useSingleAndDoubleClick';
 import useStyles from './styles';
+import {useTheme} from '@material-ui/core/styles';
 
 const HeaderCell = ({
     onClick = () => {},
@@ -10,7 +11,9 @@ const HeaderCell = ({
     sortDirection,
     VariableSizeGridProps: { style, rowIndex, columnIndex, data, ...other },
 }) => {
+    const theme = useTheme();
     const classes = useStyles();
+
 
     const handleClick = useCallback(
         (e) => {

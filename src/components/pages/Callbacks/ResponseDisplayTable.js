@@ -21,6 +21,7 @@ import {snackActions} from '../../utilities/Snackbar';
 import { Tooltip } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
 import {faList, faTrashAlt, faSkullCrossbones, faCamera, faSyringe, faFolder, faFolderOpen, faFileArchive, faCog, faFileWord, faFileExcel, faFilePowerpoint, faFilePdf, faDatabase, faKey, faFileCode, faDownload, faUpload, faFileImage, faCopy, faBoxOpen, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 
 const useStyles = makeStyles((theme) => ({

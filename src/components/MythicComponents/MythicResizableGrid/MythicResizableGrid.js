@@ -52,7 +52,20 @@ const ResizableGridWrapper = ({
         const updatedColumnWidths = columns.map((column) => column.initialWidth || MIN_COLUMN_WIDTH);
         const totalWidthDiff = totalWidth - updatedColumnWidths.reduce((a, b) => a + b, 0);
         if (totalWidthDiff > 0) {
-            updatedColumnWidths[updatedColumnWidths.length - 1] += totalWidthDiff;
+            let updatedWidthIndexs = [];
+            for(let i = 0; i < columns.length; i++){
+                // check if any of the columns have the `fillWidth` property to true
+                if(columns[i]["fillWidth"]){
+                    updatedWidthIndexs.push(i);
+                }
+            }
+            if(updatedWidthIndexs.length === 0){
+                updatedWidthIndexs.push(columns.length - 1);
+            }
+            for(let i = 0; i < updatedWidthIndexs.length; i++){
+                updatedColumnWidths[updatedWidthIndexs[i]] += totalWidthDiff / updatedWidthIndexs.length;
+            }
+            //updatedColumnWidths[updatedWidthIndex] += totalWidthDiff;
         }
         setColumnWidths(updatedColumnWidths);
     }, [scrollbarWidth]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -74,7 +87,14 @@ const ResizableGridWrapper = ({
     };
 
     const autosizeColumn = (columnIndex) => {
-        const longestElementInColumn = Math.max(...items.map((itemRow) => itemRow[columnIndex].length));
+        const longestElementInColumn = Math.max(...items.map((itemRow) => {
+            if(typeof(itemRow[columnIndex]) === "string"){
+                return itemRow[columnIndex].length;
+            }else{
+                return itemRow[columnIndex]?.props?.cellData?.length || -1;
+            }
+            
+        }));
         const updatedWidths = columnWidths.map((columnWidth, index) => {
             if (columnIndex === index) {
                 return Math.floor(Math.max(longestElementInColumn * 8 + 32, MIN_COLUMN_WIDTH));

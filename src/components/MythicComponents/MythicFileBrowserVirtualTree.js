@@ -124,9 +124,8 @@ const FileBrowserRow = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   return (
-      <Paper
+      <div
           className={classes.root}
-          elevation={5}
           style={{ backgroundColor: theme.body, color: theme.text, alignItems: 'center', display: 'flex', paddingRight: "10px" }}
           onClick={props.handleOnClickRow}>
           {props.filebrowserobj.parent_id === null ? (
@@ -176,7 +175,7 @@ const FileBrowserRow = (props) => {
                   <ErrorIcon fontSize='small' style={{ color: theme.palette.error.main }} />
               </Tooltip>
           ) : null}
-      </Paper>
+      </div>
   );
 };
 

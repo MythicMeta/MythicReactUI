@@ -69,8 +69,8 @@ const updateFileComment = gql`
 `;
 
 const columns = [
-    { name: 'Actions', initialWidth: 100, disableAutosize: true },
-    { name: 'Name', type: 'string', key: 'name_text', disableAutosize: true },
+    { name: 'Actions', initialWidth: 100, disableAutosize: true, disableSort: true },
+    { name: 'Name', type: 'string', key: 'name_text', fillWidth: true },
     { name: 'Size', type: 'number', key: 'size', initialWidth: 200 },
     { name: 'Last Modified', type: 'date', key: 'modify_time', initialWidth: 200 },
     { name: 'Comment', type: 'string', key: 'comment', initialWidth: 200 },
@@ -137,6 +137,9 @@ export const CallbacksTabsFileBrowserTable = (props) => {
 
     const onClickHeader = (e, columnIndex) => {
         const column = columns[columnIndex];
+        if(column.disableSort){
+            return;
+        }
         if (!column.key) {
             setSortKey(null);
             setSortType(null);
@@ -385,7 +388,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
     return (
         <React.Fragment>
             <Button
-                style={{ padding: 0 }}
+                style={{ }}
                 size='small'
                 aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
                 aria-expanded={dropdownOpen ? 'true' : undefined}
