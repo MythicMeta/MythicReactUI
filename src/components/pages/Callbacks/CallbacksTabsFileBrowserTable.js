@@ -27,7 +27,6 @@ import Divider from '@material-ui/core/Divider';
 import ListIcon from '@material-ui/icons/List';
 import DeleteIcon from '@material-ui/icons/Delete';
 import GetAppIcon from '@material-ui/icons/GetApp';
-import { Typography } from '@material-ui/core';
 import 'react-virtualized/styles.css';
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import { copyStringToClipboard } from '../../utilities/Clipboard';
@@ -71,7 +70,7 @@ const updateFileComment = gql`
 
 const columns = [
     { name: 'Actions', initialWidth: 100, disableAutosize: true },
-    { name: 'Name', type: 'string', key: 'name_text', initialWidth: 200, disableAutosize: true },
+    { name: 'Name', type: 'string', key: 'name_text', disableAutosize: true },
     { name: 'Size', type: 'number', key: 'size', initialWidth: 200 },
     { name: 'Last Modified', type: 'date', key: 'modify_time', initialWidth: 200 },
     { name: 'Comment', type: 'string', key: 'comment', initialWidth: 200 },
@@ -192,7 +191,7 @@ const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
                 />
             )}
             {rowData.filemeta.length > 0 ? <GetAppIcon style={{ color: theme.palette.success.main }} /> : null}
-            <Typography
+            <pre 
                 style={{
                     color:
                         rowData.filebrowserobjs_aggregate.aggregate.count > 0 || rowData.success !== null
@@ -200,7 +199,7 @@ const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
                             : theme.palette.text.secondary,
                 }}>
                 {cellData}
-            </Typography>
+            </pre>
             {rowData.success === true ? (
                 <Tooltip title='Successfully listed contents of folder'>
                     <CheckCircleIcon fontSize='small' style={{ color: theme.palette.success.main }} />

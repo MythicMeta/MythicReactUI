@@ -14,6 +14,7 @@ export function MythicTabPanel(props) {
                   flexGrow: 1,
                   width: '100%',
                   maxWidth: '100%',
+                  overflowY: "auto",
               }
             : props.style;
     return (

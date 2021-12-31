@@ -70,7 +70,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
         clearSelectedTab();
     }, [clickedTabId, openTabs, clearSelectedTab]);
     return (
-        <div className={classes.root} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+        <div className={classes.root} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, height: "100%" }}>
             <AppBar color='default' position='static'>
                 <Tabs
                     value={value}
@@ -129,6 +129,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
                                     position: 'relative',
                                     height: '100%',
                                     maxHeight: '100%',
+                                    overflow: 'auto',
                                 }}
                                 key={'tabpanel' + tab.tabID + tab.tabType}
                                 onCloseTab={onCloseTabLocal}
