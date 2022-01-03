@@ -41,7 +41,7 @@ export function Callbacks() {
     const [topDisplay, setTopDisplay] = React.useState('table');
     const [openTabs, setOpenTabs] = React.useState([]);
     const [clickedTabId, setClickedTabId] = React.useState('');
-    const [heights, setHeights] = React.useState({ top: '30%', bottom: '69%' });
+    const [heights, setHeights] = React.useState({ top: '30%', bottom: '68%' });
     useEffect(() => {
         const oldTabs = localStorage.getItem('openTabs');
         if (oldTabs !== undefined && oldTabs !== null) {
@@ -107,13 +107,13 @@ export function Callbacks() {
         localStorage.setItem('heights', JSON.stringify(newHeights));
     }, []);
     return (
-        <div style={{ maxWidth: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ maxWidth: '100%', height: '100%',  display: 'flex', flexDirection: 'column' }}>
             <React.Fragment>
                 <SpeedDialWrapper setTopDisplay={setTopDisplay} heights={heights} onSubmitHeights={onSubmitHeights} />
                 <div style={{ flexGrow: 1, flexBasis: heights.top, height: heights.top }}>
                     <CallbacksTop topDisplay={topDisplay} onOpenTab={onOpenTab} heights={heights} />
                 </div>
-                <div style={{ flexGrow: 1, flexBasis: heights.bottom, display: 'flex', height: "100%" }}>
+                <div style={{ flexGrow: 1, flexBasis: heights.bottom, height: heights.bottom }}>
                     <CallbacksTabs
                         onCloseTab={onCloseTab}
                         onEditTabDescription={onEditTabDescription}

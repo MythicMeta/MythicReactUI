@@ -144,7 +144,7 @@ const SearchTabTasksSearchPanel = (props) => {
                         style: {padding: 0}
                     }}/>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={3}>
                 <FormLabel component="legend">Search Task's</FormLabel>
                 <Select
                     style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
