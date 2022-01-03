@@ -108,9 +108,9 @@ export const TaskDisplayContainer = ({task}) => {
       fetchPolicy: "network-only",
       onCompleted: (data) => {
           const output = data.response.reduce( (prev, cur) => {
-            return prev + cur.response;
+            return prev + Buffer.from(cur.response, "base64");
           }, "");
-          const dataBlob = new Blob([output], {type: 'text/plain'});
+          const dataBlob = new Blob([output], {type: 'application/octet-stream'});
           const ele = document.getElementById("download_config");
           if(ele !== null){
             ele.href = URL.createObjectURL(dataBlob);

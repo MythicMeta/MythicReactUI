@@ -95,7 +95,7 @@ export function App(props) {
                 }}>
                 <SnackbarUtilsConfigurator />
                 <div style={{ maxHeight: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ minHeight: '48px', flexGrow: 0 }}>
+                    <div style={{ minHeight: '54px', flexGrow: 0 }}>
                         {me.loggedIn && me.user !== undefined && me.user !== null ? (
                             <TopAppBar theme={themeMode} toggleTheme={themeToggler} />
                         ) : null}

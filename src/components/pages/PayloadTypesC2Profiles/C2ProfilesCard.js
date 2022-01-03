@@ -179,9 +179,9 @@ export function C2ProfilesCard(props) {
     <Card className={classes.root} elevation={5} style={{maxWidth: "100%"}}>
         <StyledAvatar overlap="circle" classes={{badge: classes[running]}} invisible={false} anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
             {props.is_p2p ? 
-            (<FontAwesomeIcon icon={faLink} size="6x" style={{width: "125px", height: "125px"}} />)
+            (<FontAwesomeIcon icon={faLink}  style={{width: "100px", height: "100px", marginTop: "25px"}} />)
             : 
-            (<WifiIcon style={{width: "125px", height: "125px"}}/>)
+            (<WifiIcon style={{width: "100px", height: "100px", marginTop: "25px"}}/>)
             }
         </StyledAvatar>
         <div style={{maxWidth: "60%"}}>

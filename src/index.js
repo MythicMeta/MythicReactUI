@@ -17,7 +17,7 @@ import jwt_decode from 'jwt-decode';
 import {meState} from './cache';
 
 export const mythicVersion = "2.3.3";
-export const mythicUIVersion = "0.0.3";
+export const mythicUIVersion = "0.0.4";
 
 const cache = new InMemoryCache({
     typePolicies: {
@@ -82,7 +82,7 @@ const authLink = setContext( async (_, {headers}) => {
       let diff = Math.abs(Date.now() - (decoded_token.exp * 1000));
       let twoHours = 7200000; // 2 hours in miliseconds, this is half the JWT lifetime
       // we want to make sure we try to get a new access_token while the current one is still active or it'll fail
-      if(diff < twoHours){
+      if(diff < twoHours || !isJWTValid()){
         console.log("token is at its half life or less, try to get a new token");
         const updated = await GetNewToken();
         //console.log("updated?", updated);

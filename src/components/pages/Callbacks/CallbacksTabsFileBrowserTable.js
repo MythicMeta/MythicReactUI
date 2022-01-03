@@ -69,11 +69,11 @@ const updateFileComment = gql`
 `;
 
 const columns = [
-    { name: 'Actions', initialWidth: 100, disableAutosize: true, disableSort: true },
+    { name: 'Actions', width: 100, disableAutosize: true, disableSort: true },
     { name: 'Name', type: 'string', key: 'name_text', fillWidth: true },
-    { name: 'Size', type: 'number', key: 'size', initialWidth: 200 },
-    { name: 'Last Modified', type: 'date', key: 'modify_time', initialWidth: 200 },
-    { name: 'Comment', type: 'string', key: 'comment', initialWidth: 200 },
+    { name: 'Size', type: 'number', key: 'size', width: 200 },
+    { name: 'Last Modified', type: 'date', key: 'modify_time', width: 200 },
+    { name: 'Comment', type: 'string', key: 'comment', width: 200 },
 ];
 
 export const CallbacksTabsFileBrowserTable = (props) => {

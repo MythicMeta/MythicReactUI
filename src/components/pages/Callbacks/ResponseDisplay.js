@@ -86,7 +86,8 @@ export const ResponseDisplay = (props) =>{
       }else 
       // we still have some room to view more, but only room for fetchLimit - totalFetched 
       if(subscriptionData.data.response.length > 0){
-        const newerResponses = subscriptionData.data.response.filter( r => r.id > highestFetched);
+        const newResponses = subscriptionData.data.response.filter( r => r.id > highestFetched);
+        const newerResponses = newResponses.map( (r) => { return {...r, response: Buffer.from(r.response,"base64")}});
         newerResponses.sort( (a,b) => a.id > b.id ? 1 : -1);
         let outputResponses = output;
         let rawResponseArray = [...rawResponses];
@@ -162,7 +163,7 @@ export const ResponseDisplay = (props) =>{
       onCompleted: (data) => {
         if(data.browserscriptoperation.length > 0){
           try{
-            let unb64script = atob(data.browserscriptoperation[0]["script"]);
+            let unb64script = Buffer.from(data.browserscriptoperation[0]["script"], "base64");
             //console.log(unb64script);
             setViewBrowserScript(true);
           }catch(error){
@@ -173,7 +174,7 @@ export const ResponseDisplay = (props) =>{
         }else if(data.browserscript.length > 0){
           
           try{
-            let unb64script = atob(data.browserscript[0]["script"]);
+            let unb64script = Buffer.from(data.browserscript[0]["script"], "base64");
             let fun = Function('"use strict";return(' + unb64script + ')')();
             script.current = fun;
             setViewBrowserScript(true);
@@ -195,7 +196,7 @@ export const ResponseDisplay = (props) =>{
       fetchPolicy: "network-only",
       onCompleted: (data) => {
         const responses = data.response.reduce( (prev, cur) => {
-          return prev + cur.response;
+          return prev + Buffer.from(cur.response, "base64");
         }, "");
         const maxID = data.response.reduce( (prev, cur) => {
           if(cur.id > prev){
@@ -205,7 +206,7 @@ export const ResponseDisplay = (props) =>{
         }, highestFetched);
         setHighestFetched(maxID);
         setOutput(responses);
-        const responseArray = data.response.map( r => r.response);
+        const responseArray = data.response.map( r => Buffer.from(r.response, "base64"));
         setRawResponses(responseArray);
         if(viewBrowserScript && script.current !== undefined){
           try{
@@ -231,7 +232,7 @@ export const ResponseDisplay = (props) =>{
       fetchPolicy: "network-only",
       onCompleted: (data) => {
         const responses = data.response.reduce( (prev, cur) => {
-          return prev + cur.response;
+          return prev + Buffer.from(cur.response, "base64");
         }, "");
         const maxID = data.response.reduce( (prev, cur) => {
           if(cur.id > prev){
@@ -241,7 +242,7 @@ export const ResponseDisplay = (props) =>{
         }, highestFetched);
         setHighestFetched(maxID);
         setOutput(responses);
-        const responseArray = data.response.map( r => r.response);
+        const responseArray = data.response.map( r => Buffer.from(r.response, "base64"));
         setRawResponses(responseArray);
         if(viewBrowserScript && script.current !== undefined){
           try{

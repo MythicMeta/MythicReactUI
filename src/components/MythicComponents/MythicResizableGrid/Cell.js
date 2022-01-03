@@ -12,9 +12,8 @@ const Cell = ({ VariableSizeGridProps: { style, rowIndex, columnIndex, data, ...
     );
 
     const item = data.items[rowIndex][columnIndex];
-
     return (
-        <div style={style} className={classes.cell} onDoubleClick={handleDoubleClick}>
+        <div style={{...style, ...item?.cellStyle || null}} className={classes.cell} onDoubleClick={handleDoubleClick}>
             <div className={classes.cellInner}>{item}</div>
         </div>
     );

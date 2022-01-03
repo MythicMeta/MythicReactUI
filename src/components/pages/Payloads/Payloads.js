@@ -18,6 +18,8 @@ fragment payloadData on payload {
   }
   uuid
   tag
+  deleted
+  auto_generated
   payloadtype {
     id
     ptype
@@ -40,7 +42,7 @@ fragment payloadData on payload {
 const SUB_Payloads = gql`
 ${payloadFragment}
 subscription SubPayloadsQuery($operation_id: Int!) {
-  payload(where: {deleted: {_eq: false}, operation_id: {_eq: $operation_id}, auto_generated: {_eq: false}}, order_by: {id: desc}) {
+  payload(where: { operation_id: {_eq: $operation_id}}, order_by: {id: desc}) {
     ...payloadData
   }
 }
@@ -48,7 +50,7 @@ subscription SubPayloadsQuery($operation_id: Int!) {
 const Get_Payloads = gql`
 ${payloadFragment}
 query GetPayloadsQuery($operation_id: Int!) {
-  payload(where: {deleted: {_eq: false}, operation_id: {_eq: $operation_id}, auto_generated: {_eq: false}}, order_by: {id: desc}, limit: 20) {
+  payload(where: { operation_id: {_eq: $operation_id}}, order_by: {id: desc}, limit: 20) {
     ...payloadData
   }
 }
@@ -116,7 +118,13 @@ export function Payloads(props){
     const [deletePayload] = useMutation(payloadsDelete, {
         onCompleted: (data) => {
           if(data.deleteFile.status === "success"){
-            const updated = payloads.filter( (payload) => !data.deleteFile.payload_ids.includes(payload.id));
+            const updated = payloads.map( (p) => {
+              if(data.deleteFile.payload_ids.includes(p.id)){
+                return {...p, deleted: true};
+              }else{
+                return {...p}
+              }
+            });
             setPayloads(updated);
             snackActions.success("Successfully deleted");
           }else{

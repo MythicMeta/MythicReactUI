@@ -19,15 +19,17 @@ const ResizableGridWrapper = ({
     sortIndicatorIndex,
     sortDirection,
     items,
+    headerNameKey,
     onClickHeader,
     onDoubleClickRow,
     rowHeight,
+    widthMeasureKey,
     ...AutoSizerProps
 }) => {
     /* Hooks */
     const { width: scrollbarWidth } = useScrollbarSize();
 
-    const [columnWidths, setColumnWidths] = useState(columns.map((column) => column.initialWidth || MIN_COLUMN_WIDTH));
+    const [columnWidths, setColumnWidths] = useState(columns.map((column) => column.width || MIN_COLUMN_WIDTH));
 
     const gridRef = useRef(null);
 
@@ -49,7 +51,7 @@ const ResizableGridWrapper = ({
 
     useEffect(() => {
         const totalWidth = AutoSizerProps.width - scrollbarWidth;
-        const updatedColumnWidths = columns.map((column) => column.initialWidth || MIN_COLUMN_WIDTH);
+        const updatedColumnWidths = columns.map((column) => column.width || MIN_COLUMN_WIDTH);
         const totalWidthDiff = totalWidth - updatedColumnWidths.reduce((a, b) => a + b, 0);
         if (totalWidthDiff > 0) {
             let updatedWidthIndexs = [];
@@ -90,6 +92,8 @@ const ResizableGridWrapper = ({
         const longestElementInColumn = Math.max(...items.map((itemRow) => {
             if(typeof(itemRow[columnIndex]) === "string"){
                 return itemRow[columnIndex].length;
+            }else if(widthMeasureKey){
+                return String(itemRow[columnIndex]?.props?.cellData?.[widthMeasureKey]).length || -1;
             }else{
                 return itemRow[columnIndex]?.props?.cellData?.length || -1;
             }
@@ -121,6 +125,7 @@ const ResizableGridWrapper = ({
                         return (
                             <HeaderCell
                                 key={i}
+                                headerNameKey={headerNameKey}
                                 onClick={onClickHeader}
                                 onDoubleClick={(e, columnIndex) => {
                                     if (column.disableAutosize) return;
@@ -157,6 +162,7 @@ const ResizableGridWrapper = ({
                 width={AutoSizerProps.width}
                 columnCount={columns.length}
                 columnWidth={getColumnWidth}
+                headerNameKey={headerNameKey}
                 rowCount={itemsWithHeader.length}
                 rowHeight={getRowHeight}
                 itemData={{ items: itemsWithHeader, onDoubleClickRow }}
@@ -189,7 +195,9 @@ const MythicResizableGrid = ({
     sortDirection,
     items,
     onClickHeader,
+    headerNameKey,
     onDoubleClickRow,
+    widthMeasureKey,
     rowHeight = 32,
 }) => {
     return (
@@ -197,9 +205,11 @@ const MythicResizableGrid = ({
             {(AutoSizerProps) => (
                 <ResizableGridWrapper
                     columns={columns}
+                    headerNameKey={headerNameKey}
                     sortIndicatorIndex={sortIndicatorIndex}
                     sortDirection={sortDirection}
                     items={items}
+                    widthMeasureKey={widthMeasureKey}
                     rowHeight={rowHeight}
                     onClickHeader={onClickHeader}
                     onDoubleClickRow={onDoubleClickRow}
@@ -213,9 +223,10 @@ const MythicResizableGrid = ({
 MythicResizableGrid.propTypes = {
     columns: PropTypes.arrayOf(
         PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            initialWidth: PropTypes.number,
+            name: PropTypes.string,
+            width: PropTypes.number,
             disableAutosize: PropTypes.bool,
+            disableSort: PropTypes.bool
         })
     ).isRequired,
     sortIndicatorIndex: PropTypes.number,
@@ -224,6 +235,8 @@ MythicResizableGrid.propTypes = {
     onClickHeader: PropTypes.func,
     onDoubleClickRow: PropTypes.func,
     rowHeight: PropTypes.number,
+    headerNameKey: PropTypes.string,
+    widthMeasureKey: PropTypes.string
 };
 
 export default MythicResizableGrid;

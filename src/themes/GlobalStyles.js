@@ -72,4 +72,8 @@ tspan {
 .MuiAppBar-root{
     z-index: 1
 }
+.ace-monokai .ace_invalid {
+    color: #F8F8F0;
+    background-color: #52524d;
+}
 `

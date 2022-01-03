@@ -34,7 +34,15 @@ export function PayloadTypeBuildDialog(props) {
         variables: {payload_name: props.payload_name},
         onCompleted: data => {
             console.log(data);
-            setBuildParams(data.payloadtype[0].buildparameters);
+            const buildParams = data.payloadtype[0].buildparameters.map((param) => {
+              switch(param.parameter_type){
+                case "ChooseOne":
+                  return {...param, defaultParameter: param.parameter.split("\n")[0], options: param.parameter.split("\n").join(", ")};
+                default:
+                  return {...param, defaultParameter: param.parameter};
+              }
+            });
+            setBuildParams(buildParams);
         }
         });
     if (loading) {
@@ -55,21 +63,26 @@ export function PayloadTypeBuildDialog(props) {
             <Table size="small" aria-label="details" style={{"tableLayout": "fixed", "overflowWrap": "break-word"}}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Parameter</TableCell>
+                    <TableCell >Parameter</TableCell>
                     <TableCell>Value</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {
                     buildParams.map( (param) => (
-                        <TableRow key={"buildprop" + param.id}>
+                        <TableRow key={"buildprop" + param.id} hover>
                             <TableCell>{param.description}</TableCell>
                             <TableCell>
-                            Scripting/Building Name:<br/>{param.name}<br/>
-                            Parameter Type:<br/>{param.parameter_type}<br/>
-                            Default Parameter:<br/>{param.parameter}<br/>
-                            Required value?<br/>{param.required ? "Yes": "No"}<br/>
-                            Verifier Regex:<br/>{param.verifier_regex}<br/>
+                            <b>Scripting/Building Name: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.name}</pre><br/>
+                            <b>Parameter Type: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.parameter_type}</pre><br/>
+                            <b>Default Parameter: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.defaultParameter}</pre><br/>
+                            {param.parameter_type === "ChooseOne" ? (
+                              <React.Fragment>
+                                <b>Parameter Options: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.options}</pre><br/>
+                              </React.Fragment>
+                            ) : (null)}
+                            <b>Required? </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.required ? "Yes": "No"}</pre><br/>
+                            <b>Verifier Regex: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.verifier_regex}</pre><br/>
                             </TableCell>
                         </TableRow>
                     ))

@@ -3,7 +3,7 @@ import Typography from '@material-ui/core/Typography';
 import CancelIcon from '@material-ui/icons/Cancel';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import {useTheme} from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
+import {MythicStyledTooltip} from '../../MythicComponents/MythicStyledTooltip';
 import PermScanWifiIcon from '@material-ui/icons/PermScanWifi';
 
 export function PayloadsTableRowC2Status(props){
@@ -15,25 +15,25 @@ export function PayloadsTableRowC2Status(props){
                     <Typography key={c2.c2profile.name + props.uuid} style={{display: "flex"}}> 
                         {c2.c2profile.is_p2p ?
                             ( c2.c2profile.container_running ? 
-                                <Tooltip title="C2 Container online">
+                                <MythicStyledTooltip title="C2 Container online">
                                     <CheckCircleIcon style={{color: theme.palette.success.main}}/>
-                                </Tooltip>: 
-                                <Tooltip title="C2 Container offline">
+                                </MythicStyledTooltip>: 
+                                <MythicStyledTooltip title="C2 Container offline">
                                     <CancelIcon style={{color: theme.palette.error.main}}/>
-                                </Tooltip> )
+                                </MythicStyledTooltip> )
                             :
                         ( c2.c2profile.running ? 
-                            <Tooltip title="C2 Internal Server Running">
+                            <MythicStyledTooltip title="C2 Internal Server Running">
                                 <CheckCircleIcon style={{color: theme.palette.success.main}}/>
-                            </Tooltip> : 
+                            </MythicStyledTooltip> : 
                             (c2.c2profile.container_running ? (
-                                <Tooltip title="C2 Internal Server Not Running, but Container Online">
+                                <MythicStyledTooltip title="C2 Internal Server Not Running, but Container Online">
                                     <PermScanWifiIcon style={{color: theme.palette.warning.main}}/> 
-                                </Tooltip>
+                                </MythicStyledTooltip>
                             ) : (
-                                <Tooltip title="C2 Container offline">
+                                <MythicStyledTooltip title="C2 Container offline">
                                     <CancelIcon style={{color: theme.palette.error.main}}/> 
-                                </Tooltip>
+                                </MythicStyledTooltip>
                             ))
                             )
                         } - {c2.c2profile.name}

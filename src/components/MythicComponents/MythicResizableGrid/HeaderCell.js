@@ -2,16 +2,15 @@ import { Box, Typography } from '@material-ui/core';
 import { useCallback } from 'react';
 import useSingleAndDoubleClick from '../../utilities/useSingleAndDoubleClick';
 import useStyles from './styles';
-import {useTheme} from '@material-ui/core/styles';
 
 const HeaderCell = ({
     onClick = () => {},
     onDoubleClick = () => {},
     sortIndicatorIndex,
     sortDirection,
+    headerNameKey = "name",
     VariableSizeGridProps: { style, rowIndex, columnIndex, data, ...other },
 }) => {
-    const theme = useTheme();
     const classes = useStyles();
 
 
@@ -37,7 +36,7 @@ const HeaderCell = ({
         <div style={style} className={classes.headerCell} onClick={handleClicks}>
             <Box display='flex' alignItems='center' justifyContent='space-between' width='100%'>
                 <Typography className={classes.cellInner} variant='body1'>
-                    {item.name}
+                    {item[headerNameKey].toUpperCase()}
                 </Typography>
                 {sortIndicatorIndex === columnIndex && (sortDirection === 'ASC' ? <div>↑</div> : <div>↓</div>)}
             </Box>
