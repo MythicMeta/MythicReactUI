@@ -23,6 +23,8 @@ import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import { MythicModifyStringDialog } from '../../MythicComponents/MythicDialog';
 import LockIcon from '@material-ui/icons/Lock';
+import { Backdrop } from '@material-ui/core';
+import {CircularProgress} from '@material-ui/core';
 
 const fileDataFragment = gql`
     fragment fileObjData on filebrowserobj {
@@ -215,6 +217,7 @@ export function CallbacksTabsFileBrowserLabel(props) {
 export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
     const me = useReactiveVar(meState);
     const fileBrowserRoots = React.useRef([]);
+    const [backdropOpen, setBackdropOpen] = React.useState(false);
     const [fileBrowserRootsState, setFileBrowserRootsState] = React.useState([]);
     const [selectedFolder, setSelectedFolder] = React.useState([]);
     const selectedFolderDataRef = React.useRef({});
@@ -345,6 +348,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                     snackActions.info('Empty folder');
                 }
                 setSelectedFolder(Object.values(selectedFolderData.children));
+                setBackdropOpen(false);
                 return;
             }
             snackActions.dismiss();
@@ -368,6 +372,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             //console.log("setting new roots");
             setFileBrowserRootsState(newRoots);
             setSelectedFolder(Object.values(selectedFolderData.children));
+            setBackdropOpen(false);
         },
     });
     const [getCallbackData] = useLazyQuery(getCallbackDataQuery, {
@@ -560,6 +565,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
         getFolderData({
             variables: { filebrowserobj_id: filebrowserobj.id, operation_id: me.user.current_operation_id },
         });
+        setBackdropOpen(true);
         setSelectedFolderData(filebrowserobj);
     }, []);
     const onListFilesButton = ({ callbackID, fullPath }) => {
@@ -631,12 +637,16 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
         <MythicTabPanel index={index} value={value}>
             <div style={{ display: 'flex', flexGrow: 1, overflowY: 'auto' }}>
                 <div style={{ width: '30%', overflow: 'auto' }}>
+                    <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}}>
+                        <CircularProgress color="inherit" />
+                    </Backdrop>
                     <CallbacksTabsFileBrowserTree
                         showDeletedFiles={showDeletedFiles}
                         treeRoot={fileBrowserRootsState}
                         fetchFolderData={fetchFolderData}
                         setTableData={onSetTableData}
                     />
+                    
                 </div>
                 <div style={{ width: '60%', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                     <div style={{ flexGrow: 0 }}>
@@ -660,6 +670,9 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                         />
                     </div>
                     <div style={{ flexGrow: 1 }}>
+                        <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}}>
+                            <CircularProgress color="inherit" />
+                        </Backdrop>
                         <CallbacksTabsFileBrowserTable
                             showDeletedFiles={showDeletedFiles}
                             onRowDoubleClick={fetchFolderData}

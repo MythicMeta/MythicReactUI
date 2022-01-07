@@ -33,7 +33,6 @@ const SUB_Callbacks = gql`
 const useStyles = makeStyles((theme) => ({
     root: {
         width: '100%',
-        backgroundColor: theme.palette.background.paper,
     },
 }));
 export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelectedTab, onEditTabDescription }) {

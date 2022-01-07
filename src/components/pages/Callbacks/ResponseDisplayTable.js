@@ -79,6 +79,9 @@ const getIconName = (iconName) => {
       return faFileAlt;
   }
 }
+const doubleClickRow = () => {
+
+}
 const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
   return (
     <div style={{...rowData?.rowStyle || null, ...cellData?.cellStyle || null}}>
@@ -287,14 +290,12 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
 
 export const ResponseDisplayTable = ({table, callback_id}) =>{
   const theme = useTheme();
+  const rowHeight = 35;
+  const headerHeight = 45;
+  const [dataHeight, setDataHeight] = React.useState(530);
+  const maxElements = Math.floor(dataHeight / rowHeight);
   const [allData, setAllData] = React.useState([]);
   const [sortData, setSortData] = React.useState({sortKey: null, sortType: null, sortDirection: "ASC"})
-  const rowStyle =  ({index}) => {
-    if(index < 0){
-      return {backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main};
-    }
-    return allData.current[index]["rowStyle"] || {};
-  };
   const sortedData = React.useMemo(() => {
     if (sortData.sortKey === null || sortData.sortType === null) {
       return allData
@@ -374,6 +375,9 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
   
   useEffect( () => {
     setAllData([...table.rows]);
+    if(table.rows.length < maxElements){
+      setDataHeight((table.rows.length * rowHeight) + headerHeight);
+    }
   }, [table.rows])
   const sortColumn = table.headers.findIndex((column) => column.plaintext === sortData.sortKey);
   return (
@@ -383,7 +387,7 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
                   {table.title}
               </Typography>
           </Paper>
-          <div style={{height: "calc(45vh)", width: "100%"}}>
+          <div style={{height: dataHeight, width: "100%"}}>
             <MythicResizableGrid
                   columns={table.headers}
                   sortIndicatorIndex={sortColumn}
@@ -391,7 +395,8 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
                   items={gridData}
                   widthMeasureKey={"plaintext"}
                   headerNameKey={"plaintext"}
-                  rowHeight={35}
+                  onDoubleClickRow={doubleClickRow}
+                  rowHeight={rowHeight}
                   onClickHeader={onClickHeader}
               />
             

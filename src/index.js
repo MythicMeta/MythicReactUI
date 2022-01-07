@@ -51,7 +51,7 @@ const httpLink = new HttpLink({
         reconnect: true,   
         connectionParams: {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+            Authorization: () => `Bearer ${localStorage.getItem('access_token')}`
           }
        }     
     }
@@ -93,7 +93,8 @@ const authLink = setContext( async (_, {headers}) => {
             }
           }
         }else{
-          //console.log("update failed!");
+          console.log("update failed!");
+          FailedRefresh();
         }
       }else{
         //console.log("No update needed, access_token still valid");

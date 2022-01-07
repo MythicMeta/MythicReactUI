@@ -11,8 +11,8 @@ import {ResponseDisplaySearch} from './ResponseDisplaySearch';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import SearchIcon from '@material-ui/icons/Search';
 import {useTheme} from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
 import { IconButton } from '@material-ui/core';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 
 const subResponsesQuery = gql`
@@ -24,11 +24,11 @@ subscription subResponsesQuery($task_id: Int!, $fetchLimit: Int!) {
 }`;
 const getResponsesLazyQuery = gql`
 query subResponsesQuery($task_id: Int!, $fetchLimit: Int!, $offset: Int!, $search: String!) {
-  response(where: {task_id: {_eq: $task_id}, response_text: {_ilike: $search}}, limit: $fetchLimit, offset: $offset, order_by: {id: asc}) {
+  response(where: {task_id: {_eq: $task_id}, response_escape: {_ilike: $search}}, limit: $fetchLimit, offset: $offset, order_by: {id: asc}) {
     id
     response: response_text
   }
-  response_aggregate(where: {task_id: {_eq: $task_id}, response_text: {_ilike: $search}}){
+  response_aggregate(where: {task_id: {_eq: $task_id}, response_escape: {_ilike: $search}}){
     aggregate{
       count
     }
@@ -36,11 +36,11 @@ query subResponsesQuery($task_id: Int!, $fetchLimit: Int!, $offset: Int!, $searc
 }`;
 const getAllResponsesLazyQuery = gql`
 query subResponsesQuery($task_id: Int!, $search: String!) {
-  response(where: {task_id: {_eq: $task_id}, response_text: {_ilike: $search}}, order_by: {id: asc}) {
+  response(where: {task_id: {_eq: $task_id}, response_escape: {_ilike: $search}}, order_by: {id: asc}) {
     id
     response: response_text
   }
-  response_aggregate(where: {task_id: {_eq: $task_id}, response_text: {_ilike: $search}}){
+  response_aggregate(where: {task_id: {_eq: $task_id}, response_escape: {_ilike: $search}}){
     aggregate{
       count
     }
@@ -164,15 +164,17 @@ export const ResponseDisplay = (props) =>{
         if(data.browserscriptoperation.length > 0){
           try{
             let unb64script = Buffer.from(data.browserscriptoperation[0]["script"], "base64");
-            //console.log(unb64script);
+            let fun = Function('"use strict";return(' + unb64script + ')')();
+            script.current = fun;
             setViewBrowserScript(true);
+            let res = script.current(props.task, rawResponses);
+            setBrowserScriptData(filterOutput(res));
           }catch(error){
             snackActions.error(error.toString());
             setViewBrowserScript(false);
           }
           
         }else if(data.browserscript.length > 0){
-          
           try{
             let unb64script = Buffer.from(data.browserscript[0]["script"], "base64");
             let fun = Function('"use strict";return(' + unb64script + ')')();
@@ -330,9 +332,9 @@ export const ResponseDisplay = (props) =>{
           InputProps={{
             endAdornment: 
             <React.Fragment>
-                <Tooltip title="Search">
+                <MythicStyledTooltip title="Search">
                     <IconButton onClick={onSubmitSearch}><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
-                </Tooltip>
+                </MythicStyledTooltip>
             </React.Fragment>,
             style: {padding: 0}
         }}

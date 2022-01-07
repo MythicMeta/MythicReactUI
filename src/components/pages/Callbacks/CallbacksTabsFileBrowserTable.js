@@ -88,10 +88,8 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         }
         const tempData = [...allData];
 
-        if (sortType === 'number' || sortType === 'size') {
+        if (sortType === 'number' || sortType === 'size' || sortType === 'date') {
             tempData.sort((a, b) => (parseInt(a[sortKey]) > parseInt(b[sortKey]) ? 1 : -1));
-        } else if (sortType === 'date') {
-            tempData.sort((a, b) => (new Date(a[sortKey]) > new Date(b[sortKey]) ? 1 : -1));
         } else if (sortType === 'string') {
             tempData.sort((a, b) => (a[sortKey].toLowerCase() > b[sortKey].toLowerCase() ? 1 : -1));
         }
@@ -107,7 +105,7 @@ export const CallbacksTabsFileBrowserTable = (props) => {
                 <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />,
                 <FileBrowserTableRowNameCell rowData={row} cellData={row.name_text} />,
                 FileBrowserTableRowSizeCell({ cellData: row.size }),
-                FileBrowserTableRowStringCell({ cellData: row.modify_time }),
+                FileBrowserTableRowDateCell({ cellData: row.modify_time }),
                 FileBrowserTableRowStringCell({ cellData: row.comment }),
             ]),
         [sortedData, props.onTaskRowAction]
@@ -217,6 +215,12 @@ const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
 };
 const FileBrowserTableRowStringCell = ({ cellData }) => {
     return cellData;
+};
+const FileBrowserTableRowDateCell = ({ cellData }) => {
+    if(cellData === "" || cellData <= 0){
+        return cellData;
+    }
+    return (new Date(parseInt(cellData))).toISOString();
 };
 const FileBrowserTableRowSizeCell = ({ cellData }) => {
     const getStringSize = () => {

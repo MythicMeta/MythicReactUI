@@ -6,7 +6,6 @@ import { snackActions } from '../utilities/Snackbar';
 import FolderIcon from '@material-ui/icons/Folder';
 import FolderOpenIcon from '@material-ui/icons/FolderOpen';
 import ComputerIcon from '@material-ui/icons/Computer';
-import Paper from '@material-ui/core/Paper';
 import DescriptionIcon from '@material-ui/icons/Description';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
@@ -234,7 +233,6 @@ const FileBrowserVirtualTree = ({
         ];
       }
       if (openNodes[node.id] === true) {
-        console.log("node children: ", node.children);
         return [
           {
             id: node.id,
@@ -250,7 +248,6 @@ const FileBrowserVirtualTree = ({
           }, []).flat())
         ];
       }
-      console.log("node children: ", node.children);
       return [
         {
           id: node.id,
@@ -270,10 +267,6 @@ const FileBrowserVirtualTree = ({
     () => nodes.map((node) => flattenNode(node)).flat(),
     [flattenNode, nodes]
   );
-  useEffect( () => {
-    console.log("nodes", nodes);
-    console.log("flattenedNodes", flattenedNodes);
-  }, [nodes, flattenedNodes])
   return (
     <AutoSizer>
       {(AutoSizerProps) => (

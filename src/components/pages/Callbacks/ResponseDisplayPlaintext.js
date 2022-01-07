@@ -26,7 +26,6 @@ export const ResponseDisplayPlaintext = (props) =>{
         height={"100px"}
         highlightActiveLine={true}
         value={plaintextView}
-        focus={true}
         width={"100%"}
         minLines={2}
         maxLines={50}

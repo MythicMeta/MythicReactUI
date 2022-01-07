@@ -23,12 +23,12 @@ const fetchLimit = 20;
 const responseSearch = gql`
 ${taskingDataFragment}
 query responseQuery($operation_id: Int!, $search: String!, $offset: Int!, $fetchLimit: Int!, $status: String!) {
-    task_aggregate(distinct_on: id, order_by: {id: asc}, where: {status: {_ilike: $status}, parent_task_id: {_is_null: true}, responses: {response_text: {_ilike: $search}}, callback: {operation_id: {_eq: $operation_id}}}) {
+    task_aggregate(distinct_on: id, order_by: {id: asc}, where: {status: {_ilike: $status}, parent_task_id: {_is_null: true}, responses: {response_escape: {_ilike: $search}}, callback: {operation_id: {_eq: $operation_id}}}) {
       aggregate {
         count(columns: id)
       }
     }
-    task(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: asc}, where: {status: {_ilike: $status}, parent_task_id: {_is_null: true}, responses: {response_text: {_ilike: $search}}, callback: {operation_id: {_eq: $operation_id}}}) {
+    task(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: asc}, where: {status: {_ilike: $status}, parent_task_id: {_is_null: true}, responses: {response_escape: {_ilike: $search}}, callback: {operation_id: {_eq: $operation_id}}}) {
       ...taskData
     }
   }
