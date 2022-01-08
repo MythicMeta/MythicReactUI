@@ -171,6 +171,7 @@ export const ResponseDisplay = (props) =>{
             setBrowserScriptData(filterOutput(res));
           }catch(error){
             snackActions.error(error.toString());
+            console.log(error);
             setViewBrowserScript(false);
           }
           
@@ -180,10 +181,12 @@ export const ResponseDisplay = (props) =>{
             let fun = Function('"use strict";return(' + unb64script + ')')();
             script.current = fun;
             setViewBrowserScript(true);
+            console.log(rawResponses);
             let res = script.current(props.task, rawResponses);
             setBrowserScriptData(filterOutput(res));
           }catch(error){
             snackActions.error(error.toString());
+            console.log(error);
             setViewBrowserScript(false);
           }
         }else{

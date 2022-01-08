@@ -7,14 +7,14 @@ import {useTheme} from '@material-ui/core/styles';
 
 export const ResponseDisplayPlaintext = (props) =>{
   const theme = useTheme();
-  const [plaintextView, setPlaintextView] = React.useState(props.plaintext);
+  const [plaintextView, setPlaintextView] = React.useState(String(props.plaintext));
   useEffect( () => {
     try{
-      const newPlaintext = JSON.stringify(JSON.parse(props.plaintext), null, 4);
+      const newPlaintext = JSON.stringify(JSON.parse(String(props.plaintext)), null, 4);
       setPlaintextView(newPlaintext);
     }catch(error){
       //console.log("trying to JSONify plaintext error", error);
-      setPlaintextView(props.plaintext);
+      setPlaintextView(String(props.plaintext));
     }
   }, [props.plaintext])
   return (

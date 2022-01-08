@@ -312,7 +312,6 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
         }else if(b[sortData.sortKey]["plaintext"] === undefined){
           return 1;
         }
-        console.log(a[sortData.sortKey], sortData.sortType, sortData.sortKey)
         return a[sortData.sortKey]["plaintext"].toLowerCase() > b[sortData.sortKey]["plaintext"].toLowerCase() ? 1 : -1
       });
     }
@@ -382,11 +381,14 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
   const sortColumn = table.headers.findIndex((column) => column.plaintext === sortData.sortKey);
   return (
       <React.Fragment>
+        {table?.title ? (
           <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main, marginBottom: "5px", marginTop: "10px", marginRight: "5px"}} variant={"elevation"}>
               <Typography variant="h5" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
                   {table.title}
               </Typography>
           </Paper>
+        ) : (null)}
+          
           <div style={{height: dataHeight, width: "100%"}}>
             <MythicResizableGrid
                   columns={table.headers}
