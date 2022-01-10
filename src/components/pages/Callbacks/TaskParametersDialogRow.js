@@ -22,6 +22,7 @@ import { snackActions } from '../../utilities/Snackbar';
 import Popover from '@material-ui/core/Popover';
 import {CredentialTableNewCredentialDialog} from '../Search/CredentialTableNewCredentialDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const getDynamicQueryParams = gql`
 mutation getDynamicParamsMutation($callback: Int!, $command: String!, $payload_type: String!, $parameter_name: String!){
@@ -733,41 +734,15 @@ export function TaskParametersDialogRow(props){
             return null
         }
     }
-    const [anchorPopoverEl, setAnchorPopoverEl] = React.useState(null);
-    const openDescription = Boolean(anchorPopoverEl);
-    const handlePopoverOpen = (event) => {
-        setAnchorPopoverEl(event.currentTarget);
-    }
-    const handlePopoverClose = () => {
-        setAnchorPopoverEl(null);
-    }
     return (
             <TableRow key={"buildparam" + props.id}>
                 <TableCell >
-                    <Typography aria-haspopup="true" onMouseEnter={handlePopoverOpen} onMouseLeave={handlePopoverClose}
-                        aria-owns={openDescription ? 'taskparam' + props.id + 'popover' : undefined}>
-                            {props.display_name}
-                    </Typography>
+                    <MythicStyledTooltip title={props.description.length > 0 ? props.description : "No Description"}>
+                        {props.display_name}
+                    </MythicStyledTooltip>
                     {props.required ? (
                         <Typography component="div" style={{color: theme.palette.warning.main}}>Required</Typography>
                     ) : (null) }
-                    <Popover id={'taskparam' + props.id + 'popover'} open={openDescription} anchorEl={anchorPopoverEl}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center'
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right'
-                        }}
-                        onClose={handlePopoverClose}
-                        disableRestoreFocus
-                        elevation={5}
-                        style={{pointerEvents: 'none'}}
-                        PaperProps={{style: {padding: "10px", margin: "5px", backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}, variant: "outlined"}}
-                    >
-                        <Typography>{props.description.length > 0 ? props.description : "No Description"}</Typography>
-                    </Popover>
                  </TableCell>
                 <TableCell>
                     {getParameterObject()}

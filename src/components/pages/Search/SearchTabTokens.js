@@ -202,6 +202,22 @@ export const SearchTabTokensPanel = (props) =>{
     const onChangeSearchField = (field) => {
         setSearchField(field);
         setTokenData([]);
+        switch(field){
+            case "User/Group":
+                onUserGroupSearch({search, offset: 0});
+                break;
+            case "SID":
+                onSIDSearch({search, offset: 0});
+                break;
+            case "LogonType":
+                onLogonTypeSearch({search, offset: 0});
+                break;
+            case "Host":
+                onHostSearch({search, offset: 0});
+                break;
+            default:
+                break;
+        }
     }
     const handleTokenSearchResults = (data) => {
         snackActions.dismiss();

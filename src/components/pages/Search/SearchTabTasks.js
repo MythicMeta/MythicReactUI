@@ -174,6 +174,19 @@ export const SearchTabTasksPanel = (props) =>{
     const me = useReactiveVar(meState);
     const onChangeSearchField = (field) => {
         setSearchField(field);
+        switch(field){
+            case "Output":
+                onOutputSearch({search, offset: 0, taskStatus});
+                break;
+            case "Parameters":
+                onParameterSearch({search, offset: 0, taskStatus});
+                break;
+            case "Comment":
+                onCommentSearch({search, offset: 0, taskStatus});
+                break;
+            default:
+                break;
+        }
     }
     const onChangeTaskStatus = (status) => {
         setTaskStatus(status);

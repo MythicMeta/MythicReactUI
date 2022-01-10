@@ -84,8 +84,8 @@ export function Step5Build(props){
                   Payload Review
             </Typography>
             <br/>
-            <MythicTextField required={false} placeholder={"Filename"} value={filename} multiline={false} onChange={onChangeFilename} display="inline-block"/>
-            <MythicTextField required={false} placeholder={"description"} value={description} multiline={false} onChange={onChangeDescription} display="inline-block"/>
+            <MythicTextField onEnter={finished} autoFocus={true} required={false} placeholder={"Filename"} value={filename} multiline={false} onChange={onChangeFilename} display="inline-block"/>
+            <MythicTextField onEnter={finished} required={false} placeholder={"description"} value={description} multiline={false} onChange={onChangeDescription} display="inline-block"/>
             <CreatePayloadNavigationButtons first={props.first} last={props.last} canceled={canceled} finished={finished} />
             <br/><br/>
             <PayloadSubscriptionNotification/>

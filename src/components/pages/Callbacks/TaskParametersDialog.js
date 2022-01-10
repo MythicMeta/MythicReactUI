@@ -109,6 +109,7 @@ query getAllPayloadsQuery($operation_id: Int!){
       c2profile {
         name
         id
+        is_p2p
       }
     }
     payloadtype{
@@ -542,10 +543,17 @@ export function TaskParametersDialog(props) {
                         }
                     case "AgentConnect":
                         const agentConnectNewPayloads = loadedAllPayloadsLoading.payload.reduce( (prevn, payload) => {
+                            let foundP2P = false;
                             const profiles = payload.payloadc2profiles.reduce( (prevn, profile) => {
+                                if(profile.c2profile.is_p2p){foundP2P = true;}
                                 return [...prevn, profile.c2profile.name];
                             }, []).join(",");
-                            return [...prevn, {...payload, display: payload.filemetum.filename_text + " - " + profiles + " - " + payload.tag}]
+                            if(foundP2P){
+                                return [...prevn, {...payload, display: payload.filemetum.filename_text + " - " + profiles + " - " + payload.tag}];
+                            }else{
+                                return [...prevn];
+                            }
+                            
                         }, []);
                         const callbacksOrganized = loadedAllPayloadsOnHostsLoading.callback.reduce( (prevn, entry) => {
                             let found = false;

@@ -410,11 +410,35 @@ export const SearchTabFilesPanel = (props) =>{
     const me = useReactiveVar(meState);
     const onChangeSearchField = (field) => {
         setSearchField(field);
+        switch(field){
+            case "Filename":
+                onFilenameSearch({search, searchHost, offset: 0, adjustedSearchLocation: searchLocation});
+                break;
+            case "Hash":
+                onHashSearch({search, searchHost, offset: 0, adjustedSearchLocation: searchLocation});
+                break;
+            case "Comments":
+                onCommentSearch({search, searchHost, offset: 0, adjustedSearchLocation: searchLocation});
+                break;
+            default:
+                break;
+        }
     }
     const onChangeSearchLocation = (field) => {
         setSearchLocation(field);
-        setFileMetaData([]);
-        setFileBrowserData([]);
+        switch(searchField){
+            case "Filename":
+                onFilenameSearch({search, searchHost, offset: 0, adjustedSearchLocation: field});
+                break;
+            case "Hash":
+                onHashSearch({search, searchHost, offset: 0, adjustedSearchLocation: field});
+                break;
+            case "Comments":
+                onCommentSearch({search, searchHost, offset: 0, adjustedSearchLocation: field});
+                break;
+            default:
+                break;
+        }
     }
     const handleFileMetaSearchResults = (data) => {
         snackActions.dismiss();
@@ -533,6 +557,9 @@ export const SearchTabFilesPanel = (props) =>{
         if(adjustedSearchLocation === "FileBrowser"){
             snackActions.dismiss();
             snackActions.warning("FileBrowser doesn't currently track file hashes");
+            setTotalCount(0);
+            setFileBrowserData([]);
+            setFileMetaData([]);
         }else if(adjustedSearchLocation === "Uploads"){
             gethashFileMetaUploadSearch({variables:{
                 operation_id: me.user.current_operation_id,
@@ -611,7 +638,7 @@ export const SearchTabFilesPanel = (props) =>{
                     onHashSearch({search, searchHost, offset: 0});
                     break;
                 case "Comments":
-                    onCommentSearch({search, offset: 0});
+                    onCommentSearch({search, searchHost, offset: 0});
                     break;
                 default:
                     break;
@@ -623,10 +650,10 @@ export const SearchTabFilesPanel = (props) =>{
                     onFilenameSearch({search, searchHost, offset: (value - 1) * fetchLimit});
                     break;
                 case "Hash":
-                    onHashSearch({search, offset: (value - 1) * fetchLimit });
+                    onHashSearch({search, searchHost, offset: (value - 1) * fetchLimit });
                     break;
                 case "Comments":
-                    onCommentSearch({search, offset: (value - 1) * fetchLimit });
+                    onCommentSearch({search, searchHost, offset: (value - 1) * fetchLimit });
                     break;
                 default:
                     break;

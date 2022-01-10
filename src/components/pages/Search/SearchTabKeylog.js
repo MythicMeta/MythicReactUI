@@ -216,6 +216,22 @@ export const SearchTabKeylogsPanel = (props) =>{
     const onChangeSearchField = (field) => {
         setSearchField(field);
         setKeylogData([]);
+        switch(field){
+            case "Keystroke":
+                onKeylogSearch({search, offset: 0});
+                break;
+            case "User":
+                onUserSearch({search, offset: 0});
+                break;
+            case "Program":
+                onProgramSearch({search, offset: 0});
+                break;
+            case "Host":
+                onHostSearch({search, offset: 0});
+                break;
+            default:
+                break;
+        }
     }
     const handleKeylogSearchResults = (data) => {
         snackActions.dismiss();

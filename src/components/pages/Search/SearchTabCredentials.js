@@ -223,7 +223,22 @@ export const SearchTabCredentialsPanel = (props) =>{
 
     const onChangeSearchField = (field) => {
         setSearchField(field);
-        setCredentialData([]);
+        switch(field){
+            case "Account":
+                onAccountSearch({search, offset: 0});
+                break;
+            case "Realm":
+                onRealmSearch({search, offset: 0});
+                break;
+            case "Credential":
+                onCredentialSearch({search, offset: 0});
+                break;
+            case "Comment":
+                onCommentSearch({search, offset: 0});
+                break;
+            default:
+                break;
+        }
     }
     const handleCredentialSearchResults = (data) => {
         snackActions.dismiss();

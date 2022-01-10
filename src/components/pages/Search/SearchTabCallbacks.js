@@ -205,7 +205,25 @@ export const SearchTabCallbacksPanel = (props) =>{
 
     const onChangeSearchField = (field) => {
         setSearchField(field);
-        setCallbackData([]);
+        switch(field){
+            case "User":
+                onUserSearch({search, offset: 0});
+                break;
+            case "Domain":
+                onDomainSearch({search, offset: 0});
+                break;
+            case "Description":
+                onDescriptionSearch({search, offset: 0});
+                break;
+            case "Host":
+                onHostSearch({search, offset: 0});
+                break;
+            case "IP":
+                onIPSearch({search, offset: 0});
+                break;
+            default:
+                break;
+        }
     }
     const handleCallbackSearchResults = (data) => {
         snackActions.dismiss();

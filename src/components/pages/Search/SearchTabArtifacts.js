@@ -225,7 +225,28 @@ export const SearchTabArtifactsPanel = (props) =>{
 
     const onChangeSearchField = (field) => {
         setSearchField(field);
-        setArtifactData([]);
+        switch(field){
+            case "Artifact":
+                onArtifactSearch({search, offset: 0});
+                break;
+            case "Command":
+                onCommandSearch({search, offset: 0});
+                break;
+            case "Type":
+                onTypeSearch({search, offset: 0});
+                break;
+            case "Host":
+                onHostSearch({search, offset: 0});
+                break;
+            case "Task":
+                onTaskSearch({search, offset: 0});
+                break;
+            case "Callback":
+                onCallbackSearch({search, offset: 0});
+                break;
+            default:
+                break;
+        }
     }
     const handleCallbackSearchResults = (data) => {
         snackActions.dismiss();

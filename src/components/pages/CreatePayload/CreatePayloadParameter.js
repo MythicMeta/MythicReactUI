@@ -15,8 +15,7 @@ import 'date-fns';
 import Switch from '@material-ui/core/Switch';
 import DateFnsUtils from '@date-io/date-fns';
 import {useTheme} from '@material-ui/core/styles';
-import Popover from '@material-ui/core/Popover';
-import {Typography} from '@material-ui/core';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 export function CreatePayloadParameter({onChange, parameter_type, default_value, name, required, verifier_regex, id, description, value: passedValue, returnAllDictValues}){
     const [value, setValue] = React.useState("");
@@ -343,39 +342,13 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
             return null
         }
     }
-    const [anchorPopoverEl, setAnchorPopoverEl] = React.useState(null);
-    const openDescription = Boolean(anchorPopoverEl);
-    const handlePopoverOpen = (event) => {
-        setAnchorPopoverEl(event.currentTarget);
-    }
-    const handlePopoverClose = () => {
-        setAnchorPopoverEl(null);
-    }
     
     return (
             <TableRow key={"buildparam" + id}>
                 <TableCell>
-                    <Typography aria-haspopup="true" onMouseEnter={handlePopoverOpen} onMouseLeave={handlePopoverClose}
-                        aria-owns={openDescription ? 'taskparam' + id + 'popover' : undefined}>
-                            {description}
-                    </Typography>
-                    <Popover id={'taskparam' + id + 'popover'} open={openDescription} anchorEl={anchorPopoverEl}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center'
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right'
-                        }}
-                        onClose={handlePopoverClose}
-                        disableRestoreFocus
-                        elevation={5}
-                        style={{pointerEvents: 'none'}}
-                        PaperProps={{style: {padding: "10px", margin: "5px", backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}, variant: "outlined"}}
-                    >
-                        <Typography>{name.length > 0 ? name : "No Description"}</Typography>
-                    </Popover>
+                    <MythicStyledTooltip title={name.length > 0 ? name : "No Description"}>
+                        {description}
+                    </MythicStyledTooltip>
                  </TableCell>
                 <TableCell>
                     {getParameterObject()}
