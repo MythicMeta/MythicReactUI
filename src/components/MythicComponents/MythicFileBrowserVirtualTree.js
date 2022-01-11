@@ -204,7 +204,6 @@ const FileBrowserVirtualTree = ({
 }) => {
   const flattenNode = useCallback(
     (node, depth = 0) => {
-      console.log("calling flattenNode");
       if(depth === 0){
         return [
           {

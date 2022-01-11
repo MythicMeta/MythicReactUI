@@ -84,7 +84,7 @@ const doubleClickRow = () => {
 }
 const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
   return (
-    <div style={{...rowData?.rowStyle || null, ...cellData?.cellStyle || null}}>
+    <div style={{...cellData?.cellStyle || null}}>
       {cellData?.copyIcon? 
         <MythicStyledTooltip title={"Copy to clipboard"}>
             <IconButton onClick={() => onCopyToClipboard(cellData["plaintext"])} size="small">
@@ -143,7 +143,7 @@ const getStringSize = ({cellData}) => {
 }
 const ResponseDisplayTableSizeCell = ({cellData, rowData}) => {
   return (
-    <div style={{...rowData?.rowStyle || null, ...cellData?.cellStyle || null}}>
+    <div style={{...cellData?.cellStyle || null}}>
         {cellData?.plaintextHoverText? (
         <MythicStyledTooltip title={cellData.plaintextHoverText} >
           <pre style={{display: "inline-block"}}>
