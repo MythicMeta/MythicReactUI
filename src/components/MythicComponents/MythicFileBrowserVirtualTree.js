@@ -125,6 +125,7 @@ const VirtualTreeRow = ({
     onSelectNode(item.id, item);
   };
   return (
+    <div style={ListProps.style}>
     <div style={{display: 'flex' , marginBottom: "2px", flexGrow: 1, width: "100%"}}>
         {[...Array(item.data.depth)].map((o, i) => (
             <div
@@ -188,6 +189,7 @@ const VirtualTreeRow = ({
               </MythicStyledTooltip>
           ) : null}
       </div>
+    </div>
     </div>
 );
 };
