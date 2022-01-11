@@ -66,4 +66,7 @@ export default makeStyles((theme) => ({
         width: '1px',
         backgroundImage: 'linear-gradient(#7f93c0, #00000000)',
     },
+    highlightRow: {
+        backgroundColor: 'red',
+    },
 }));
