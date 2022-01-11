@@ -1,5 +1,6 @@
 import React from 'react';
 import FileBrowserVirtualTree from '../../MythicComponents/MythicFileBrowserVirtualTree';
+import VirtualTree from '../../MythicComponents/VirtualTree2';
 
 
 export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTableData }) => {
@@ -36,13 +37,12 @@ export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTab
             No File Browser Data Collected
         </div>
     ) : (
-        <FileBrowserVirtualTree
-            nodes={treeRoot}
-            display_name={"name_text"}
-            openNodes={openNodes}
-            onSelectNode={onSelectNode}
-            onExpandNode={toggleNodeExpanded}
-            onCollapseNode={toggleNodeCollapsed}
-        />
+      <VirtualTree
+          nodes={treeRoot}
+          openNodes={openNodes}
+          onSelectNode={onSelectNode}
+          onExpandNode={toggleNodeExpanded}
+          onCollapseNode={toggleNodeCollapsed}
+      />
     );
 };
