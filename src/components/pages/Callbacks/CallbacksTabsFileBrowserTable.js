@@ -19,7 +19,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import EditIcon from '@material-ui/icons/Edit';
-import Tooltip from '@material-ui/core/Tooltip';
 import { DownloadHistoryDialog } from './DownloadHistoryDialog';
 import HistoryIcon from '@material-ui/icons/History';
 import VisibilityIcon from '@material-ui/icons/Visibility';
@@ -31,6 +30,7 @@ import 'react-virtualized/styles.css';
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import { copyStringToClipboard } from '../../utilities/Clipboard';
 import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const getPermissionsDataQuery = gql`
     query getPermissionsQuery($filebrowserobj_id: Int!) {
@@ -202,13 +202,13 @@ const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
                 {cellData}
             </pre>
             {rowData.success === true ? (
-                <Tooltip title='Successfully listed contents of folder'>
+                <MythicStyledTooltip title='Successfully listed contents of folder'>
                     <CheckCircleIcon fontSize='small' style={{ color: theme.palette.success.main }} />
-                </Tooltip>
+                </MythicStyledTooltip>
             ) : rowData.success === false ? (
-                <Tooltip title='Failed to list contents of folder'>
+                <MythicStyledTooltip title='Failed to list contents of folder'>
                     <ErrorIcon fontSize='small' style={{ color: theme.palette.error.main }} />
-                </Tooltip>
+                </MythicStyledTooltip>
             ) : null}
         </div>
     );

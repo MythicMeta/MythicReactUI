@@ -637,7 +637,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
         <MythicTabPanel index={index} value={value}>
             <div style={{ display: 'flex', flexGrow: 1, overflowY: 'auto' }}>
                 <div style={{ width: '30%', overflow: 'auto' }}>
-                    <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}}>
+                    <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={true}>
                         <CircularProgress color="inherit" />
                     </Backdrop>
                     <CallbacksTabsFileBrowserTree
@@ -670,7 +670,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                         />
                     </div>
                     <div style={{ flexGrow: 1 }}>
-                        <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}}>
+                        <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={true}>
                             <CircularProgress color="inherit" />
                         </Backdrop>
                         <CallbacksTabsFileBrowserTable

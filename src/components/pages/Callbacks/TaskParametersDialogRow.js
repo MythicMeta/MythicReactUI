@@ -63,7 +63,7 @@ export function TaskParametersDialogRow(props){
     const theme = useTheme();
     const [ChoiceOptions, setChoiceOptions] = React.useState([]);
     const [boolValue, setBoolValue] = React.useState(false);
-    const [arrayValue, setArrayValue] = React.useState([]);
+    const [arrayValue, setArrayValue] = React.useState([""]);
     const [choiceMultipleValue, setChoiceMultipleValue] = React.useState([]);
     const [agentConnectNewHost, setAgentConnectNewHost] = React.useState("");
     const [agentConnectHostOptions, setAgentConnectHostOptions] = React.useState([]);
@@ -372,18 +372,14 @@ export function TaskParametersDialogRow(props){
                 return (
                     <TableContainer component={Paper} className="mythicElement">
                         <Table size="small" style={{tableLayout: "fixed", maxWidth: "100%", "overflow": "auto"}}>
-                            <TableRow >
-                                <TableCell style={{width: "5rem"}}></TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
                             <TableBody>
                                 {arrayValue.map( (a, i) => (
                                     <TableRow key={'array' + props.name + i} hover>
-                                        <TableCell>
-                                            <Button onClick={() => removeArrayValue(i)} color="secondary" variant="outlined" size="small">X</Button>
+                                        <TableCell style={{width: "5rem"}}>
+                                            <Button onClick={() => removeArrayValue(i)} style={{backgroundColor: theme.palette.error.main,}} size="small" variant="contained">x</Button>
                                         </TableCell>
                                         <TableCell>
-                                        <MythicTextField required={props.required} placeholder={""} value={a} multiline={false} autoFocus={props.autoFocus && i === 0}
+                                            <MythicTextField required={props.required} fullWidth={true} placeholder={""} value={a} multiline={false} autoFocus={props.autoFocus && i === 0}
                                                 onChange={(n,v,e) => onChangeArrayText(v, e, i)} display="inline-block" onEnter={addNewArrayValue}
                                                 validate={testParameterValues} errorText={"Must match: " + props.verifier_regex}
                                             />
@@ -391,9 +387,10 @@ export function TaskParametersDialogRow(props){
                                     </TableRow>
                                 ))}
                                 <TableRow hover>
-                                    <TableCell>
-                                        <Button onClick={addNewArrayValue} size="small" variant="outlined" color="primary">+</Button>
+                                    <TableCell style={{width: "5rem"}}>
+                                        <Button onClick={addNewArrayValue} size="small" variant="contained" style={{backgroundColor: theme.palette.success.main}}>+</Button>
                                     </TableCell>
+                                    <TableCell></TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>

@@ -17,7 +17,7 @@ import jwt_decode from 'jwt-decode';
 import {meState} from './cache';
 
 export const mythicVersion = "2.3.4";
-export const mythicUIVersion = "0.0.5";
+export const mythicUIVersion = "0.0.6";
 
 const cache = new InMemoryCache({
     typePolicies: {
