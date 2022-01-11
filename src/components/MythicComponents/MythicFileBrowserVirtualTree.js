@@ -125,68 +125,70 @@ const VirtualTreeRow = ({
     onSelectNode(item.id, item);
   };
   return (
-    <div style={{display: 'flex' , marginBottom: "2px", flexGrow: 1, width: "100%"}}>
-        {[...Array(item.data.depth)].map((o, i) => (
-            <div
-                key={'folder' + item.data.id + 'lines' + i}
-                style={{
-                    borderLeft: `2px dashed ${fade(theme.palette.text.primary, 0.4)}`,
-                    marginLeft: 15,
-                    paddingRight: 15,
-                    display: 'inline-block',
-                }}></div>
-        ))}
-        <div
-          className={classes.root}
-          style={{ backgroundColor: theme.body, color: theme.text, alignItems: 'center', display: 'flex', paddingRight: "10px" }}
-          onClick={handleOnClickRow}>
-          {item.data.parent_id === null ? (
-              <ComputerIcon style={{ marginLeft: '3px', marginRight: '5px' }} onClick={handleOnClickButton} />
-          ) : item.data.is_file ? (
-              <DescriptionIcon style={{ marginLeft: '3px', marginRight: '5px' }} />
-          ) : item.isOpen ? (
-              <FolderOpenIcon
+    <div style={ListProps.style}>
+      <div style={{display: 'flex' , marginBottom: "2px", flexGrow: 1, width: "100%"}}>
+          {[...Array(item.data.depth)].map((o, i) => (
+              <div
+                  key={'folder' + item.data.id + 'lines' + i}
                   style={{
-                      marginLeft: '3px',
-                      marginRight: '5px',
-                      color: theme.folderColor
-                  }}
-                  onClick={handleOnClickButton}
-              />
-          ) : (
-              <FolderIcon style={{ paddingTop: '5px', marginLeft: '3px', marginRight: '5px', color: theme.folderColor }} onClick={handleOnClickButton} />
-          )}
-          {item.data.depth > 0 &&
-          item.data.filebrowserobjs_aggregate.aggregate.count > 99 ? (
-              <MythicStyledTooltip title='Number of known children'>
-                  <Badge
-                      style={{ left: -50 }}
-                      max={99}
-                      badgeContent={item.data.filebrowserobjs_aggregate.aggregate.count}
-                      color='primary'
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}></Badge>
-              </MythicStyledTooltip>
-          ) : null}
-          <Typography
-              style={{
-                  color:
-                      item.data.filebrowserobjs_aggregate.aggregate.count > 0 ||
-                      item.data.success !== null
-                          ? theme.palette.text.primary
-                          : theme.palette.text.secondary,
-              }}>
-              {item.data.parent_id === null ? item.data.host : item.data.name_text}
-          </Typography>
+                      borderLeft: `2px dashed ${fade(theme.palette.text.primary, 0.4)}`,
+                      marginLeft: 15,
+                      paddingRight: 15,
+                      display: 'inline-block',
+                  }}></div>
+          ))}
+          <div
+            className={classes.root}
+            style={{ backgroundColor: theme.body, color: theme.text, alignItems: 'center', display: 'flex', paddingRight: "10px" }}
+            onClick={handleOnClickRow}>
+            {item.data.parent_id === null ? (
+                <ComputerIcon style={{ marginLeft: '3px', marginRight: '5px' }} onClick={handleOnClickButton} />
+            ) : item.data.is_file ? (
+                <DescriptionIcon style={{ marginLeft: '3px', marginRight: '5px' }} />
+            ) : item.isOpen ? (
+                <FolderOpenIcon
+                    style={{
+                        marginLeft: '3px',
+                        marginRight: '5px',
+                        color: theme.folderColor
+                    }}
+                    onClick={handleOnClickButton}
+                />
+            ) : (
+                <FolderIcon style={{ paddingTop: '5px', marginLeft: '3px', marginRight: '5px', color: theme.folderColor }} onClick={handleOnClickButton} />
+            )}
+            {item.data.depth > 0 &&
+            item.data.filebrowserobjs_aggregate.aggregate.count > 99 ? (
+                <MythicStyledTooltip title='Number of known children'>
+                    <Badge
+                        style={{ left: -50 }}
+                        max={99}
+                        badgeContent={item.data.filebrowserobjs_aggregate.aggregate.count}
+                        color='primary'
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}></Badge>
+                </MythicStyledTooltip>
+            ) : null}
+            <Typography
+                style={{
+                    color:
+                        item.data.filebrowserobjs_aggregate.aggregate.count > 0 ||
+                        item.data.success !== null
+                            ? theme.palette.text.primary
+                            : theme.palette.text.secondary,
+                }}>
+                {item.data.parent_id === null ? item.data.host : item.data.name_text}
+            </Typography>
 
-          {item.data.success === true && item.data.depth > 0 ? (
-              <MythicStyledTooltip title='Successfully listed contents of folder'>
-                  <CheckCircleIcon fontSize='small' style={{ color: theme.palette.success.main }} />
-              </MythicStyledTooltip>
-          ) : item.data.success === false && item.data.depth > 0 ? (
-              <MythicStyledTooltip title='Failed to list contents of folder'>
-                  <ErrorIcon fontSize='small' style={{ color: theme.palette.error.main }} />
-              </MythicStyledTooltip>
-          ) : null}
+            {item.data.success === true && item.data.depth > 0 ? (
+                <MythicStyledTooltip title='Successfully listed contents of folder'>
+                    <CheckCircleIcon fontSize='small' style={{ color: theme.palette.success.main }} />
+                </MythicStyledTooltip>
+            ) : item.data.success === false && item.data.depth > 0 ? (
+                <MythicStyledTooltip title='Failed to list contents of folder'>
+                    <ErrorIcon fontSize='small' style={{ color: theme.palette.error.main }} />
+                </MythicStyledTooltip>
+            ) : null}
+        </div>
       </div>
     </div>
 );
