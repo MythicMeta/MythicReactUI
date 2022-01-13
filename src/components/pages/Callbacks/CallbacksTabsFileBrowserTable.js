@@ -87,8 +87,8 @@ export const CallbacksTabsFileBrowserTable = (props) => {
             [
                 { name: 'Actions', width: 100, disableAutosize: true, disableSort: true, disableFilterMenu: true },
                 { name: 'Name', type: 'string', key: 'name_text', fillWidth: true },
-                { name: 'Size', type: 'number', key: 'size', width: 200 },
-                { name: 'Last Modified', type: 'date', key: 'modify_time', width: 200 },
+                { name: 'Size', type: 'number', key: 'size', width: 100 },
+                { name: 'Last Modified', type: 'date', key: 'modify_time', width: 220 },
                 { name: 'Comment', type: 'string', key: 'comment', width: 200 },
             ].reduce( (prev, cur) => {
                 if(columnVisibility.visible.includes(cur.name)){
@@ -223,7 +223,7 @@ export const CallbacksTabsFileBrowserTable = (props) => {
     const sortColumn = columns.findIndex((column) => column.key === sortData.sortKey);
 
     return (
-        <div style={{ width: '100%', height: '100%' }}>
+        <div style={{ width: '100%', height: '100%', overflow: "hidden" }}>
             <MythicResizableGrid
                 columns={columns}
                 sortIndicatorIndex={sortColumn}
@@ -302,7 +302,8 @@ const FileBrowserTableRowDateCell = ({ cellData }) => {
     if(cellData === "" || cellData <= 0){
         return cellData;
     }
-    return (new Date(parseInt(cellData))).toISOString();
+    const dateData = new Date(parseInt(cellData)).toISOString();
+    return dateData.slice(0, 10) + " " + dateData.slice(11,-1);
 };
 const FileBrowserTableRowSizeCell = ({ cellData }) => {
     const getStringSize = () => {

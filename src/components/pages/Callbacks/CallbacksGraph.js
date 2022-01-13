@@ -87,7 +87,7 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
         createTask({variables: {callback_id: selectedCallback.id, command: cmd, params: parameters, files}});
     }
     const [viewConfig, setViewConfig] = React.useState({
-        rankDir: "LR",
+        rankDir: "BT",
         label_components: ["id", "user"],
         packet_flow_view: true,
         include_disconnected: true,

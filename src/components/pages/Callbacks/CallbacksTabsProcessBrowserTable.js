@@ -139,7 +139,7 @@ query getDetailed($process_id: Int!){
 
 export const CallbacksTabsProcessBrowserTable = (props) => {
     const [allData, setAllData] = React.useState([]);
-    const [sortData, setSortData] = React.useState({"sortKey": null, "sortDirection": null, "sortType": null})
+    const [sortData, setSortData] = React.useState({"sortKey": null, "sortDirection": null, "sortType": null});
     const [openContextMenu, setOpenContextMenu] = React.useState(false);
     const [filterOptions, setFilterOptions] = React.useState({});
     const [selectedColumn, setSelectedColumn] = React.useState({});
@@ -278,7 +278,7 @@ export const CallbacksTabsProcessBrowserTable = (props) => {
     }
     const sortColumn = columns.findIndex((column) => column.key === sortData.sortKey);
     return (
-        <div style={{ width: '100%', height: '100%' }}>
+        <div style={{ width: '100%', height: '100%', overflow: "hidden" }}>
             <MythicResizableGrid
                 columns={columns}
                 sortIndicatorIndex={sortColumn}

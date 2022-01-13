@@ -42,7 +42,7 @@ const ResizableGridWrapper = ({
         },
         [columnWidths]
     );
-
+    const gridUUID = React.useMemo( () => crypto.randomUUID(), []);
     const getRowHeight = useCallback(
         (index) => {
             return rowHeight;
@@ -167,7 +167,7 @@ const ResizableGridWrapper = ({
                 headerNameKey={headerNameKey}
                 rowCount={itemsWithHeader.length}
                 rowHeight={getRowHeight}
-                itemData={{ items: itemsWithHeader, onDoubleClickRow }}
+                itemData={{ items: itemsWithHeader, onDoubleClickRow, gridUUID }}
                 innerElementType={innerElementType}
                 overscanRowCount={2}
                 onScroll={({ scrollLeft }) => {

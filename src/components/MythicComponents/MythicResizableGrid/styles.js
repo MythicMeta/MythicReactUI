@@ -29,6 +29,9 @@ export default makeStyles((theme) => ({
             cursor: 'pointer',
         },
     },
+    hoveredRow: {
+        backgroundColor: theme.tableHover,
+    },
     cell: {
         display: 'flex',
         alignItems: 'center',
@@ -37,10 +40,6 @@ export default makeStyles((theme) => ({
         fontFamily: 'monospace',
         borderBottom: '1px solid #e0e0e0',
         cursor: "default !important",
-        '&:hover': {
-            backgroundColor: theme.tableHover,
-            cursor: 'default !important',
-        },
     },
     cellInner: {
         width: '100%',
