@@ -48,7 +48,10 @@ export function PayloadBuildMessageDialog(props) {
     <React.Fragment>
         <DialogTitle id="form-dialog-title">Payload Build Messages</DialogTitle>
         <DialogContent dividers={true}>
-            <MythicTextField multiline={true} onChange={()=>{}} value={viewError ? payloadData["error"] : payloadData["message"]} />
+          <pre style={{}}>
+            {viewError ? payloadData["error"] : payloadData["message"]}
+          </pre>
+            
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={props.onClose} color="primary">

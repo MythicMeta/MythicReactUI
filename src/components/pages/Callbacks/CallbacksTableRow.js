@@ -35,6 +35,7 @@ import {faLinux, faApple, faWindows, faChrome} from '@fortawesome/free-brands-sv
 import {useSubscription, gql } from '@apollo/client';
 import {DetailedCallbackTable} from './DetailedCallbackTable';
 import InfoIcon from '@material-ui/icons/Info';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const SUB_Callbacks = gql`
 subscription CallbacksSubscription ($callback_id: Int!){
@@ -325,7 +326,15 @@ export function CallbacksTableRowPreMemo(props){
             <TableCell><SnoozeIcon onClick={(evt)=>{evt.stopPropagation();setOpenSleepDialog(true);}} style={{color: props.sleep_info === "" ? theme.palette.warning.main : theme.palette.info.main, cursor: "pointer"}}/></TableCell>
             ) : (null)}
             {shownColumns.includes("type") ? (
-            <TableCell>{props.payload.payloadtype.ptype}</TableCell>
+            <TableCell>
+                <MythicStyledTooltip title={props.payload.payloadtype.ptype}>
+                <img
+                    style={{width: "35px", height: "35px"}}
+                    src={"/static/" + props.payload.payloadtype.ptype + ".svg"}
+                />
+                </MythicStyledTooltip>
+                
+            </TableCell>
             ) : (null)}
             {shownColumns.includes("c2") ? (
             <TableCell>{hasEgressRoute ? 

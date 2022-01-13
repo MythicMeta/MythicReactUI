@@ -15,11 +15,11 @@ import ListIcon from '@material-ui/icons/List';
 import DeleteIcon from '@material-ui/icons/Delete';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import { snackActions } from '../../utilities/Snackbar';
-import {Table, Column, AutoSizer} from 'react-virtualized';
 import 'react-virtualized/styles.css';
-import Draggable from 'react-draggable';
-import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
+import {TableFilterDialog} from './TableFilterDialog';
+import {MythicTransferListDialog} from '../../MythicComponents/MythicTransferList';
+
 
 const getDetailedData = gql`
 query getDetailed($process_id: Int!){
@@ -135,169 +135,186 @@ query getDetailed($process_id: Int!){
     }
 }
 `;
-const noRowsRender = () => {
-    return (
-        <div style={{display: "flex", justifyContent: "center", alignItems: "center", position: "absolute", left: "50%", top: "50%"}}>No Data Selected</div>
-    )
-}
-const CellRenderer = ({columnData, dataKey, rowData}) => {
-    const DisplayData = () => {
-        switch(columnData.format){
-        case "string":
-            return <FileBrowserTableRowStringCell cellData={rowData[dataKey]} rowData={rowData}/>
-        case "button":
-            return <FileBrowserTableRowActionCell rowData={rowData} onTaskRowAction={columnData.onTaskRowAction} os={columnData.os}/>
-        default:
-            return <FileBrowserTableRowStringCell cellData={rowData[dataKey]} rowData={rowData} />
-        }
-    };
-    return (
-        DisplayData()
-    )
-}
+
+
 export const CallbacksTabsProcessBrowserTable = (props) => {
-    const widthRef = React.useRef(null);
-    const [sortDirection, setSortDirection] = React.useState("ASC");
-    const [sortBy, setSortBy] = React.useState("name");
-    const [columnWidths, setColumnWidths] = React.useState({
-        actions: .065,
-        parent_process_id: .0714,
-        process_id: .0714,
-        architecture: .06,
-        name: .14,
-        user: .14,
-        bin_path: .40,
+    const [allData, setAllData] = React.useState([]);
+    const [sortData, setSortData] = React.useState({"sortKey": null, "sortDirection": null, "sortType": null})
+    const [openContextMenu, setOpenContextMenu] = React.useState(false);
+    const [filterOptions, setFilterOptions] = React.useState({});
+    const [selectedColumn, setSelectedColumn] = React.useState({});
+    const [columnVisibility, setColumnVisibility] = React.useState({
+        "visible": ["Actions", "PPID", "PID", "Arch", "Name", "User"],
+        "hidden": ["Path"]
     })
-    const [columns, setColumns] = React.useState([]);
-    
-    const sortTable = ({sortBy, sortDirection}) => {
-        const tmpData = [...allData];
-        const sortType = columns.filter( h => h.dataKey === sortBy)[0]["columnData"]["format"];
-        if(sortType === "number" || sortType === "size"){
-          tmpData.sort((a, b) => (parseInt(a[sortBy]) > parseInt(b[sortBy]) ? 1 : -1));
-        }else if(sortType === "date"){
-          tmpData.sort((a,b) => ( (new Date(a[sortBy])) > (new Date(b[sortBy])) ? 1: -1));
-        }else{
-          tmpData.sort( (a, b) => a[sortBy] > b[sortBy] ? 1 : -1);
+    const [openAdjustColumnsDialog, setOpenAdjustColumnsDialog] = React.useState(false);
+    const columns = React.useMemo(
+        () => 
+            [
+                { name: 'Actions', width: 100, disableAutosize: true, disableSort: true, disableFilterMenu: true },
+                { name: 'PPID', type: 'number', key: 'parent_process_id', width:75 },
+                { name: 'PID',  type: 'number', key: 'process_id', width: 75},
+                { name: 'Arch', type: 'string', key: 'architecture', width: 75 },
+                { name: 'Name', type: 'string', key: 'name', fillWidth: true },
+                { name: 'User', type: 'string', key: 'user', fillWidth: true},
+                { name: 'Path', type: 'string', key: 'bin_path', width: 200}
+            ].reduce( (prev, cur) => {
+                if(columnVisibility.visible.includes(cur.name)){
+                    if(filterOptions[cur.key] && String(filterOptions[cur.key]).length > 0){
+                        return [...prev, {...cur, filtered: true}];
+                    }else{
+                        return [...prev, {...cur}];
+                    }
+                }else{
+                    return [...prev];
+                }
+            }, [])
+        , [filterOptions, columnVisibility]
+    );
+    useEffect( () => {
+        setAllData([...props.selectedFolder]);
+    }, [props.selectedFolder]);
+    const sortedData = React.useMemo(() => {
+        if (sortData.sortKey === null || sortData.sortType === null) {
+            return allData;
         }
-        if(sortDirection === "DESC"){
-          tmpData.reverse();
+        const tempData = [...allData];
+
+        if (sortData.sortType === 'number' || sortData.sortType === 'size' || sortData.sortType === 'date') {
+            tempData.sort((a, b) => (parseInt(a[sortData.sortKey]) > parseInt(b[sortData.sortKey]) ? 1 : -1));
+        } else if (sortData.sortType === 'string') {
+            tempData.sort((a, b) => (a[sortData.sortKey].toLowerCase() > b[sortData.sortKey].toLowerCase() ? 1 : -1));
         }
-        setAllData([...tmpData]);
-        setSortBy(sortBy);
-        setSortDirection(sortDirection);
-    
-    };
-    const rowGetter = ({index}) => {
-        return allData[index];
-    };
-    const resizeRow = React.useCallback( ({event, dataKey, deltaX}) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const prevWidths = {...columnWidths};
-        const percentDelta = deltaX / widthRef.current.offsetWidth;
-        let nextHeader = "";
-        let getNext = false;
-        for(const key of Object.keys(columnWidths)){
-            if(getNext){
-                nextHeader = key;
-                break;
-            }else if(key === dataKey){
-                getNext = true;
+        if (sortData.sortDirection === 'DESC') {
+            tempData.reverse();
+        }
+        return tempData;
+    }, [allData, sortData]);
+    const onSubmitFilterOptions = (newFilterOptions) => {
+        setFilterOptions(newFilterOptions);
+    }
+    const filterRow = (row) => {
+        for(const [key,value] of Object.entries(filterOptions)){
+            if(!String(row[key]).toLowerCase().includes(value)){
+                return true;
             }
         }
-        if(nextHeader === ""){
-            console.log("next header not found");
+        return false;
+    }
+    const gridData = React.useMemo(
+        () =>
+            sortedData.reduce((prev, row) => { 
+                if(filterRow(row)){
+                    return [...prev];
+                }else{
+                    return [...prev, columns.map( c => {
+                        switch(c.name){
+                            case "Actions":
+                                return <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />;
+                            case "PPID":
+                                return <FileBrowserTableRowStringCell rowData={row} cellData={row.parent_process_id} />;
+                            case "PID":
+                                return <FileBrowserTableRowStringCell rowData={row} cellData={row.process_id} />;
+                            case "Arch":
+                                return <FileBrowserTableRowStringCell rowData={row} cellData={row.architecture} />;
+                            case "Name":
+                                return <FileBrowserTableRowStringCell rowData={row} cellData={row.name} />;
+                            case "User":
+                                return <FileBrowserTableRowStringCell rowData={row} cellData={row.user} />;
+                            case "Path":
+                                return <FileBrowserTableRowStringCell rowData={row} cellData={row.bin_path} />;
+                        }
+                    })];
+                }
+            }, []),
+        [sortedData, props.onTaskRowAction, filterOptions, columnVisibility]
+    );
+    const onClickHeader = (e, columnIndex) => {
+        const column = columns[columnIndex];
+        if(column.disableSort){
             return;
         }
-        const updatedWidths = {...prevWidths, 
-            [dataKey]: prevWidths[dataKey] + percentDelta,
-            [nextHeader]: prevWidths[nextHeader] - percentDelta
-        };
-        setColumnWidths(updatedWidths);
-    }, [columnWidths]);
-    const headerRenderer = React.useCallback( ({columnData, dataKey, disableSort, label, sortBy, sortDirection}) => {
-        return (
-          <React.Fragment key={"header" + dataKey}>
-            <span style={{display: "inline-flex", flexDirection: "row", alignContent: "stretch", justifyContent: "flex-start"}}>
-              {label}
-              {sortBy === dataKey ? (
-                sortDirection === "ASC" ? (
-                  <ArrowDownwardIcon />
-                ) : (
-                  <ArrowUpwardIcon />
-                )
-              ) :(null) }
-            </span>
-            {columnData.format !== "button" && label !== "Path" && 
-                <Draggable
-                    axis="x"
-                    defaultClassName="DragHandle"
-                    defaultClassNameDragging="DragHandleActive"
-                    onDrag={(event, {deltaX}) => resizeRow({event, dataKey, deltaX})}
-                    position={{x:0}}
-                    zIndex={999}
-                    >
-                    <span onClick={(evt) => {evt.preventDefault();evt.stopPropagation();}} className="DragHandleIcon" style={{width: "20px", textAlign: "center"}}>⋮</span>
-                </Draggable>
+        if (!column.key) {
+            setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC"});
+        }
+        if (sortData.sortKey === column.key) {
+            if (sortData.sortDirection === 'ASC') {
+                setSortData({...sortData, "sortDirection": "DESC"});
+            } else {
+                setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC"});
             }
-            
-          </React.Fragment>
-        )
-      }, [resizeRow, columns]);
-    const [allData, setAllData] = React.useState([]);
-    useEffect( () => {
-        setColumns([
-            {columnData: {format: "button", onTaskRowAction: props.onTaskRowAction, os: props.os}, dataKey: 'actions', label: "Actions", 
-                cellRenderer: CellRenderer, width: columnWidths.actions * widthRef.current.offsetWidth, headerRenderer: headerRenderer},
-            {columnData: {format: "number"}, dataKey: 'parent_process_id', label: "PPID", 
-                cellRenderer: CellRenderer, width: columnWidths.parent_process_id * widthRef.current.offsetWidth, headerRenderer: headerRenderer},
-            {columnData: {format: "number"}, dataKey: 'process_id', label: "PID", 
-                cellRenderer: CellRenderer,  width: columnWidths.process_id * widthRef.current.offsetWidth, headerRenderer: headerRenderer},
-            {columnData: {format: "string"}, dataKey: 'architecture',  label: "Arch", 
-                cellRenderer: CellRenderer, width: columnWidths.architecture * widthRef.current.offsetWidth, headerRenderer: headerRenderer},
-            {columnData: {format: "string"}, dataKey: 'name',  label: "Name", 
-                cellRenderer: CellRenderer, width: columnWidths.name * widthRef.current.offsetWidth, headerRenderer: headerRenderer},
-            
-            {columnData: {format: "string"}, dataKey: 'user',  label: "User", 
-                cellRenderer: CellRenderer, width: columnWidths.user * widthRef.current.offsetWidth, headerRenderer: headerRenderer},
-            {columnData: {format: "string"}, dataKey: 'bin_path',  label: "Path", 
-                cellRenderer: CellRenderer, width: columnWidths.bin_path * widthRef.current.offsetWidth, headerRenderer: headerRenderer},
-        ])
-    }, [columnWidths, props.onTaskRowAction, props.os]);
-    useEffect( () => {
-        setAllData(props.selectedFolder);
-    }, [props.selectedFolder]);
+        } else {
+            setSortData({"sortKey": column.key, "sortType":column.type, "sortDirection": "ASC"});
+        }
+    };
+    const onRowDoubleClick = React.useCallback( () => {
 
+    }, []);
+    const contextMenuOptions = [
+        {
+            name: 'Filter Column', 
+            click: ({event, columnIndex}) => {
+                if(columns[columnIndex].disableFilterMenu){
+                    snackActions.warning("Can't filter that column");
+                    return;
+                }
+                setSelectedColumn(columns[columnIndex]);
+                setOpenContextMenu(true);
+            }
+        },
+        {
+            name: "Show/Hide Columns",
+            click: ({event, columnIndex}) => {
+                if(columns[columnIndex].disableFilterMenu){
+                    snackActions.warning("Can't filter that column");
+                    return;
+                }
+                setOpenAdjustColumnsDialog(true);
+            }
+        }
+    ];
+    const onSubmitAdjustColumns = ({left, right}) => {
+        setColumnVisibility({visible: right, hidden: left});
+    }
+    const sortColumn = columns.findIndex((column) => column.key === sortData.sortKey);
     return (
-        <div ref={widthRef} style={{width: "100%", height: "90%", overflow: "hidden"}}>
-            <AutoSizer>
-                {({height, width}) => (
-                    <Table
-                        headerHeight={25}
-                        noRowsRenderer={noRowsRender}
-                        rowCount={allData.length}
-                        rowGetter={ rowGetter }
-                        rowHeight={35}
-                        height={height}
-                        width={width}
-                        sort={sortTable}
-                        sortBy={sortBy}
-                        sortDirection={sortDirection}
-                    >
-                        {columns.map( (col) => (
-                            <Column key={"col" + col.dataKey} {...col} />
-                        ))}
-                    </Table>
-                )}
-            </AutoSizer>
+        <div style={{ width: '100%', height: '100%' }}>
+            <MythicResizableGrid
+                columns={columns}
+                sortIndicatorIndex={sortColumn}
+                sortDirection={sortData.sortDirection}
+                items={gridData}
+                rowHeight={35}
+                onClickHeader={onClickHeader}
+                onDoubleClickRow={onRowDoubleClick}
+                contextMenuOptions={contextMenuOptions}
+            />
+            {openContextMenu &&
+                <MythicDialog fullWidth={true} maxWidth="xs" open={openContextMenu} 
+                    onClose={()=>{setOpenContextMenu(false);}} 
+                    innerDialog={<TableFilterDialog 
+                        selectedColumn={selectedColumn} 
+                        filterOptions={filterOptions} 
+                        onSubmit={onSubmitFilterOptions} 
+                        onClose={()=>{setOpenContextMenu(false);}} />}
+                />
+            }
+            {openAdjustColumnsDialog &&
+                <MythicDialog fullWidth={true} maxWidth="md" open={openAdjustColumnsDialog} 
+                  onClose={()=>{setOpenAdjustColumnsDialog(false);}} 
+                  innerDialog={
+                    <MythicTransferListDialog onClose={()=>{setOpenAdjustColumnsDialog(false);}} 
+                      onSubmit={onSubmitAdjustColumns} right={columnVisibility.visible} rightTitle="Show these columns"
+                      leftTitle={"Hidden Columns"} left={columnVisibility.hidden} dialogTitle={"Edit which columns are shown"}/>}
+                />
+            }       
         </div>
     )
 }
 
 const FileBrowserTableRowStringCell = ({cellData}) => {
     return (
-        cellData
+        <div>{cellData}</div>
     )
 }
 
@@ -401,7 +418,6 @@ const FileBrowserTableRowActionCell = ({rowData, onTaskRowAction, os}) => {
     return (
         <React.Fragment>
             <Button
-                style={{padding:0}} 
                 size="small"
                 aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
                 aria-expanded={dropdownOpen ? 'true' : undefined}

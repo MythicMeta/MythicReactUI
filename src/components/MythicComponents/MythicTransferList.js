@@ -27,6 +27,10 @@ const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(0.5, 0),
   },
+  divider: {
+    backgroundColor: "rgb(100, 170, 204)",
+    border: "2px solid rgba(100, 170, 204)"
+  }
 }));
 
 
@@ -120,7 +124,7 @@ export function MythicTransferListDialog(props) {
             className={classes.cardHeader}
             title={title}
           />
-          <Divider />
+          <Divider classes={{root: classes.divider}}/>
           <List dense component="div" role="list" style={{padding:0}}>
             {items.map((valueObj) => {
               const value = props.itemKey === undefined ? valueObj : valueObj[props.itemKey];
@@ -153,7 +157,7 @@ export function MythicTransferListDialog(props) {
         <DialogTitle id="form-dialog-title">{props.dialogTitle}</DialogTitle>
         <DialogContent dividers={true}>
         <Grid container spacing={2} justify="center" alignItems="center" className={classes.root}>
-          <Grid item xs={5}>{customList(leftTitle, left)}</Grid>
+          <Grid item xs={5} style={{paddingLeft: 0, marginLeft: 0}}>{customList(leftTitle, left)}</Grid>
           <Grid item>
             <Grid container direction="column" alignItems="center">
               <Button

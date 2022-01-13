@@ -226,6 +226,8 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
               <TaskFromUIButton ui_feature={cellData?.button?.ui_feature || " "} 
                 callback_id={callback_id} 
                 parameters={cellData?.button?.parameters || ""}
+                openDialog={cellData?.button?.openDialog || false}
+                getConfirmation={cellData?.button?.getConfirmation || false}
                 onTasked={() => setOpenTaskingButton(false)}/>
             }
           </React.Fragment>
@@ -322,7 +324,7 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
   }, [allData, sortData]);
   const onClickHeader = (e, columnIndex) => {
     const column = table.headers[columnIndex];
-    console.log(column)
+
     if(column.disableSort){
         return;
     }

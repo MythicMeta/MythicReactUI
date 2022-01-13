@@ -22,6 +22,7 @@ const ResizableGridWrapper = ({
     headerNameKey,
     onClickHeader,
     onDoubleClickRow,
+    contextMenuOptions,
     rowHeight,
     widthMeasureKey,
     ...AutoSizerProps
@@ -37,7 +38,7 @@ const ResizableGridWrapper = ({
 
     const getColumnWidth = useCallback(
         (index) => {
-            return columnWidths[index];
+            return columnWidths[index] || MIN_COLUMN_WIDTH;
         },
         [columnWidths]
     );
@@ -70,7 +71,7 @@ const ResizableGridWrapper = ({
             //updatedColumnWidths[updatedWidthIndex] += totalWidthDiff;
         }
         setColumnWidths(updatedColumnWidths);
-    }, [scrollbarWidth]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [scrollbarWidth, columns]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         gridRef.current.resetAfterColumnIndex(0, true);
@@ -131,6 +132,7 @@ const ResizableGridWrapper = ({
                                     if (column.disableAutosize) return;
                                     autosizeColumn(columnIndex);
                                 }}
+                                contextMenuOptions={contextMenuOptions}
                                 sortIndicatorIndex={sortIndicatorIndex}
                                 sortDirection={sortDirection}
                                 VariableSizeGridProps={{
@@ -167,7 +169,7 @@ const ResizableGridWrapper = ({
                 rowHeight={getRowHeight}
                 itemData={{ items: itemsWithHeader, onDoubleClickRow }}
                 innerElementType={innerElementType}
-                overscanRowCount={20}
+                overscanRowCount={2}
                 onScroll={({ scrollLeft }) => {
                     if (dragHandlesRef.current) {
                         dragHandlesRef.current.scrollTo({ left: scrollLeft });
@@ -197,6 +199,7 @@ const MythicResizableGrid = ({
     onClickHeader,
     headerNameKey,
     onDoubleClickRow,
+    contextMenuOptions,
     widthMeasureKey,
     rowHeight = 32,
 }) => {
@@ -213,6 +216,7 @@ const MythicResizableGrid = ({
                     rowHeight={rowHeight}
                     onClickHeader={onClickHeader}
                     onDoubleClickRow={onDoubleClickRow}
+                    contextMenuOptions={contextMenuOptions}
                     {...AutoSizerProps}
                 />
             )}
@@ -234,6 +238,7 @@ MythicResizableGrid.propTypes = {
     items: PropTypes.arrayOf(PropTypes.array).isRequired,
     onClickHeader: PropTypes.func,
     onDoubleClickRow: PropTypes.func,
+    contextMenuOptions: PropTypes.array,
     rowHeight: PropTypes.number,
     headerNameKey: PropTypes.string,
     widthMeasureKey: PropTypes.string

@@ -31,6 +31,8 @@ import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import { copyStringToClipboard } from '../../utilities/Clipboard';
 import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import {TableFilterDialog} from './TableFilterDialog';
+import {MythicTransferListDialog} from '../../MythicComponents/MythicTransferList';
 
 const getPermissionsDataQuery = gql`
     query getPermissionsQuery($filebrowserobj_id: Int!) {
@@ -68,47 +70,90 @@ const updateFileComment = gql`
     }
 `;
 
-const columns = [
-    { name: 'Actions', width: 100, disableAutosize: true, disableSort: true },
-    { name: 'Name', type: 'string', key: 'name_text', fillWidth: true },
-    { name: 'Size', type: 'number', key: 'size', width: 200 },
-    { name: 'Last Modified', type: 'date', key: 'modify_time', width: 200 },
-    { name: 'Comment', type: 'string', key: 'comment', width: 200 },
-];
 
 export const CallbacksTabsFileBrowserTable = (props) => {
     const [allData, setAllData] = React.useState([]);
-    const [sortDirection, setSortDirection] = React.useState(null);
-    const [sortKey, setSortKey] = React.useState(null);
-    const [sortType, setSortType] = React.useState(null);
-
+    const [openContextMenu, setOpenContextMenu] = React.useState(false);
+    const [filterOptions, setFilterOptions] = React.useState({});
+    const [selectedColumn, setSelectedColumn] = React.useState({});
+    const [sortData, setSortData] = React.useState({"sortKey": null, "sortDirection": null, "sortType": null})
+    const [columnVisibility, setColumnVisibility] = React.useState({
+        "visible": ["Actions", "Name", "Size", "Last Modified"],
+        "hidden": ["Comment"]
+    });
+    const [openAdjustColumnsDialog, setOpenAdjustColumnsDialog] = React.useState(false);
+    const columns = React.useMemo(
+        () =>
+            [
+                { name: 'Actions', width: 100, disableAutosize: true, disableSort: true, disableFilterMenu: true },
+                { name: 'Name', type: 'string', key: 'name_text', fillWidth: true },
+                { name: 'Size', type: 'number', key: 'size', width: 200 },
+                { name: 'Last Modified', type: 'date', key: 'modify_time', width: 200 },
+                { name: 'Comment', type: 'string', key: 'comment', width: 200 },
+            ].reduce( (prev, cur) => {
+                if(columnVisibility.visible.includes(cur.name)){
+                    if(filterOptions[cur.key] && String(filterOptions[cur.key]).length > 0){
+                        return [...prev, {...cur, filtered: true}];
+                    }else{
+                        return [...prev, {...cur}];
+                    }
+                }else{
+                    return [...prev];
+                }
+            }, [])
+        , [filterOptions, columnVisibility]
+    );
     const sortedData = React.useMemo(() => {
-        if (sortKey === null || sortType === null) {
+        if (sortData.sortKey === null || sortData.sortType === null) {
             return allData;
         }
         const tempData = [...allData];
 
-        if (sortType === 'number' || sortType === 'size' || sortType === 'date') {
-            tempData.sort((a, b) => (parseInt(a[sortKey]) > parseInt(b[sortKey]) ? 1 : -1));
-        } else if (sortType === 'string') {
-            tempData.sort((a, b) => (a[sortKey].toLowerCase() > b[sortKey].toLowerCase() ? 1 : -1));
+        if (sortData.sortType === 'number' || sortData.sortType === 'size' || sortData.sortType === 'date') {
+            tempData.sort((a, b) => (parseInt(a[sortData.sortKey]) > parseInt(b[sortData.sortKey]) ? 1 : -1));
+        } else if (sortData.sortType === 'string') {
+            tempData.sort((a, b) => (a[sortData.sortKey].toLowerCase() > b[sortData.sortKey].toLowerCase() ? 1 : -1));
         }
-        if (sortDirection === 'DESC') {
+        if (sortData.sortDirection === 'DESC') {
             tempData.reverse();
         }
         return tempData;
-    }, [allData, sortKey, sortType, sortDirection]);
-
+    }, [allData, sortData]);
+    const onSubmitFilterOptions = (newFilterOptions) => {
+        setFilterOptions(newFilterOptions);
+    }
+    const filterRow = (row) => {
+        for(const [key,value] of Object.entries(filterOptions)){
+            if(!String(row[key]).toLowerCase().includes(value)){
+                return true;
+            }
+        }
+        return false;
+    }
     const gridData = React.useMemo(
         () =>
-            sortedData.map((row) => [
-                <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />,
-                <FileBrowserTableRowNameCell rowData={row} cellData={row.name_text} />,
-                FileBrowserTableRowSizeCell({ cellData: row.size }),
-                FileBrowserTableRowDateCell({ cellData: row.modify_time }),
-                FileBrowserTableRowStringCell({ cellData: row.comment }),
-            ]),
-        [sortedData, props.onTaskRowAction]
+            sortedData.reduce((prev, row) => {
+                if(filterRow(row)){
+                    return [...prev];
+                }else{
+                    return [...prev, columns.map( c => {
+                        switch(c.name){
+                            case "Actions":
+                                return  <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />;
+                            case "Name":
+                                return <FileBrowserTableRowNameCell rowData={row} cellData={row.name_text} />;
+                            case "Size":
+                                return FileBrowserTableRowSizeCell({ cellData: row.size });
+                            case "Last Modified":
+                                return FileBrowserTableRowDateCell({ cellData: row.modify_time });
+                            case "Comment":
+                                return FileBrowserTableRowStringCell({ cellData: row.comment });
+                        }
+                    })];
+                }
+                
+        }, []),
+        [sortedData, props.onTaskRowAction, filterOptions, columnVisibility]
     );
 
     useEffect(() => {
@@ -128,9 +173,7 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         snackActions.info('Fetching contents of folder...');
         props.onRowDoubleClick(rowData);
 
-        setSortKey(null);
-        setSortType(null);
-        setSortDirection('ASC');
+        setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC"});
     };
 
     const onClickHeader = (e, columnIndex) => {
@@ -139,38 +182,77 @@ export const CallbacksTabsFileBrowserTable = (props) => {
             return;
         }
         if (!column.key) {
-            setSortKey(null);
-            setSortType(null);
-            setSortDirection('ASC');
+            setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC"});
         }
-        if (sortKey === column.key) {
-            if (sortDirection === 'ASC') {
-                setSortDirection('DESC');
+        if (sortData.sortKey === column.key) {
+            if (sortData.sortDirection === 'ASC') {
+                setSortData({...sortData, "sortDirection": "DESC"});
             } else {
-                setSortKey(null);
-                setSortType(null);
-                setSortDirection('ASC');
+                setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC"});
             }
         } else {
-            setSortDirection('ASC');
-            setSortKey(column.key);
-            setSortType(column.type);
+            setSortData({"sortKey": column.key, "sortType":column.type, "sortDirection": "ASC"});
         }
     };
-
-    const sortColumn = columns.findIndex((column) => column.key === sortKey);
+    const contextMenuOptions = [
+        {
+            name: 'Filter Column', 
+            click: ({event, columnIndex}) => {
+                if(columns[columnIndex].disableFilterMenu){
+                    snackActions.warning("Can't filter that column");
+                    return;
+                }
+                setSelectedColumn(columns[columnIndex]);
+                setOpenContextMenu(true);
+            }
+        },
+        {
+            name: "Show/Hide Columns",
+            click: ({event, columnIndex}) => {
+                if(columns[columnIndex].disableFilterMenu){
+                    snackActions.warning("Can't filter that column");
+                    return;
+                }
+                setOpenAdjustColumnsDialog(true);
+            }
+        }
+    ];
+    const onSubmitAdjustColumns = ({left, right}) => {
+        setColumnVisibility({visible: right, hidden: left});
+    }
+    const sortColumn = columns.findIndex((column) => column.key === sortData.sortKey);
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
             <MythicResizableGrid
                 columns={columns}
                 sortIndicatorIndex={sortColumn}
-                sortDirection={sortDirection}
+                sortDirection={sortData.sortDirection}
                 items={gridData}
                 rowHeight={35}
                 onClickHeader={onClickHeader}
                 onDoubleClickRow={onRowDoubleClick}
+                contextMenuOptions={contextMenuOptions}
             />
+            {openContextMenu &&
+                <MythicDialog fullWidth={true} maxWidth="xs" open={openContextMenu} 
+                    onClose={()=>{setOpenContextMenu(false);}} 
+                    innerDialog={<TableFilterDialog 
+                        selectedColumn={selectedColumn} 
+                        filterOptions={filterOptions} 
+                        onSubmit={onSubmitFilterOptions} 
+                        onClose={()=>{setOpenContextMenu(false);}} />}
+                />
+            }
+            {openAdjustColumnsDialog &&
+                <MythicDialog fullWidth={true} maxWidth="md" open={openAdjustColumnsDialog} 
+                  onClose={()=>{setOpenAdjustColumnsDialog(false);}} 
+                  innerDialog={
+                    <MythicTransferListDialog onClose={()=>{setOpenAdjustColumnsDialog(false);}} 
+                      onSubmit={onSubmitAdjustColumns} right={columnVisibility.visible} rightTitle="Show these columns"
+                      leftTitle={"Hidden Columns"} left={columnVisibility.hidden} dialogTitle={"Edit which columns are shown"}/>}
+                />
+            } 
         </div>
     );
 };
@@ -385,6 +467,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
                     host: rowData.host,
                     filename: rowData.name_text,
                     uifeature: 'file_browser:remove',
+                    getConfirmation: true
                 });
             },
         },

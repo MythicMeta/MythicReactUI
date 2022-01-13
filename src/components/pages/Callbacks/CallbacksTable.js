@@ -292,7 +292,7 @@ export function CallbacksTable(props){
                     </Table>
                 </TableContainer>
                 {openAdjustColumnsDialog &&
-                <MythicDialog fullWidth={true} maxWidth="lg" open={openAdjustColumnsDialog} 
+                <MythicDialog fullWidth={true} maxWidth="md" open={openAdjustColumnsDialog} 
                   onClose={()=>{setOpenAdjustColumnsDialog(false);}} 
                   innerDialog={
                     <MythicTransferListDialog onClose={()=>{setOpenAdjustColumnsDialog(false);}} 

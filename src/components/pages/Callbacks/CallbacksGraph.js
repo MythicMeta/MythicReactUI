@@ -243,7 +243,7 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
         const allEdges = [...callbackgraphedges];
         drawC2PathElements(allEdges, dagreRef, reZoom, viewConfig, node_events, theme);
         setReZoom(false);
-    }, [callbackgraphedges, reZoom, viewConfig, theme])
+    }, [callbackgraphedges, reZoom, viewConfig, theme]) // eslint-disable-line react-hooks/exhaustive-deps
     return (
         <div style={{maxWidth: "100%", "overflow": "auto", height: "100%"}}>
             <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" style={{marginTop: "10px"}} color="primary">
@@ -280,26 +280,35 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
                 </Grow>
               )}
             </Popper>
-            <MythicDialog fullWidth={true} maxWidth="sm" open={manuallyRemoveEdgeDialogOpen}
+            {manuallyRemoveEdgeDialogOpen &&
+                <MythicDialog fullWidth={true} maxWidth="sm" open={manuallyRemoveEdgeDialogOpen}
                     onClose={()=>{setManuallyRemoveEdgeDialogOpen(false);}} 
                     innerDialog={<MythicSelectFromListDialog onClose={()=>{setManuallyRemoveEdgeDialogOpen(false);}} identifier="edge_id" display="display"
                                         onSubmit={onSubmitManuallyRemoveEdge} options={edgeOptions} title={"Manually Remove Edge"} action={"remove"} />}
                 />
-            <MythicDialog fullWidth={true} maxWidth="sm" open={manuallyAddEdgeDialogOpen}
+            }
+            {manuallyAddEdgeDialogOpen &&
+                <MythicDialog fullWidth={true} maxWidth="sm" open={manuallyAddEdgeDialogOpen}
                     onClose={()=>{setManuallyAddEdgeDialogOpen(false);}} 
                     innerDialog={<ManuallyAddEdgeDialog onClose={()=>{setManuallyAddEdgeDialogOpen(false);}}
                                         onSubmit={onSubmitManuallyAddEdge} source={addEdgeSource} />}
                 />
-            <MythicDialog fullWidth={true} maxWidth="md" open={openParametersDialog} 
+            }
+            {openParametersDialog &&
+                <MythicDialog fullWidth={true} maxWidth="md" open={openParametersDialog} 
                     onClose={()=>{setOpenParametersDialog(false);}} 
                     innerDialog={<TaskParametersDialog command={selectedLinkCommand} callback={selectedCallback} onSubmit={submitParametersDialog} onClose={()=>{setOpenParametersDialog(false);}} />}
                 />
-            <MythicDialog fullWidth={true} maxWidth="sm" open={openSelectLinkCommandDialog}
+            }
+            {openSelectLinkCommandDialog &&
+                <MythicDialog fullWidth={true} maxWidth="sm" open={openSelectLinkCommandDialog}
                     onClose={()=>{setOpenSelectLinkCommandDialog(false);}} 
                     innerDialog={<MythicSelectFromListDialog onClose={()=>{setOpenSelectLinkCommandDialog(false);}}
                                         onSubmit={onSubmitSelectedLinkCommand} options={linkCommands} title={"Select Link Command"} 
                                         action={"select"} display={"display"} identifier={"display"}/>}
                 />
+            }
+            
             
                 <svg id="callbacksgraph" ref={dagreRef} width="100%" height="90%"></svg> 
             </div>

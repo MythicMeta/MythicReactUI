@@ -1,9 +1,8 @@
 import {MythicTabPanel, MythicTabLabel} from '../../../components/MythicComponents/MythicTabPanel';
 import React, {useEffect} from 'react';
-import {gql, useMutation, useLazyQuery, useQuery } from '@apollo/client';
+import {gql, useLazyQuery, useQuery } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
-import {MythicSelectFromListDialog} from '../../MythicComponents/MythicSelectFromListDialog';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import { useReactiveVar } from '@apollo/client';
 import { meState } from '../../../cache';
@@ -13,8 +12,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import IconButton from '@material-ui/core/IconButton';
 import RotateLeftIcon from '@material-ui/icons/RotateLeft';
-import {createTaskingMutation} from './CallbacksTabsTasking';
-import {TaskParametersDialog} from './TaskParametersDialog';
 import {CallbacksTabsProcessBrowserTree} from './CallbacksTabsProcessBrowserTree';
 import {CallbacksTabsProcessBrowserTable} from './CallbacksTabsProcessBrowserTable';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
@@ -22,6 +19,8 @@ import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 import {MythicModifyStringDialog} from '../../MythicComponents/MythicDialog';
 import LockIcon from '@material-ui/icons/Lock';
+import {TaskFromUIButton} from './TaskFromUIButton';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const dataFragment = gql`
 fragment objData on process {
@@ -36,7 +35,7 @@ fragment objData on process {
 }
 `;
 const taskFragment = gql`
-fragment taskData on task {
+fragment taskDataProcess on task {
     id
     callback {
         id
@@ -57,7 +56,7 @@ ${taskFragment}
 query getHostProcessesQuery($operation_id: Int!, $host: String!, $task_id: Int!) {
     process(where: {operation_id: {_eq: $operation_id}, host: {_eq: $host}, task_id: {_gt: $task_id}}, order_by: {task_id: asc}, limit: 1) {
         task {
-            ...taskData
+            ...taskDataProcess
             processes(order_by: {process_id: asc}) {
                 ...objData
             }
@@ -71,7 +70,7 @@ ${taskFragment}
 query getHostProcessesQuery($operation_id: Int!, $host: String!, $task_id: Int!) {
     process(where: {operation_id: {_eq: $operation_id}, host: {_eq: $host}, task_id: {_lt: $task_id}}, order_by: {task_id: desc}, limit: 1) {
         task {
-            ...taskData
+            ...taskDataProcess
             processes(order_by: {name: asc}) {
                 ...objData
             }
@@ -90,60 +89,7 @@ query getHostsQuery($operation_id: Int!, $host:String!){
     }
 }
 `;
-const getLoadedCommandsQuery = gql`
-query GetLoadedCommandsQuery($callback_id: Int!, $payloadtype: String!, $ui_feature: String!) {
-  loadedcommands(where: {callback_id: {_eq: $callback_id}, command: {supported_ui_features: {_iregex: $ui_feature}}}) {
-    id
-    command {
-      cmd
-      help_cmd
-      description
-      id
-      needs_admin
-      payload_type_id
-      attributes
-      commandparameters {
-        id
-        type 
-      }
-      supported_ui_features
-    }
-  }
-  command(where: {payloadtype: {ptype: {_eq: $payloadtype}}, script_only: {_eq: true}, deleted: {_eq: false}, supported_ui_features: {_iregex: $ui_feature }}){
-      id
-      cmd
-      help_cmd
-      description
-      needs_admin
-      attributes
-      payload_type_id
-      commandparameters {
-          id
-          type
-      }
-      supported_ui_features
-    }
-}
-`;
-const getCallbackDataQuery = gql`
-query getCallbackDataQuery($callback_id: Int!){
-    callback_by_pk(id: $callback_id){
-        payload {
-            os
-            payloadtype {
-              ptype
-              id
-            }
-            tag
-            id
-        }
-        id
-        operation_id
-        host
-        active
-    }
-}
-`;
+
 export function CallbacksTabsProcessBrowserLabel(props){
     const [description, setDescription] = React.useState("Processes: " + props.tabInfo.host)
     const [openEditDescriptionDialog, setOpenEditDescriptionDialog] = React.useState(false);
@@ -176,38 +122,15 @@ export function CallbacksTabsProcessBrowserLabel(props){
     )
 }
 export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
-    const theme = useTheme();
     const me = useReactiveVar(meState);
     const fileBrowserRoots = React.useRef([]);
     const [fileBrowserRootsState, setFileBrowserRootsState] = React.useState([]);
     const [selectedFolder, setSelectedFolder] = React.useState([]);
-    const [fileBrowserCommands, setFileBrowserCommands] = React.useState({});
-    const [openSelectCommandDialog, setOpenSelectCommandDialog] = React.useState(false);
-    const [openParametersDialog, setOpenParametersDialog] = React.useState(false);
-    const [selectedCommand, setSelectedCommand] = React.useState({});
-    const [searchCallback, setSearchCallback] = React.useState({});
     const [taskInfo, setTaskInfo] = React.useState({});
-    const [uiFeature, setUIFeature] = React.useState("");
     const currentCallbackIDSetInTable = React.useRef();
     const [currentOS, setCurrentOS] = React.useState("");
-    const [getCallbackData] = useLazyQuery(getCallbackDataQuery, {
-        fetchPolicy: "no-cache",
-        onCompleted: (data) => {
-            if(data.callback_by_pk !== null){
-                if(data.callback_by_pk.active){
-                    setSearchCallback({...data.callback_by_pk, "ui_feature": ".*" + uiFeature + ".*"});
-                }else{
-                    snackActions.warning("That callback isn't active");
-                }
-                
-            }else{
-                snackActions.warning("Failed to find that Callback");
-            }
-        },
-        onError: (data) => {
-            snackActions.error("Failed to fetch callback data for the specified callback");
-        }
-    });
+    const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
+    const taskingData = React.useRef({"parameters": "", "ui_feature": "process_browser:list"});
     const makeTree = (root, element) => {
         if(root.process_id === element.parent_process_id){
             root.children.push({...element, children: []});
@@ -308,71 +231,9 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
         fileBrowserRoots.current = fileBrowserRootsState;
     }, [fileBrowserRootsState])
 
-    const [createTask] = useMutation(createTaskingMutation, {
-        update: (cache, {data}) => {
-            if(data.createTask.status === "error"){
-                snackActions.error(data.createTask.error);
-            }else{
-                snackActions.success("Issued \"" + selectedCommand["cmd"] + "\" to Callback " + searchCallback.id);
-            }
-            setSelectedCommand({});
-            setSearchCallback({});
-            setUIFeature("");
-        },
-        onError: data => {
-            console.error(data);
-            setSelectedCommand({});
-            setSearchCallback({});
-            setUIFeature("");
-        }
-    });
-    const [getCommandOptions] = useLazyQuery(getLoadedCommandsQuery, {
-        onCompleted: (data) => {
-            const availableCommands = data.loadedcommands.reduce( (prev, cur) => {
-                return [...prev, cur.command];
-            }, []);
-            const finalCommands = data.command.reduce( (prev, cur) => {
-                return [...prev, cur];
-            }, [...availableCommands]);
-            setFileBrowserCommands(finalCommands);
-            if(finalCommands.length === 0){
-                snackActions.warning("No commands currently loaded that support that feature");
-            }else if(finalCommands.length === 1){
-                setSelectedCommand({...finalCommands[0]});
-            }else{
-                setSelectedCommand({});
-                setOpenSelectCommandDialog(true);
-            }
-        },
-        fetchPolicy: "network-only"
-    });
-    useEffect( () => {
-        if(selectedCommand["cmd"] !== undefined){
-            if(selectedCommand["commandparameters"].length === 0){
-                createTask({variables: {callback_id: searchCallback.id, command: selectedCommand["cmd"], params: ""}});
-            }else{
-                switch(uiFeature){
-                    case "process_browser:list":
-                        // need to do a popup for the user to select the file
-                        setOpenParametersDialog(true);
-                        break;              
-                    default:
-                        break;
-                }
-            }
-            
-        }
-    }, [selectedCommand, createTask, searchCallback, uiFeature]);
-    useEffect( () => {
-        if(searchCallback.id !== undefined){
-            getCommandOptions({variables: {callback_id: searchCallback.id, payloadtype: searchCallback.payload.payloadtype.ptype, ui_feature: searchCallback.ui_feature}});
-        }
-    }, [searchCallback, getCommandOptions]);
     const onListFilesButton = ({callbackID}) => {
-        getCallbackData({variables: {callback_id: callbackID}});
-        // clear out commands and re-fetch
-        setFileBrowserCommands([]);
-        setUIFeature("process_browser:list");
+        taskingData.current = ({"parameters": "", "ui_feature": "process_browser:list"});
+        setOpenTaskingButton(true);
     }
     const onNextButton = ({task_id}) => {
         getNextProcessDataByHostAndTask({variables: {operation_id: me.user.current_operation_id, 
@@ -390,17 +251,7 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
         
     }
     const onTaskRowAction = ({path, host, filename, uifeature}) => {
-        getCallbackData({variables: {callback_id: currentCallbackIDSetInTable.current}});
-        // clear out commands and re-fetch
-        setFileBrowserCommands([]);
-        setUIFeature(uifeature);
-    }
-    const onSubmitSelectedCommand = (cmd) => {
-        setSelectedCommand(cmd);
-    }
-    const submitParametersDialog = (cmd, parameters, files) => {
-        setOpenParametersDialog(false);
-        createTask({variables: {callback_id: searchCallback.id, command: cmd, params: parameters, files}});
+        console.log(path, host, filename, uifeature);
     }
     const onChangeCallbackID = (callbackID) => {
         currentCallbackIDSetInTable.current = callbackID;
@@ -409,7 +260,8 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
         <MythicTabPanel index={index} value={value} >
             <div style={{display: "flex", flexGrow: 1, overflowY: "auto"}}>
                 <div style={{width: "30%", overflow: "auto", flexGrow: 1}}>
-                    <CallbacksTabsProcessBrowserTree treeRoot={fileBrowserRootsState} theme={theme} />
+                    <CallbacksTabsProcessBrowserTree 
+                        treeRoot={fileBrowserRootsState} />
                 </div>
                 <div style={{width: "60%", display: "flex", flexDirection: "column", overflow: "auto", flexGrow: 1}}>
                     <ProcessBrowserTableTop
@@ -422,23 +274,13 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
                         taskInfo={taskInfo}/>
                     <CallbacksTabsProcessBrowserTable selectedFolder={selectedFolder} onTaskRowAction={onTaskRowAction} os={currentOS}/>
                 </div>
-            </div>
-            {openSelectCommandDialog &&
-                <MythicDialog fullWidth={true} maxWidth="sm" open={openSelectCommandDialog}
-                    onClose={()=>{setOpenSelectCommandDialog(false);}} 
-                    innerDialog={<MythicSelectFromListDialog onClose={()=>{setOpenSelectCommandDialog(false);}}
-                                        onSubmit={onSubmitSelectedCommand} options={fileBrowserCommands} title={"Select Command"} 
-                                        action={"select"} identifier={"id"} display={"cmd"}/>}
-                />
-            }
-            {openParametersDialog &&
-                <MythicDialog fullWidth={true} maxWidth="md" open={openParametersDialog} 
-                    onClose={()=>{setOpenParametersDialog(false);}} 
-                    innerDialog={<TaskParametersDialog command={selectedCommand} callback_id={searchCallback.id} payloadtype_id={searchCallback.payload.payloadtype.id}
-                    operation_id={searchCallback.operation_id} onSubmit={submitParametersDialog} onClose={()=>{setOpenParametersDialog(false);}} />}
-                />
-            }
-            
+                {openTaskingButton && 
+                    <TaskFromUIButton ui_feature={taskingData.current?.ui_feature || " "} 
+                        callback_id={currentCallbackIDSetInTable.current} 
+                        parameters={taskingData.current?.parameters || ""}
+                        onTasked={() => setOpenTaskingButton(false)}/>
+                    }
+            </div>            
         </MythicTabPanel>
     )
 }
@@ -507,18 +349,18 @@ const ProcessBrowserTableTop = ({onListFilesButton, onNextButton, onPreviousButt
                     onChange={() => {}} name="Host Name" InputProps={{
                         endAdornment: 
                         <React.Fragment>
-                            <Tooltip title="Fetch Previous Saved Process Listing">
-                            <IconButton style={{padding: "3px"}} onClick={onLocalPreviousButton}><SkipPreviousIcon style={{color: theme.palette.info.main}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title="Task Callback to List Processes">
-                            <IconButton style={{padding: "3px"}} onClick={onLocalListFilesButton}><RefreshIcon style={{color: theme.palette.info.main}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title="Fetch Next Saved Process Listing">
-                            <IconButton style={{padding: "3px"}} onClick={onLocalNextButton}><SkipNextIcon style={{color: theme.palette.info.main}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title="Compare Previous Listing">
-                            <IconButton style={{padding: "3px"}} onClick={onLocalDiffButton}><CompareArrowsIcon style={{color: theme.palette.info.main}}/></IconButton>
-                        </Tooltip>
+                            <MythicStyledTooltip title="Fetch Previous Saved Process Listing">
+                                <IconButton style={{padding: "3px"}} onClick={onLocalPreviousButton}><SkipPreviousIcon style={{color: theme.palette.info.main}}/></IconButton>
+                            </MythicStyledTooltip>
+                            <MythicStyledTooltip title="Task Callback to List Processes">
+                                <IconButton style={{padding: "3px"}} onClick={onLocalListFilesButton}><RefreshIcon style={{color: theme.palette.info.main}}/></IconButton>
+                            </MythicStyledTooltip>
+                            <MythicStyledTooltip title="Fetch Next Saved Process Listing">
+                                <IconButton style={{padding: "3px"}} onClick={onLocalNextButton}><SkipNextIcon style={{color: theme.palette.info.main}}/></IconButton>
+                            </MythicStyledTooltip>
+                            <MythicStyledTooltip title="Compare Previous Listing">
+                                <IconButton style={{padding: "3px"}} onClick={onLocalDiffButton}><CompareArrowsIcon style={{color: theme.palette.info.main}}/></IconButton>
+                            </MythicStyledTooltip>
                         </React.Fragment>
                     }} />
             </Grid>
@@ -526,16 +368,16 @@ const ProcessBrowserTableTop = ({onListFilesButton, onNextButton, onPreviousButt
                 <MythicTextField type="number" placeholder="Callback" name="Callback"
                     onChange={onChangeID} value={callbackID} InputProps={{
                         endAdornment: manuallySetCallbackID ? (
-                            <Tooltip title="Change Callback Based on Data Origin">
+                            <MythicStyledTooltip title="Change Callback Based on Data Origin">
                                 <IconButton style={{padding: "3px"}} onClick={revertCallbackID}>
                                     <LockIcon style={{color: theme.palette.info.main}}/>
                                 </IconButton>
-                        </Tooltip>
-                        ) : (<Tooltip title="Manually Update Callback Number to Prevent Data Origin Tracking">
+                            </MythicStyledTooltip>
+                        ) : (<MythicStyledTooltip title="Manually Update Callback Number to Prevent Data Origin Tracking">
                                 <IconButton  style={{padding: "3px"}}>
                                     <RotateLeftIcon disabled style={{color: theme.palette.warning.main}}/> 
                                 </IconButton>
-                            </Tooltip>),
+                            </MythicStyledTooltip>),
                         style: {padding: 0, margin: 0}
                     }}/>
             </Grid>

@@ -36,9 +36,10 @@ export default makeStyles((theme) => ({
         boxSizing: 'border-box',
         fontFamily: 'monospace',
         borderBottom: '1px solid #e0e0e0',
+        cursor: "default !important",
         '&:hover': {
             backgroundColor: theme.tableHover,
-            cursor: 'pointer',
+            cursor: 'default !important',
         },
     },
     cellInner: {

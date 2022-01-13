@@ -1,5 +1,5 @@
 import { makeStyles, fade } from "@material-ui/core";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList as List } from "react-window";
 import { snackActions } from '../utilities/Snackbar';
@@ -248,7 +248,7 @@ const FileBrowserVirtualTree = ({
       ];
      
     },
-    [openNodes]
+    [openNodes] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const flattenedNodes = useMemo(

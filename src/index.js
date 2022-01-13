@@ -19,6 +19,8 @@ import {meState} from './cache';
 export const mythicVersion = "2.3.4";
 export const mythicUIVersion = "0.0.6";
 
+let fetchingNewToken = false;
+
 const cache = new InMemoryCache({
     typePolicies: {
         Query: {
@@ -74,12 +76,16 @@ export const isJWTValid = () => {
 const authLink = setContext( async (_, {headers}) => {
   // get the authentication token from local storage if it exists
   // return the headers to the context so httpLink can read them
+  while(fetchingNewToken){
+    // we need to wait until we're no longer fetching a token
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
     let access_token = localStorage.getItem('access_token');
     if(access_token){
       const decoded_token = jwt_decode(access_token);
       //console.log(decoded_token);
       // JWT lifetime is 4 hours. If there's 2hrs or less left of the JWT, update it
-      let diff = Math.abs(Date.now() - (decoded_token.exp * 1000));
+      let diff = (decoded_token.exp * 1000) - Date.now();
       let twoHours = 7200000; // 2 hours in miliseconds, this is half the JWT lifetime
       // we want to make sure we try to get a new access_token while the current one is still active or it'll fail
       if(diff < twoHours || !isJWTValid()){
@@ -100,7 +106,8 @@ const authLink = setContext( async (_, {headers}) => {
         //console.log("No update needed, access_token still valid");
       }
     }else{
-      //console.log("no access token");
+      console.log("no access token");
+      FailedRefresh();
     }
     //console.log("should be called after updating if needed");
     return {
@@ -187,6 +194,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 const GetNewToken = async () =>{
+  fetchingNewToken = true;
   const requestOptions = {
       method: "POST",
       headers: {
@@ -201,16 +209,19 @@ const GetNewToken = async () =>{
           if("access_token" in data){
               successfulRefresh(data);
               console.log("successfully got new access_token");
+              fetchingNewToken = false;
               return true;
           }else{
-            console.log("calling FailedRefresh from GetNewToken call");
+              console.log("calling FailedRefresh from GetNewToken call");
               FailedRefresh();
+              fetchingNewToken = false;
               return false;
           }
       }).catch(error => {
           console.log("Error trying to get json response in GetNewToken", error);
           console.log(response);
           FailedRefresh();
+          fetchingNewToken = false;
           return false;
       });
   return json;

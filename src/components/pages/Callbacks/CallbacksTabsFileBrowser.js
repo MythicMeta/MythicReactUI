@@ -1,22 +1,17 @@
 import { MythicTabPanel, MythicTabLabel } from '../../../components/MythicComponents/MythicTabPanel';
 import React, { useEffect, useCallback } from 'react';
-import { gql, useMutation, useLazyQuery, useQuery } from '@apollo/client';
+import { gql, useLazyQuery, useQuery } from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
-import { MythicConfirmDialog } from '../../MythicComponents/MythicConfirmDialog';
-import { MythicSelectFromListDialog } from '../../MythicComponents/MythicSelectFromListDialog';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import { useReactiveVar } from '@apollo/client';
 import { meState } from '../../../cache';
 import { useTheme } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Tooltip from '@material-ui/core/Tooltip';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import IconButton from '@material-ui/core/IconButton';
 import RotateLeftIcon from '@material-ui/icons/RotateLeft';
-import { createTaskingMutation } from './CallbacksTabsTasking';
-import { TaskParametersDialog } from './TaskParametersDialog';
 import { CallbacksTabsFileBrowserTree } from './CallbacksTabsFileBrowserTree';
 import { CallbacksTabsFileBrowserTable } from './CallbacksTabsFileBrowserTable';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -25,6 +20,8 @@ import { MythicModifyStringDialog } from '../../MythicComponents/MythicDialog';
 import LockIcon from '@material-ui/icons/Lock';
 import { Backdrop } from '@material-ui/core';
 import {CircularProgress} from '@material-ui/core';
+import {TaskFromUIButton} from './TaskFromUIButton';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const fileDataFragment = gql`
     fragment fileObjData on filebrowserobj {
@@ -107,69 +104,6 @@ const getDeltaFilesQuery = gql`
         }
     }
 `;
-const getLoadedCommandsQuery = gql`
-    query GetLoadedCommandsQuery($callback_id: Int!, $payloadtype: String!, $ui_feature: String!) {
-        loadedcommands(
-            where: { callback_id: { _eq: $callback_id }, command: { supported_ui_features: { _iregex: $ui_feature } } }
-        ) {
-            id
-            command {
-                cmd
-                help_cmd
-                description
-                id
-                needs_admin
-                payload_type_id
-                attributes
-                commandparameters {
-                    id
-                    type
-                }
-                supported_ui_features
-            }
-        }
-        command(
-            where: {
-                payloadtype: { ptype: { _eq: $payloadtype } }
-                script_only: { _eq: true }
-                deleted: { _eq: false }
-                supported_ui_features: { _iregex: $ui_feature }
-            }
-        ) {
-            id
-            cmd
-            help_cmd
-            description
-            needs_admin
-            attributes
-            payload_type_id
-            commandparameters {
-                id
-                type
-            }
-            supported_ui_features
-        }
-    }
-`;
-const getCallbackDataQuery = gql`
-    query getCallbackDataQuery($callback_id: Int!) {
-        callback_by_pk(id: $callback_id) {
-            payload {
-                os
-                payloadtype {
-                    ptype
-                    id
-                }
-                tag
-                id
-            }
-            id
-            operation_id
-            host
-            active
-        }
-    }
-`;
 
 export function CallbacksTabsFileBrowserLabel(props) {
     const [description, setDescription] = React.useState('File Browser: ' + props.tabInfo.callbackID);
@@ -226,18 +160,11 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
         host: tabInfo.host,
         full_path_text: '.',
     });
-    const [fileBrowserCommands, setFileBrowserCommands] = React.useState({});
-    const [openSelectCommandDialog, setOpenSelectCommandDialog] = React.useState(false);
-    const [openParametersDialog, setOpenParametersDialog] = React.useState(false);
-    const [selectedCommand, setSelectedCommand] = React.useState({});
-    const [searchCallback, setSearchCallback] = React.useState({});
-    const [taskInfo, setTaskInfo] = React.useState({});
-    const [uiFeature, setUIFeature] = React.useState('');
     const currentCallbackIDSetInTable = React.useRef();
-    const [openConfirmDialog, setOpenConfirmDialog] = React.useState(false);
     const lastFetchedTime = React.useRef(new Date().toISOString());
-    const [savedStateForConfirmDialog, setSavedStateForConfirmDialog] = React.useState({});
     const [showDeletedFiles, setShowDeletedFiles] = React.useState(false);
+    const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
+    const taskingData = React.useRef({"parameters": "", "ui_feature": "file_browser:list"});
     const { subscribeToMore } = useQuery(rootFileQuery, {
         variables: { operation_id: me.user.current_operation_id },
         onCompleted: (data) => {
@@ -375,28 +302,6 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             setBackdropOpen(false);
         },
     });
-    const [getCallbackData] = useLazyQuery(getCallbackDataQuery, {
-        fetchPolicy: 'no-cache',
-        onCompleted: (data) => {
-            if (data.callback_by_pk !== null) {
-                if (data.callback_by_pk.active) {
-                    setSearchCallback({
-                        ...data.callback_by_pk,
-                        ui_feature: '.*' + uiFeature + '.*',
-                        ...savedStateForConfirmDialog,
-                    });
-                } else {
-                    snackActions.warning("That callback isn't active");
-                }
-            } else {
-                snackActions.warning('Failed to find that Callback');
-            }
-            setSavedStateForConfirmDialog({});
-        },
-        onError: (data) => {
-            snackActions.error('Failed to fetch callback data for the specified callback');
-        },
-    });
     const mergeData = useCallback((search, parent_id, all_objects) => {
         //merge the obj into fileBrowserRoots
         //console.log('in mergeData');
@@ -429,134 +334,6 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
         }
         return false;
     }, []);
-    const [createTask] = useMutation(createTaskingMutation, {
-        update: (_, { data }) => {
-            if (data.createTask.status === 'error') {
-                snackActions.error(data.createTask.error);
-            } else {
-                snackActions.success('Issued "' + selectedCommand['cmd'] + '" to Callback ' + searchCallback.id);
-            }
-            setSelectedCommand({});
-            setSearchCallback({});
-
-            setTaskInfo({});
-            setUIFeature('');
-        },
-        onError: (data) => {
-            console.error(data);
-            setSelectedCommand({});
-            setSearchCallback({});
-            setTaskInfo({});
-            setUIFeature('');
-        },
-    });
-    const [getCommandOptions] = useLazyQuery(getLoadedCommandsQuery, {
-        onCompleted: (data) => {
-            const availableCommands = data.loadedcommands.reduce((prev, cur) => {
-                return [...prev, cur.command];
-            }, []);
-            const finalCommands = data.command.reduce(
-                (prev, cur) => {
-                    return [...prev, cur];
-                },
-                [...availableCommands]
-            );
-            setFileBrowserCommands(finalCommands);
-            if (finalCommands.length === 0) {
-                snackActions.warning('No commands currently loaded that support that feature');
-            } else if (finalCommands.length === 1) {
-                setSelectedCommand({ ...finalCommands[0] });
-            } else {
-                setSelectedCommand({});
-                setOpenSelectCommandDialog(true);
-            }
-        },
-        fetchPolicy: 'network-only',
-    });
-    useEffect(() => {
-        //console.log("useEffect for many things");
-        if (selectedCommand['cmd'] !== undefined) {
-            switch (uiFeature) {
-                case 'file_browser:list':
-                    // static parameters passed
-                    if (taskInfo.path === undefined) {
-                        // this is an ls from the top table bar
-                        createTask({
-                            variables: {
-                                callback_id: searchCallback.id,
-                                command: selectedCommand['cmd'],
-                                params: JSON.stringify({
-                                    host: searchCallback['host'],
-                                    path: searchCallback.fullPath,
-                                    file: '',
-                                }),
-                                tasking_location: 'file_browser',
-                            },
-                        });
-                    } else {
-                        // this is an ls from the action menu of a row
-                        createTask({
-                            variables: {
-                                callback_id: currentCallbackIDSetInTable.current,
-                                command: selectedCommand['cmd'],
-                                params: JSON.stringify({
-                                    host: taskInfo.host,
-                                    path: taskInfo.path,
-                                    file: taskInfo.filename,
-                                }),
-                                tasking_location: 'file_browser',
-                            },
-                        });
-                    }
-                    break;
-                case 'file_browser:upload':
-                    // need to do a popup for the user to select the file
-                    setOpenParametersDialog(true);
-                    break;
-                case 'file_browser:download':
-                // static parameters passed
-                // fallsthrough
-                case 'file_browser:remove':
-                    // static parameters passed
-                    createTask({
-                        variables: {
-                            callback_id: currentCallbackIDSetInTable.current,
-                            command: selectedCommand['cmd'],
-                            params: JSON.stringify({
-                                host: taskInfo.host,
-                                path: taskInfo.path,
-                                file: taskInfo.filename,
-                            }),
-                            tasking_location: 'file_browser',
-                        },
-                    });
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    }, [
-        selectedCommand,
-        createTask,
-        searchCallback,
-        selectedFolderData.full_path_text,
-        taskInfo.filename,
-        taskInfo.host,
-        taskInfo.path,
-        uiFeature,
-    ]);
-    useEffect(() => {
-        if (searchCallback.id !== undefined) {
-            getCommandOptions({
-                variables: {
-                    callback_id: searchCallback.id,
-                    payloadtype: searchCallback.payload.payloadtype.ptype,
-                    ui_feature: searchCallback.ui_feature,
-                },
-            });
-        }
-    }, [searchCallback]);
     const onSetTableData = useCallback((filebrowserobj) => {
         setSelectedFolder(Object.values(filebrowserobj.children));
         setSelectedFolderData(filebrowserobj);
@@ -568,43 +345,24 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
         setBackdropOpen(true);
         setSelectedFolderData(filebrowserobj);
     }, []);
-    const onListFilesButton = ({ callbackID, fullPath }) => {
-        getCallbackData({ variables: { callback_id: callbackID } });
-        setSavedStateForConfirmDialog({ fullPath });
-        // clear out commands and re-fetch
-        setFileBrowserCommands([]);
-        setUIFeature('file_browser:list');
+    const onListFilesButton = ({ fullPath }) => {
+        taskingData.current = ({"parameters": fullPath, "ui_feature": "file_browser:list"});
+        setOpenTaskingButton(true);
     };
-    const onUploadFileButton = ({ callbackID }) => {
-        getCallbackData({ variables: { callback_id: callbackID } });
-        // clear out commands and re-fetch
-        setFileBrowserCommands([]);
-        setUIFeature('file_browser:upload');
+    const onUploadFileButton = ({ hostname, fullPath }) => {
+        taskingData.current = ({"parameters": {remote_path: fullPath}, "ui_feature": "file_browser:upload", "openDialog": true});
+        setOpenTaskingButton(true);
     };
-    const onTaskRowAction = useCallback(({ path, host, filename, uifeature, confirmed }) => {
-        if (uifeature === 'file_browser:remove' && !confirmed) {
-            setSavedStateForConfirmDialog({ path, host, filename, uifeature });
-            setOpenConfirmDialog(true);
-        } else {
-            setSavedStateForConfirmDialog({});
-            getCallbackData({ variables: { callback_id: currentCallbackIDSetInTable.current } });
-            // clear out commands and re-fetch
-            setFileBrowserCommands([]);
-            setUIFeature(uifeature);
-            setTaskInfo({
-                path,
-                host,
-                filename,
-            });
-        }
+    const onTaskRowAction = useCallback(({ path, host, filename, uifeature, openDialog, getConfirmation }) => {
+        taskingData.current = ({"parameters": {
+            host: host,
+            path: path,
+            file: filename,
+            openDialog,
+            getConfirmation
+        }, "ui_feature": uifeature});
+        setOpenTaskingButton(true);
     }, []);
-    const onSubmitSelectedCommand = (cmd) => {
-        setSelectedCommand(cmd);
-    };
-    const submitParametersDialog = (cmd, parameters, files) => {
-        setOpenParametersDialog(false);
-        createTask({ variables: { callback_id: searchCallback.id, command: cmd, params: parameters, files } });
-    };
     const onChangeCallbackID = (callbackID) => {
         currentCallbackIDSetInTable.current = callbackID;
     };
@@ -636,7 +394,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
     return (
         <MythicTabPanel index={index} value={value}>
             <div style={{ display: 'flex', flexGrow: 1, overflowY: 'auto' }}>
-                <div style={{ width: '30%', overflow: 'auto' }}>
+                <div style={{ width: '30%', overflow: 'auto', flexGrow: 1 }}>
                     <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={true}>
                         <CircularProgress color="inherit" />
                     </Backdrop>
@@ -682,62 +440,15 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                     </div>
                 </div>
             </div>
-            {openSelectCommandDialog && (
-                <MythicDialog
-                    fullWidth={true}
-                    maxWidth='sm'
-                    open={openSelectCommandDialog}
-                    onClose={() => {
-                        setOpenSelectCommandDialog(false);
-                    }}
-                    innerDialog={
-                        <MythicSelectFromListDialog
-                            onClose={() => {
-                                setOpenSelectCommandDialog(false);
-                            }}
-                            onSubmit={onSubmitSelectedCommand}
-                            options={fileBrowserCommands}
-                            title={'Select Command'}
-                            action={'select'}
-                            identifier={'id'}
-                            display={'cmd'}
-                        />
-                    }
-                />
-            )}
-            {openParametersDialog && (
-                <MythicDialog
-                    fullWidth={true}
-                    maxWidth='md'
-                    open={openParametersDialog}
-                    onClose={() => {
-                        setOpenParametersDialog(false);
-                    }}
-                    innerDialog={
-                        <TaskParametersDialog
-                            command={selectedCommand}
-                            callback_id={searchCallback.id}
-                            payloadtype_id={searchCallback.payload.payloadtype.id}
-                            operation_id={searchCallback.operation_id}
-                            onSubmit={submitParametersDialog}
-                            onClose={() => {
-                                setOpenParametersDialog(false);
-                            }}
-                        />
-                    }
-                />
-            )}
-            {openConfirmDialog && (
-                <MythicConfirmDialog
-                    onSubmit={() => {
-                        onTaskRowAction({ ...savedStateForConfirmDialog, confirmed: true });
-                    }}
-                    onClose={() => {
-                        setOpenConfirmDialog(false);
-                    }}
-                    open={openConfirmDialog}
-                />
-            )}
+            {openTaskingButton && 
+                <TaskFromUIButton ui_feature={taskingData.current?.ui_feature || " "} 
+                    callback_id={currentCallbackIDSetInTable.current} 
+                    parameters={taskingData.current?.parameters || ""}
+                    tasking_location={"file_browser"}
+                    openDialog={taskingData.current?.openDialog || false}
+                    getConfirmation={taskingData.current?.getConfirmation || false}
+                    onTasked={() => setOpenTaskingButton(false)}/>
+            }
         </MythicTabPanel>
     );
 };
@@ -801,7 +512,7 @@ const FileBrowserTableTop = ({
     };
     const onLocalUploadFileButton = () => {
         if (callbackID > 0) {
-            onUploadFileButton({ callbackID });
+            onUploadFileButton({ fullPath, hostname });
         } else {
             snackActions.warning('Must select a folder or set a callback number first');
         }
@@ -832,17 +543,17 @@ const FileBrowserTableTop = ({
                     InputProps={{
                         endAdornment: (
                             <React.Fragment>
-                                <Tooltip title='Task callback to list contents'>
+                                <MythicStyledTooltip title='Task callback to list contents'>
                                     <IconButton style={{ padding: '3px' }} onClick={onLocalListFilesButton}>
                                         <RefreshIcon style={{ color: theme.palette.info.main }} />
                                     </IconButton>
-                                </Tooltip>
-                                <Tooltip title='Upload file to folder via callback'>
+                                </MythicStyledTooltip>
+                                <MythicStyledTooltip title='Upload file to folder via callback'>
                                     <IconButton style={{ padding: '3px' }} onClick={onLocalUploadFileButton}>
                                         <CloudUploadIcon style={{ color: theme.palette.info.main }} />
                                     </IconButton>
-                                </Tooltip>
-                                <Tooltip title={showDeletedFiles ? 'Hide Deleted Files' : 'Show Deleted Files'}>
+                                </MythicStyledTooltip>
+                                <MythicStyledTooltip title={showDeletedFiles ? 'Hide Deleted Files' : 'Show Deleted Files'}>
                                     <IconButton style={{ padding: '3px' }} onClick={onLocalToggleShowDeletedFiles}>
                                         {showDeletedFiles ? (
                                             <VisibilityIcon style={{ color: theme.palette.info.main }} />
@@ -850,7 +561,7 @@ const FileBrowserTableTop = ({
                                             <VisibilityOffIcon style={{ color: theme.palette.info.main }} />
                                         )}
                                     </IconButton>
-                                </Tooltip>
+                                </MythicStyledTooltip>
                             </React.Fragment>
                         ),
                         style: { padding: 0 },
@@ -866,17 +577,17 @@ const FileBrowserTableTop = ({
                     value={callbackID}
                     InputProps={{
                         endAdornment: manuallySetCallbackID ? (
-                            <Tooltip title='Change Callback Based on Data Origin'>
+                            <MythicStyledTooltip title='Change Callback Based on Data Origin'>
                                 <IconButton style={{ padding: '3px' }} onClick={revertCallbackID}>
                                     <LockIcon style={{ color: theme.palette.info.main }} />
                                 </IconButton>
-                            </Tooltip>
+                            </MythicStyledTooltip>
                         ) : (
-                            <Tooltip title='Manually Update Callback Number to Prevent Data Origin Tracking'>
+                            <MythicStyledTooltip title='Manually Update Callback Number to Prevent Data Origin Tracking'>
                                 <IconButton style={{ padding: '3px' }}>
                                     <RotateLeftIcon disabled style={{ color: theme.palette.warning.main }} />
                                 </IconButton>
-                            </Tooltip>
+                            </MythicStyledTooltip>
                         ),
                         style: { padding: 0, margin: 0 },
                     }}

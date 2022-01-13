@@ -163,7 +163,7 @@ function SpeedDialWrapperPreMemo({ setTopDisplay, onSubmitHeights, heights }) {
                 },
             },
         ],
-        []
+        [] // eslint-disable-line react-hooks/exhaustive-deps
     );
     return (
         <React.Fragment>

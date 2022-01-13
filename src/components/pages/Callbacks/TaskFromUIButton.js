@@ -5,11 +5,18 @@ import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {MythicSelectFromListDialog} from '../../MythicComponents/MythicSelectFromListDialog';
 import {createTaskingMutation} from './CallbacksTabsTasking';
 import {TaskParametersDialog} from './TaskParametersDialog';
+import { MythicConfirmDialog } from '../../MythicComponents/MythicConfirmDialog';
 
 const getLoadedCommandsQuery = gql`
 query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: String!) {
     callback_by_pk(id: $callback_id){
         operation_id
+        active
+        payload {
+            payloadtype {
+                id
+            }
+        }
         loadedcommands(where: {command: {supported_ui_features: {_ilike: $ui_feature}}}) {
             id
             command {
@@ -40,7 +47,7 @@ query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: String!) {
 }
 `;
 
-export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}) =>{
+export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked, tasking_location, getConfirmation, openDialog}) =>{
     const [fileBrowserCommands, setFileBrowserCommands] = React.useState([]);
     const [openSelectCommandDialog, setOpenSelectCommandDialog] = React.useState(false);
     const [openParametersDialog, setOpenParametersDialog] = React.useState(false);
@@ -49,6 +56,7 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}
     const [selectedCallbackToken, setSelectedCallbackToken] = React.useState({});
     const [openCallbackTokenSelectDialog, setOpenCallbackTokenSelectDialog] = React.useState(false);
     const [taskingVariables, setTaskingVariables] = React.useState({});
+    const [openConfirmDialog, setOpenConfirmDialog] = React.useState(false);
     const [createTask] = useMutation(createTaskingMutation, {
         update: (cache, {data}) => {
             if(data.createTask.status === "error"){
@@ -66,8 +74,23 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}
     const {data: callbackData} = useQuery(getLoadedCommandsQuery, {
         variables: {callback_id: callback_id, ui_feature: "%" + ui_feature + "%"},
         onCompleted: (data) => {
+            if(data.callback_by_pk === null){
+                snackActions.warning("Unknown callback");
+                onTasked();
+                return;
+            }else if(!data.callback_by_pk.active){
+                snackActions.warning("Callback isn't active");
+                onTasked();
+                return;
+            }
             const availableCommands = data.callback_by_pk.loadedcommands.reduce( (prev, cur) => {
-                return [...prev, cur.command];
+                if(typeof(parameters) === "string"){
+                    return [...prev, {...cur.command, "parsedParameters": {}}];
+                }else{
+                    console.log("adding in parsed parameters", parameters);
+                    return [...prev, {...cur.command, "parsedParameters": parameters}];
+                }
+                
             }, []);
             const availableTokens = data.callback_by_pk.callbacktokens.reduce( (prev, cur) => {
                 return [...prev, {...cur.token, "display": cur.token.User === null ? cur.token.TokenId + " - " + cur.token.description : cur.token.User + " - " + cur.token.description}]
@@ -89,10 +112,16 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}
         setSelectedCommand(cmd);
     }
     const onSubmitTasking = ({variables}) => {
+        if(getConfirmation){
+            setTaskingVariables(variables);
+            setOpenConfirmDialog(true);
+            return;
+        }
+
         if(callbackTokenOptions.length > 0){
             setOpenCallbackTokenSelectDialog(true);
             setTaskingVariables(variables);
-        }else{
+        }else {
             createTask({variables})
         }
     }
@@ -103,13 +132,24 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}
     const onSubmitSelectedToken = (token) => {
         setSelectedCallbackToken(token);
     }
+    const onSubmitConfirm = () => {
+        if(callbackTokenOptions.length > 0){
+            setOpenCallbackTokenSelectDialog(true);
+        }else {
+            createTask({variables: taskingVariables})
+        }
+    }
+    const onCancelConfirm = () => {
+        setOpenConfirmDialog(false);
+        onTasked();
+    }
     useEffect( () => {
         if(selectedCallbackToken === ""){
             // we selected the default token to use
-            createTask({variables: taskingVariables})
+            createTask({variables: taskingVariables});
         }
         if(selectedCallbackToken.TokenId){
-            createTask({variables: {...taskingVariables, token_id: selectedCallbackToken.TokenId}})
+            createTask({variables: {...taskingVariables, token_id: selectedCallbackToken.TokenId}});
         }else{
             return;
         }
@@ -119,6 +159,11 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}
         if(selectedCommand.commandparameters === undefined){
             return;
         }
+        if(openDialog){
+            setOpenParametersDialog(true);
+            return;
+        }
+        let taskingLocation = tasking_location ? tasking_location : "browserscript";
         if(selectedCommand.commandparameters.length > 0){
             if(parameters === undefined || parameters === null){
                 setOpenParametersDialog(true);
@@ -126,7 +171,7 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}
                 if(typeof(parameters) === "string"){
                     onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: parameters}});
                 }else{
-                    onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: JSON.stringify(parameters), tasking_location: "browserscript"}});
+                    onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: JSON.stringify(parameters), tasking_location: taskingLocation}});
                 }
                 
             }
@@ -137,7 +182,7 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}
                 if(typeof(parameters) === "string"){
                     onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: parameters}});
                 }else{
-                    onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: JSON.stringify(parameters), tasking_location: "browserscript"}});
+                    onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: JSON.stringify(parameters), tasking_location: taskingLocation}});
                 }
             }
             
@@ -168,6 +213,9 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked}
                                         onSubmit={onSubmitSelectedToken} dontCloseOnSubmit={true} options={callbackTokenOptions} title={"Select Token"} 
                                         action={"select"} identifier={"id"} display={"display"}/>}
                 />
+            }
+            {openConfirmDialog && 
+                <MythicConfirmDialog onClose={onCancelConfirm} onSubmit={onSubmitConfirm} open={openConfirmDialog}/>
             }
         </div>
     )

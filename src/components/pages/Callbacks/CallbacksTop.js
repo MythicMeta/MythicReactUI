@@ -95,14 +95,14 @@ export function CallbacksTop({onOpenTab, topDisplay, heights}){
     const [callbacks, setCallbacks] = React.useState([]);
     const [callbackEdges, setCallbackEdges] = React.useState([]);
     useSubscription(SUB_Callbacks, {
-        variables: {operation_id: me.user.current_operation_id}, fetchPolicy: "network-only",
+        variables: {operation_id: me?.user?.current_operation_id || 0}, fetchPolicy: "network-only",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
           setCallbacks(subscriptionData.data.callback);
         }
     });
     useSubscription(SUB_Edges, {
-        variables: {operation_id: me.user.current_operation_id}, fetchPolicy: "network-only",
+        variables: {operation_id: me?.user?.current_operation_id || 0}, fetchPolicy: "network-only",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
           setCallbackEdges(subscriptionData.data.callbackgraphedge)
