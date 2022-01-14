@@ -101,7 +101,7 @@ export function CallbacksTable(props){
           {key: "os", type: 'string', name: "OS", width: 75},
           {key: "architecture", type: 'string', name: "Arch", width: 75},
           {key: "pid", type: 'number', name: "PID", width: 75},
-          {key: "last_checkin", type: 'string', name: "Last Checkin", width: 150},
+          {key: "last_checkin", type: 'string', name: "Last Checkin", width: 150, disableSort: true},
           {key: "description", type: 'string', name: "Description", width: 400},
           {key: "sleep", type: 'string', name: "Sleep", width: 75, disableSort: true},
           {key: "agent", type: 'string', name: "Agent", width: 100, disableSort: true},

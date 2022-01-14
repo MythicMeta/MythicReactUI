@@ -17,6 +17,9 @@ import FormControl from '@material-ui/core/FormControl';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Input from '@material-ui/core/Input';
+import {UploadTaskFile} from '../../MythicComponents/MythicFileUpload';
+import { Backdrop } from '@material-ui/core';
+import {CircularProgress} from '@material-ui/core';
 
 //if we need to get all the loaded commands for the callback and filter, use this
 const GetLoadedCommandsQuery = gql`
@@ -270,6 +273,7 @@ query getCredentialsQuery($operation_id: Int!){
 }
 `;
 export function TaskParametersDialog(props) {
+    const [backdropOpen, setBackdropOpen] = React.useState(false);
     const [commandInfo, setCommandInfo] = useState({});
     const [parameterGroups, setParameterGroups] = useState([]);
     const [selectedParameterGroup, setSelectedParameterGroup] = useState('Default');
@@ -729,8 +733,10 @@ export function TaskParametersDialog(props) {
             setParameters(sorted);
         }
     }, [selectedParameterGroup, rawParameters, loadedCommandsLoading, allCommandsLoading, loadedAllEdgesLoading, requiredPieces, loadedAllPayloadsLoading, loadedCredentialsLoading, loadedAllPayloadsOnHostsLoading, props.callback_id, props.choices]);
-    const onSubmit = () => {
-        const collapsedParameters = parameters.reduce( (prev, param) => {
+    const onSubmit = async () => {
+        let newFileUUIDs = [];
+        let collapsedParameters = {};
+        for(const param of parameters){
             switch(param.type){
                 case "String":
                 case "Boolean":
@@ -745,29 +751,35 @@ export function TaskParametersDialog(props) {
                 case "PayloadList":
                 case "Array":
                 case "LinkInfo":
-                    return {...prev, [param.name]: param.value}
+                    collapsedParameters[param.name] = param.value;
+                    break;
                 case "File":
-                    return {...prev, [param.name]: param.value.name}
+                    setBackdropOpen(true);
+                    const newUUID = await UploadTaskFile(param.value);
+                    if(newUUID){
+                        newFileUUIDs.push(newUUID);
+                        collapsedParameters[param.name] = newUUID;
+                    }else{
+                        setBackdropOpen(false);
+                        return;
+                    }
+                    break;
                 case "Credential-JSON":
-                    return {...prev, [param.name]: {
+                    collapsedParameters[param.name] = {
                         account: param.value["account"],
                         comment: param.value["comment"],
                         credential: param.value["credential_text"],
                         realm: param.value["realm"],
                         type: param.value["type"]
-                    }}
+                    };
+                    break;
                 default:
-                    return {...prev}
+                    console.log("Unknown parameter type");
             }
-        }, {});
-        const collapsedFiles = parameters.reduce( (prev, param) => {
-            if(param.type === "File"){
-                return {...prev, [param.name]: param.value.contents}
-            }else{
-                return {...prev}
-            }
-        }, {});
-        props.onSubmit(props.command.cmd, JSON.stringify(collapsedParameters), JSON.stringify(collapsedFiles), selectedParameterGroup);
+        }
+        setBackdropOpen(false);
+        props.onSubmit(props.command.cmd, JSON.stringify(collapsedParameters), newFileUUIDs, selectedParameterGroup);
+        
     }
     const onAgentConnectAddNewPayloadOnHost = (host, payload) => {
         addPayloadOnHost({variables: {host: host, payload_id: payload} })
@@ -793,6 +805,9 @@ export function TaskParametersDialog(props) {
     <React.Fragment>
         <DialogTitle id="form-dialog-title">{props.command.cmd}'s Parameters</DialogTitle>
         <DialogContent dividers={true}>
+            <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Typography component="div" >
                 <b>Help</b> <pre style={{margin:0}}>{props.command.help_cmd}</pre>
                 <b>Description</b> <pre style={{margin:0, wordBreak: "break-all", overflow: "word-wrap", whiteSpace: "pre-wrap"}}>{props.command.description}</pre>

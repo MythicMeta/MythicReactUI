@@ -30,14 +30,14 @@ export function KeylogsTable(props){
                     // key3 should be Window, Window, or User
                     // value3 should always be an array of keylog entries so we can get the actual keystrokes
                     //console.log("key3", key3, "value3", value3);
-                    newThirdLevel.push({"name": key3, "value": value3});
+                    newThirdLevel.push({"name": key3, "value": value3.reverse()});
                 }
                 //console.log("newThirdLevel", newThirdLevel);
-                newSecondLevel.push({"name": key2, "value": newThirdLevel});
+                newSecondLevel.push({"name": key2, "value": newThirdLevel.reverse()});
             }
-            newArrayData.push({"name": key, "value": newSecondLevel});
+            newArrayData.push({"name": key, "value": newSecondLevel.reverse()});
         }
-        //console.log(newArrayData);
+        console.log(newArrayData);
         setKeylogs([...newArrayData]);
     }, [props.keylogs]);
 //k0["name"]

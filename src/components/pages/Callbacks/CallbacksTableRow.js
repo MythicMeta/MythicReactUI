@@ -126,20 +126,21 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
             <ButtonGroup variant="contained" 
                 color={rowData.integrity_level > 2 ? "secondary" : "primary"} 
                 ref={dropdownAnchorRef} 
-                aria-label="split button">
-            <Button size="small" 
-                onClick={(evt) => {evt.stopPropagation();localOnOpenTab("interact")}}>
-                { rowData.locked ? (<LockIcon />):(<KeyboardIcon />) } {rowData.id}
+                aria-label="split button"
+            >
+                <Button style={{padding: "0 10px 0 10px"}}
+                    onClick={(evt) => {evt.stopPropagation();localOnOpenTab("interact")}}>
+                    { rowData.locked ? (<LockIcon fontSize="large" style={{marginRight: "10px"}} />):(<KeyboardIcon fontSize="large" style={{marginRight: "10px"}}/>) } 
+                    {rowData.id}
                 </Button>
                 <Button
-                style={{padding:0}} 
-                size="small"
-                aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
-                aria-expanded={dropdownOpen ? 'true' : undefined}
-                aria-haspopup="menu"
-                onClick={handleDropdownToggle}
+                    style={{margin: 0, padding: 0}}
+                    aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
+                    aria-expanded={dropdownOpen ? 'true' : undefined}
+                    aria-haspopup="menu"
+                    onClick={handleDropdownToggle}
                 >
-                <ArrowDropDownIcon />
+                <ArrowDropDownIcon/>
                 </Button>
             </ButtonGroup>
             <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition style={{zIndex: 200}}>

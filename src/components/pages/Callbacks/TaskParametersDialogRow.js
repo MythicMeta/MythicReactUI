@@ -19,7 +19,6 @@ import CancelIcon from '@material-ui/icons/Cancel';
 import {Typography} from '@material-ui/core';
 import {useMutation, gql } from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import Popover from '@material-ui/core/Popover';
 import {CredentialTableNewCredentialDialog} from '../Search/CredentialTableNewCredentialDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
@@ -245,20 +244,14 @@ export function TaskParametersDialogRow(props){
         setValue(parseInt(value));
         props.onChange(props.name, parseInt(value), error);
     }
-    const onSwitchChange = (name, value) => {
-        setBoolValue(value);
-        setValue(value);
-        props.onChange(name, value);
+    const onSwitchChange = (event) => {
+        setBoolValue(event.target.checked);
+        setValue(event.target.checked);
+        props.onChange(props.name, event.target.checked);
     }
     const onFileChange = (evt) => {
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const contents = btoa(e.target.result);
-            setFileValue({name: evt.target.files[0].name, contents: contents});
-            props.onChange(props.name, {name: evt.target.files[0].name, contents: contents});
-        }
-        reader.readAsBinaryString(evt.target.files[0]);
+       setFileValue({name: evt.target.files[0].name});
+       props.onChange(props.name, evt.target.files[0]);
         
     }
     const onChangeAgentConnectHost = (event) => {

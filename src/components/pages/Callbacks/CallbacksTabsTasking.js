@@ -88,7 +88,7 @@ export const taskingDataFragment = gql`
     }
 `;
 export const createTaskingMutation = gql`
-mutation createTasking($callback_id: Int!, $command: String!, $params: String!, $files: String, $token_id: Int, $tasking_location: String, $original_params: String, $parameter_group_name: String) {
+mutation createTasking($callback_id: Int!, $command: String!, $params: String!, $files: [String], $token_id: Int, $tasking_location: String, $original_params: String, $parameter_group_name: String) {
   createTask(callback_id: $callback_id, command: $command, params: $params, files: $files, token: $token_id, tasking_location: $tasking_location, original_params: $original_params, parameter_group_name: $parameter_group_name) {
     status
     id
