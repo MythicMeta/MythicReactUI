@@ -83,7 +83,7 @@ function DetailedCommandMappingTables({commands}){
     return (
       <React.Fragment>
         {commands.map( c => (
-          <React.Fragment>
+          <div key={"agent" + c[0]}>
             <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
               <Typography variant="h6" style={{textAlign: "left", display: "inline-block", marginLeft: "20px", color: theme.pageHeaderColor}}>
                 {c[0]}
@@ -98,7 +98,7 @@ function DetailedCommandMappingTables({commands}){
               </TableHead>
               <TableBody>
                 {c[1].map( entry => (
-                  <TableRow hover>
+                  <TableRow hover key={"command" + entry}>
                       <TableCell>{entry}</TableCell>
                       <TableCell>
                       <Button variant="contained" color="primary" target="_blank"
@@ -108,7 +108,7 @@ function DetailedCommandMappingTables({commands}){
                 ))}
               </TableBody>
             </Table>
-          </React.Fragment>
+          </div>
         ))}
       </React.Fragment>
     )

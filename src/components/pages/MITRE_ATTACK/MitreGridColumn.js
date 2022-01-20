@@ -5,25 +5,40 @@ import { Box } from '@material-ui/core';
 
 export function MitreGridColumn({column, showCountGrouping}){
   const theme = useTheme();
-  const [rowCounts, setrowCounts] = React.useState(0);
+  const [groupCounts, setGroupCounts] = React.useState(0);
+  const [techniqueCounts, setTechniqueCounts] = React.useState(0);
   React.useEffect( () => {
     switch(showCountGrouping){
       case "":
-        setrowCounts(column?.rows?.length || 0);
+        setTechniqueCounts(column?.rows?.length || 0);
+        setGroupCounts(0);
         break;
       case "command": 
-        setrowCounts(column.commands);
+        setGroupCounts(column.commands);
+        const updatedTechniqueCountsForCommands = column.rows.reduce( (prev, cur) => {
+          if(cur.commands.length > 0){return prev + 1}
+          return prev;
+        }, 0);
+        setTechniqueCounts(updatedTechniqueCountsForCommands);
         break;
       case "task":
-        setrowCounts(column.tasks);
+        setGroupCounts(column.tasks);
+        const updatedTechniqueCounts = column.rows.reduce( (prev, cur) => {
+          if(cur.tasks.length > 0){return prev + 1}
+          return prev;
+        }, 0);
+        setTechniqueCounts(updatedTechniqueCounts);
         break;
     }
   }, [column.commands, column.rows, column.tasks, showCountGrouping])
   return (
     <div style={{display: "flex", flexDirection: "column", paddingRight: "15px",}}>
-      <Box height={"80px"} width={"100%"} style={{backgroundColor: theme.tableHover}}>
+      <Box height={"100px"} width={"100%"} style={{backgroundColor: theme.tableHover}}>
         <h2 style={{margin: 0, textAlign: "center"}}><b>{column.tactic}</b></h2>
-        <p style={{textAlign: "center", margin: 0}}>{rowCounts} techniques</p>
+        <p style={{textAlign: "center", margin: 0}}>{techniqueCounts} techniques</p>
+        { showCountGrouping === "" ? (null) : (
+          <p style={{textAlign: "center", margin: 0}}>{groupCounts} {showCountGrouping}s</p>
+        )}
       </Box>
       
       <div style={{display: "flex", flexDirection: "column"}}>

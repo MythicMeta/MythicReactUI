@@ -14,18 +14,22 @@ import {MitreGridColumn} from './MitreGridColumn';
 import { Backdrop } from '@material-ui/core';
 import {CircularProgress} from '@material-ui/core';
 import { MythicDisplayTextDialog} from '../../MythicComponents/MythicDisplayTextDialog';
+import { MythicDialog } from '../../MythicComponents/MythicDialog';
+import { SelectPayloadTypeDialog } from './SelectPayloadTypeDialog';
 
 
-export function MitreGrid({entries, onGetCommands, onGetTasks}){
+export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFiltered, onGetTasksFiltered}){
     const theme = useTheme();
     const dropdownAnchorRef = React.useRef(null);
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
     const [showCountGrouping, setShowCountGrouping] = React.useState("");
     const [backdropOpen, setBackdropOpen] = React.useState(false);
     const [openLicense, setOpenLicense] = React.useState(false);
+    const [openFilterTasks, setOpenFilterTasks] = React.useState(false);
+    const [openFilterCommands, setOpenFilterCommands] = React.useState(false);
     const dropDownOptions = [
         {
-            name: "Fetch Command Mappings",
+            name: "Fetch All Command Mappings",
             click: () => {
                 setBackdropOpen(true);
                 setShowCountGrouping("command");
@@ -34,11 +38,26 @@ export function MitreGrid({entries, onGetCommands, onGetTasks}){
             }
         },
         {
-            name: "Fetch Current Task Mappings",
+            name: "Fetch All Task Mappings",
             click: () => {
                 setShowCountGrouping("task");
                 setDropdownOpen(false);
                 onGetTasks();
+            }
+        },
+        {
+            name: "Fetch Command Mappings by Payload Type",
+            click: () => {
+                setDropdownOpen(false);
+                setOpenFilterCommands(true);
+            }
+        },
+        {
+            name: "Fetch Task Mappings by Payload Type",
+            click: () => {
+                setDropdownOpen(false);
+                setOpenFilterTasks(true);
+                
             }
         },
         {
@@ -175,6 +194,16 @@ export function MitreGrid({entries, onGetCommands, onGetTasks}){
         element.click();
         }
     }
+    const onSubmitGetTasksFiltered = (payload_type) => {
+        setBackdropOpen(true);
+        setShowCountGrouping("task");
+        onGetTasksFiltered(payload_type);
+    }
+    const onSubmitGetCommandsFiltered = (payload_type) => {
+        setBackdropOpen(true);
+        setShowCountGrouping("command");
+        onGetCommandsFiltered(payload_type);
+    }
     return (
         <div style={{display: "flex", flexDirection: "column", width: "100%", height: "100%"}}>
             <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
@@ -227,6 +256,18 @@ export function MitreGrid({entries, onGetCommands, onGetTasks}){
                         fullWidth={true} 
                         value={mitreLicense} 
                         open={openLicense}
+                    />
+                }
+                {openFilterTasks &&
+                    <MythicDialog fullWidth={true} maxWidth="sm" open={openFilterTasks}
+                        onClose={()=>{setOpenFilterTasks(false);}} 
+                        innerDialog={<SelectPayloadTypeDialog onClose={()=>{setOpenFilterTasks(false);}} onSubmit={onSubmitGetTasksFiltered} />}
+                    />
+                }
+                {openFilterCommands &&
+                    <MythicDialog fullWidth={true} maxWidth="sm" open={openFilterCommands}
+                        onClose={()=>{setOpenFilterCommands(false);}} 
+                        innerDialog={<SelectPayloadTypeDialog onClose={()=>{setOpenFilterCommands(false);}} onSubmit={onSubmitGetCommandsFiltered} />}
                     />
                 }
                 <MitreGridColumn column={entries["Reconnaissance"]} showCountGrouping={showCountGrouping}/>

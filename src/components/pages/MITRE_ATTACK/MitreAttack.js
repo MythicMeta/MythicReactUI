@@ -39,9 +39,43 @@ query GetMitreTaskAttack($operation_id: Int!) {
   }
 }
 `;
+const Get_TaskAttacksFiltered = gql`
+query GetMitreTaskAttack($operation_id: Int!, $payload_type: String!) {
+  attacktask(where: {task: {callback: {operation_id: {_eq: $operation_id}, payload: {payloadtype: {ptype: {_eq: $payload_type}}}}}}) {
+    attack_id
+    task {
+      id
+      command_name
+      comment
+      display_params
+      callback {
+        id
+        payload {
+          payloadtype {
+            ptype
+          }
+        }
+      }
+    }
+  }
+}
+`;
 const Get_CommandAttacks= gql`
 query GetMitreCommandAttack{
   attackcommand {
+    attack_id
+    command {
+      cmd
+      payloadtype {
+        ptype
+      }
+    }
+  }
+}
+`;
+const Get_CommandAttacksFiltered = gql`
+query GetMitreCommandAttack($payload_type: String!){
+  attackcommand(where: {command: {payloadtype: {ptype: {_eq: $payload_type}}}}) {
     attack_id
     command {
       cmd
@@ -79,10 +113,36 @@ export function MitreAttack(props){
       },
       fetchPolicy: "network-only",
       onCompleted: (data) => {
-        if(data.attackcommand.length === 0){
-          snackActions.info("No commands associated with MITRE ATT&CK");
-          return;
+        let attackCommands = [...data.attackcommand];
+        let updatingMitre = {...mitreAttack};
+        for(const key in updatingMitre){
+          let column_total = 0;
+          for(let i = 0; i < updatingMitre[key].rows.length; i++){
+            // updatingMitre[key].rows[i] is a specific cell in the attack matrix
+            // now check if there's a data.attackcommand entry with attack_id == updatingMitre[key].rows[i].id
+            updatingMitre[key].rows[i].commands = [];
+            attackCommands = attackCommands.filter( (attackcommand) => {
+              //console.log(attackcommand, updatingMitre[key].rows[i]);
+              if(attackcommand.attack_id === updatingMitre[key].rows[i].id){
+                updatingMitre[key].rows[i].commands.push({...attackcommand.command});
+                // we've already added this entry from data.attackcommand, so not bother processing it for the next row/column
+                return false;
+              }
+              return true;
+            });
+            column_total += updatingMitre[key].rows[i].commands.length;
+          }
+          updatingMitre[key].commands = column_total;
         }
+        setMitreAttack(updatingMitre);
+      }
+    });
+    const [getCommandsFiltered] = useLazyQuery(Get_CommandAttacksFiltered,{
+      onError: data => {
+        console.error(data)
+      },
+      fetchPolicy: "network-only",
+      onCompleted: (data) => {
         let attackCommands = [...data.attackcommand];
         let updatingMitre = {...mitreAttack};
         for(const key in updatingMitre){
@@ -113,10 +173,38 @@ export function MitreAttack(props){
       },
       fetchPolicy: "network-only",
       onCompleted: (data) => {
-        if(data.attacktask.length === 0){
-          snackActions.info("No tasks associated with MITRE ATT&CK");
-          return;
+
+        let attackTasks = [...data.attacktask];
+        let updatingMitre = {...mitreAttack};
+        for(const key in updatingMitre){
+          let column_total = 0;
+          for(let i = 0; i < updatingMitre[key].rows.length; i++){
+            // updatingMitre[key].rows[i] is a specific cell in the attack matrix
+            // now check if there's a data.attackcommand entry with attack_id == updatingMitre[key].rows[i].id
+            updatingMitre[key].rows[i].tasks = [];
+            attackTasks = attackTasks.filter( (attacktask) => {
+              //console.log(attackcommand, updatingMitre[key].rows[i]);
+              if(attacktask.attack_id === updatingMitre[key].rows[i].id){
+                updatingMitre[key].rows[i].tasks.push({...attacktask.task});
+                // we've already added this entry from data.attackcommand, so not bother processing it for the next row/column
+                return false;
+              }
+              return true;
+            });
+            column_total += updatingMitre[key].rows[i].tasks.length;
+          }
+          updatingMitre[key].tasks = column_total;
         }
+        setMitreAttack(updatingMitre);
+      }
+    });
+    const [getTasksFiltered] = useLazyQuery(Get_TaskAttacksFiltered,{
+      onError: data => {
+        console.error(data)
+      },
+      fetchPolicy: "network-only",
+      onCompleted: (data) => {
+
         let attackTasks = [...data.attacktask];
         let updatingMitre = {...mitreAttack};
         for(const key in updatingMitre){
@@ -168,12 +256,23 @@ export function MitreAttack(props){
     const onGetTasks = () => {
       getTasks({variables: {operation_id: me?.user?.current_operation_id || 0}});
     }
+    const onGetTasksFiltered = (payload_type) => {
+      getTasksFiltered({variables: {operation_id: me?.user?.current_operation_id || 0, payload_type: payload_type}});
+    }
+    const onGetCommandsFiltered = (payload_type) => {
+      getCommandsFiltered({variables: {payload_type: payload_type}});
+    }
     return (
       <React.Fragment>
         <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={false}>
-            <CircularProgress color="inherit" />
+            <CircularProgress color="inherit" disableShrink />
         </Backdrop>
-        <MitreGrid entries={mitreAttack} onGetCommands={getCommands} onGetTasks={onGetTasks}/>
+        <MitreGrid entries={mitreAttack} 
+          onGetCommands={getCommands} 
+          onGetTasks={onGetTasks} 
+          onGetTasksFiltered={onGetTasksFiltered}
+          onGetCommandsFiltered={onGetCommandsFiltered}
+          />
       </React.Fragment>
         
     );
