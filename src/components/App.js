@@ -24,7 +24,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { SnackbarUtilsConfigurator } from './utilities/Snackbar';
 import { meState } from '../cache';
 import { Reporting } from './pages/Reporting/Reporting';
-
+import { MitreAttack } from './pages/MITRE_ATTACK/MitreAttack';
 //background-color: #282c34;
 import { Route, Switch } from 'react-router-dom';
 
@@ -120,6 +120,7 @@ export function App(props) {
                             <LoggedInRoute exact path='/new/operations' component={Operations} />
                             <LoggedInRoute exact path='/new/callbacks/:callbackId' component={ExpandedCallback} />
                             <LoggedInRoute exact path='/new/reporting' component={Reporting} />
+                            <LoggedInRoute exact path='/new/mitre' component={MitreAttack} />
                         </Switch>
                     </div>
                 </div>

@@ -42,7 +42,10 @@ const ResizableGridWrapper = ({
         },
         [columnWidths]
     );
-    const gridUUID = React.useMemo( () => crypto.randomUUID(), []);
+    const getShortRandomString = () => {
+        return (Math.random() + 1).toString(36).substring(2);
+    }
+    const gridUUID = React.useMemo( () => getShortRandomString(), []);
     const getRowHeight = useCallback(
         (index) => {
             return rowHeight;

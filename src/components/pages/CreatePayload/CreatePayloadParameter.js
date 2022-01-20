@@ -60,14 +60,12 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                 setValue(-1);
             }
             if(passedValue !== "" && passedValue !== undefined && passedValue.includes("-")){
-                console.log("passed date value: ", passedValue)
                 setDateValue(new Date(passedValue));
                 setValue(-1);
                 onChange(name, (new Date(passedValue)).toISOString().slice(0,10), "");
             }
         }else if(parameter_type === "Dictionary" ){
             if(passedValue !== "" && passedValue !== undefined && typeof passedValue === "object"){
-                console.log("passed dictionaryvalue", passedValue);
                 let initial = passedValue.reduce( (prev, op) => {
                     // find all the options that have a default_show of true
                     if(op.default_show){
@@ -134,7 +132,6 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                 setValue(true);
             }
             if(passedValue !== "" && passedValue !== undefined){
-                console.log(passedValue, true);
                 setValue(passedValue);
             }
         }else{
@@ -333,7 +330,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
             case "Boolean":
                 return (
                       <Switch
-                        checked={value}
+                        checked={Boolean(value)}
                         onChange={toggleSwitchValue}
                         inputProps={{ 'aria-label': 'primary checkbox' }}
                       />

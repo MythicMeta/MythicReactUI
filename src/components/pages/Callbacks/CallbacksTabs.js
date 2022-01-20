@@ -40,7 +40,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
     const me = useReactiveVar(meState);
     const [callbackTokens, setCallbackTokens] = React.useState([]);
     useSubscription(SUB_Callbacks, {
-        variables: { operation_id: me.user.current_operation_id },
+        variables: { operation_id: me?.user?.current_operation_id || 0},
         fetchPolicy: 'network-only',
         shouldResubscribe: true,
         onSubscriptionData: ({ subscriptionData }) => {

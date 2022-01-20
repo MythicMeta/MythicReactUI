@@ -35,6 +35,7 @@ import Collapse from '@material-ui/core/Collapse';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import LayersIcon from '@material-ui/icons/Layers';
+import TableChartIcon from '@material-ui/icons/TableChart';
 import PostAddIcon from '@material-ui/icons/PostAdd';
 import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
 import EditIcon from '@material-ui/icons/Edit';
@@ -210,6 +211,11 @@ export function TopAppBar(props) {
                 <MythicStyledTooltip title="Reporting" >
                   <IconButton component={Link} to='/new/reporting' color="inherit">
                       <FontAwesomeIcon icon={faFlagCheckered} />
+                  </IconButton>
+                </MythicStyledTooltip>
+                <MythicStyledTooltip title="MITRE ATT&CK" >
+                  <IconButton component={Link} to='/new/mitre' color="inherit">
+                    <TableChartIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
                 <Button style={{display: "inline-flex", alignItems: "center", paddingRight: "10px", color: "white"}} component={Link} to="/new/operations">

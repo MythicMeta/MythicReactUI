@@ -78,7 +78,7 @@ export function Payloads(props){
     const me = useReactiveVar(meState);
     const [payloads, setPayloads] = React.useState([]);
     useQuery(Get_Payloads, {
-      variables: {operation_id: me.user.current_operation_id},
+      variables: {operation_id: me?.user?.current_operation_id || 0},
       fetchPolicy: "no-cache",
       onCompleted: (data) => {
         const updated = data.payload.reduce( (prev, cur) => {
@@ -95,7 +95,7 @@ export function Payloads(props){
       },
     })
     useSubscription(SUB_Payloads, {
-      variables: {operation_id: me.user.current_operation_id},
+      variables: {operation_id: me?.user?.current_operation_id || 0},
       fetchPolicy: "no-cache",
       onSubscriptionData: ({subscriptionData}) => {
         const updated = subscriptionData.data.payload.reduce( (prev, cur) => {
@@ -169,7 +169,7 @@ export function Payloads(props){
         });
     }
     return (
-      <div style={{height: "calc(94vh)", maxHeight: "calc(94vh)", marginTop:"10px"}}>
+      <div style={{display: "flex", flexGrow: 1, flexDirection: "column", marginTop:"10px"}}>
         <PayloadsTable onDeletePayload={onDeletePayload} onUpdateCallbackAlert={onUpdateCallbackAlert} payload={payloads} />
       </div>
     );

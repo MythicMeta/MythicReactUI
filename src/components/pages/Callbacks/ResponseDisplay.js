@@ -87,7 +87,7 @@ export const ResponseDisplay = (props) =>{
       // we still have some room to view more, but only room for fetchLimit - totalFetched 
       if(subscriptionData.data.response.length > 0){
         const newResponses = subscriptionData.data.response.filter( r => r.id > highestFetched);
-        const newerResponses = newResponses.map( (r) => { return {...r, response: Buffer.from(r.response,"base64")}});
+        const newerResponses = newResponses.map( (r) => { return {...r, response: String(Buffer.from(r.response,"base64"))}});
         newerResponses.sort( (a,b) => a.id > b.id ? 1 : -1);
         let outputResponses = output;
         let rawResponseArray = [...rawResponses];
@@ -211,7 +211,7 @@ export const ResponseDisplay = (props) =>{
         }, highestFetched);
         setHighestFetched(maxID);
         setOutput(responses);
-        const responseArray = data.response.map( r => Buffer.from(r.response, "base64"));
+        const responseArray = data.response.map( r => String(Buffer.from(r.response, "base64")));
         setRawResponses(responseArray);
         if(viewBrowserScript && script.current !== undefined){
           try{
@@ -247,7 +247,7 @@ export const ResponseDisplay = (props) =>{
         }, highestFetched);
         setHighestFetched(maxID);
         setOutput(responses);
-        const responseArray = data.response.map( r => Buffer.from(r.response, "base64"));
+        const responseArray = data.response.map( r => String(Buffer.from(r.response, "base64")));
         setRawResponses(responseArray);
         if(viewBrowserScript && script.current !== undefined){
           try{

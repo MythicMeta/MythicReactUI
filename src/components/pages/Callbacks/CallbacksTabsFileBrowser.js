@@ -171,7 +171,12 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             const roots = data.filebrowserobj.reduce((prev, cur) => {
                 for (let i = 0; i < prev.length; i++) {
                     if (prev[i]['host'] === cur.host) {
-                        prev[i].chilren.push({ ...cur, parent_id: cur.host, children: [] });
+                        if(prev[i].children){
+                            prev[i].children.push({ ...cur, parent_id: cur.host, children: [] });
+                        }else{
+                            prev[i].children = [{ ...cur, parent_id: cur.host, children: [] }];
+                        }
+                        
                         return [...prev];
                     }
                 }

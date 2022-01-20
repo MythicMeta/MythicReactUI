@@ -254,7 +254,7 @@ function DetailedPayloadInnerTable(props){
                         <TableCell>Command Name</TableCell>
                         <TableCell>Mythic Version</TableCell>
                         <TableCell>Loaded Version</TableCell>
-                        <TableCell>Documentation</TableCell>
+                        <TableCell style={{width: "5rem"}}>Documentation</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
