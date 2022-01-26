@@ -27,6 +27,8 @@ import {useTheme} from '@material-ui/core/styles';
 import InfoIcon from '@material-ui/icons/Info';
 import {useMutation, gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
+import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const rebuildPayloadMutation = gql`
 mutation triggerRebuildMutation($uuid: String!) {
@@ -164,9 +166,17 @@ export function PayloadsTableRow(props){
         <React.Fragment>
             <TableRow key={"payload" + props.uuid} hover>
                 <TableCell>
-                  {props.deleted ? (null) : (
+                  {props.deleted ? (
+                    <MythicStyledTooltip title={"Mark payload as not deleted so you can get callbacks, but does not recreate the payload on disk"}>
+                      <IconButton size="small" onClick={() => {props.onRestorePayload(props.id)}} style={{color: theme.palette.success.main}} variant="contained"><RestoreFromTrashIcon /></IconButton>
+                    </MythicStyledTooltip>
+                    
+                  ) : (
                     <React.Fragment>
-                      <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
+                      <MythicStyledTooltip title={"Delete the payload from disk and mark as deleted. No new callbacks can be generated from this payload"}>
+                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
+                      </MythicStyledTooltip>
+                      
                       {openDelete && 
                         <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDelete}/>
                       }

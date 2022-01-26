@@ -18,7 +18,7 @@ import {useReactiveVar} from '@apollo/client';
 import {useTheme} from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
-import Tooltip from '@material-ui/core/Tooltip';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const updateCredentialComment = gql`
 mutation updateCommentMutation($credential_id: Int!, $comment: String!){
@@ -142,7 +142,7 @@ export function CredentialTable(props){
                         <TableCell >Realm</TableCell>
                         <TableCell >Credential</TableCell>
                         <TableCell >Comment</TableCell>
-                        <TableCell >Timestamp</TableCell>
+                        <TableCell style={{width: "15rem"}}>Timestamp</TableCell>
                         <TableCell >Task / Operator</TableCell>
                         <TableCell style={{width: "5rem"}}>Type</TableCell>
                     </TableRow>
@@ -223,31 +223,39 @@ function CredentialTableRow(props){
         <React.Fragment>
             <TableRow hover>
                 <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDeleteDialog} acceptText={props.deleted ? "Restore" : "Remove" }/>
-                <MythicDialog fullWidth={true} maxWidth="md" open={editCommentDialogOpen} 
-                    onClose={()=>{setEditCommentDialogOpen(false);}} 
-                    innerDialog={<MythicModifyStringDialog title="Edit Credential Comment" onSubmit={onSubmitUpdatedComment} value={props.comment} onClose={()=>{setEditCommentDialogOpen(false);}} />}
-                />
-                <MythicDialog fullWidth={true} maxWidth="md" open={editAccountDialogOpen} 
-                    onClose={()=>{setEditAccountDialogOpen(false);}} 
-                    innerDialog={<MythicModifyStringDialog title="Edit Credential Account" onSubmit={onSubmitUpdatedAccount} value={props.account} onClose={()=>{setEditAccountDialogOpen(false);}} />}
-                />
-                <MythicDialog fullWidth={true} maxWidth="md" open={editRealmDialogOpen} 
-                    onClose={()=>{setEditRealmDialogOpen(false);}} 
-                    innerDialog={<MythicModifyStringDialog title="Edit Credential Realm" onSubmit={onSubmitUpdatedRealm} value={props.realm} onClose={()=>{setEditRealmDialogOpen(false);}} />}
-                />
-                <MythicDialog fullWidth={true} maxWidth="md" open={editCredentialDialogOpen} 
-                    onClose={()=>{setEditCredentialDialogOpen(false);}} 
-                    innerDialog={<MythicModifyStringDialog title="Edit Credential Credential" onSubmit={onSubmitUpdatedCredential} value={props.credential_text} onClose={()=>{setEditCredentialDialogOpen(false);}} />}
-                />
+                {editCommentDialogOpen &&
+                    <MythicDialog fullWidth={true} maxWidth="md" open={editCommentDialogOpen} 
+                        onClose={()=>{setEditCommentDialogOpen(false);}} 
+                        innerDialog={<MythicModifyStringDialog title="Edit Credential Comment" onSubmit={onSubmitUpdatedComment} value={props.comment} onClose={()=>{setEditCommentDialogOpen(false);}} />}
+                    />
+                }
+                {editAccountDialogOpen &&
+                    <MythicDialog fullWidth={true} maxWidth="md" open={editAccountDialogOpen} 
+                        onClose={()=>{setEditAccountDialogOpen(false);}} 
+                        innerDialog={<MythicModifyStringDialog title="Edit Credential Account" onSubmit={onSubmitUpdatedAccount} value={props.account} onClose={()=>{setEditAccountDialogOpen(false);}} />}
+                    />
+                }
+                {editRealmDialogOpen &&
+                    <MythicDialog fullWidth={true} maxWidth="md" open={editRealmDialogOpen} 
+                        onClose={()=>{setEditRealmDialogOpen(false);}} 
+                        innerDialog={<MythicModifyStringDialog title="Edit Credential Realm" onSubmit={onSubmitUpdatedRealm} value={props.realm} onClose={()=>{setEditRealmDialogOpen(false);}} />}
+                    />
+                }
+                {editCredentialDialogOpen &&
+                    <MythicDialog fullWidth={true} maxWidth="md" open={editCredentialDialogOpen} 
+                        onClose={()=>{setEditCredentialDialogOpen(false);}} 
+                        innerDialog={<MythicModifyStringDialog title="Edit Credential Credential" onSubmit={onSubmitUpdatedCredential} value={props.credential_text} onClose={()=>{setEditCredentialDialogOpen(false);}} />}
+                    />
+                }
                 
                 <TableCell>{props.deleted ? (
-                    <Tooltip title="Restore Credential for use in Tasking">
+                    <MythicStyledTooltip title="Restore Credential for use in Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><RestoreFromTrashIcon/></IconButton>
-                    </Tooltip>
+                    </MythicStyledTooltip>
                 ) : (
-                    <Tooltip title="Delete Credential so it can't be used in Tasking">
+                    <MythicStyledTooltip title="Delete Credential so it can't be used in Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
-                    </Tooltip>
+                    </MythicStyledTooltip>
                 )} </TableCell>
                 <TableCell>
                     <IconButton onClick={() => setEditAccountDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>

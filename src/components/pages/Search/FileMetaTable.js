@@ -19,7 +19,6 @@ import Switch from '@material-ui/core/Switch';
 import IconButton from '@material-ui/core/IconButton';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import Tooltip from '@material-ui/core/Tooltip';
 import Box from '@material-ui/core/Box';
 import Collapse from '@material-ui/core/Collapse';
 import ArchiveIcon from '@material-ui/icons/Archive';
@@ -27,6 +26,7 @@ import { gql, useMutation } from '@apollo/client';
 import { ResponseDisplayScreenshotModal } from '../Callbacks/ResponseDisplayScreenshotModal';
 import { MythicDialog, MythicModifyStringDialog } from '../../MythicComponents/MythicDialog';
 import EditIcon from '@material-ui/icons/Edit';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const downloadBulkQuery = gql`
 mutation downloadBulkMutation($files: [String!]!){
@@ -186,7 +186,7 @@ function FileMetaDownloadTableRow(props){
                 <MythicConfirmDialog onClose={() => {setOpenDelete(false);}} onSubmit={onAcceptDelete} open={openDelete}/>
                 <TableCell>
                     {props.deleted ? (null) : (
-                        <Tooltip title="Toggle to download multiple files at once">
+                        <MythicStyledTooltip title="Toggle to download multiple files at once">
                             <Switch
                                 checked={props.selected[props.id] === undefined ? false : props.selected[props.id]}
                                 onChange={onSelectChanged}
@@ -194,7 +194,7 @@ function FileMetaDownloadTableRow(props){
                                 inputProps={{ 'aria-label': 'primary checkbox' }}
                                 name="select_multiple"
                                 />
-                        </Tooltip>
+                        </MythicStyledTooltip>
                     )}
                     
                 </TableCell>
@@ -414,7 +414,7 @@ function FileMetaUploadTableRow(props){
                 <MythicConfirmDialog onClose={() => {setOpenDelete(false);}} onSubmit={onAcceptDelete} open={openDelete}/>
                 <TableCell>
                     {props.deleted ? (null) : (
-                        <Tooltip title="Toggle to download multiple files at once">
+                        <MythicStyledTooltip title="Toggle to download multiple files at once">
                             <Switch
                                 checked={props.selected[props.id] === undefined ? false : props.selected[props.id]}
                                 onChange={onSelectChanged}
@@ -422,7 +422,7 @@ function FileMetaUploadTableRow(props){
                                 inputProps={{ 'aria-label': 'primary checkbox' }}
                                 name="select_multiple"
                                 />
-                        </Tooltip>
+                        </MythicStyledTooltip>
                     )}
                     
                 </TableCell>

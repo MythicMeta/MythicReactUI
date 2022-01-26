@@ -28,12 +28,13 @@ import LockOpenIcon from '@material-ui/icons/LockOpen';
 import EditIcon from '@material-ui/icons/Edit';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faQuestion} from '@fortawesome/free-solid-svg-icons';
+import {faQuestion, faSkullCrossbones} from '@fortawesome/free-solid-svg-icons';
 import {faLinux, faApple, faWindows, faChrome} from '@fortawesome/free-brands-svg-icons';
 import {useSubscription, gql } from '@apollo/client';
 import {DetailedCallbackTable} from './DetailedCallbackTable';
 import InfoIcon from '@material-ui/icons/Info';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import {TaskFromUIButton} from './TaskFromUIButton';
 
 const SUB_Callbacks = gql`
 subscription CallbacksSubscription ($callback_id: Int!){
@@ -49,6 +50,8 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
     const [openMetaDialog, setOpenMetaDialog] = React.useState(false);
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
     const [openEditDescriptionDialog, setOpenEditDescriptionDialog] = React.useState(false);
+    const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
+    const taskingData = React.useRef({"parameters": "", "ui_feature": "callback_table:exit"});
     const editDescriptionSubmit = (description) => {
         updateDescription({description, id: rowData.id})
     }
@@ -92,35 +95,42 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
     const localToggleLock = () => {
         toggleLock({id: rowData.id, locked: rowData.locked})
     }
-    const options =  [{name: 'Hide Callback', icon: <VisibilityOffIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
-                        evt.stopPropagation();
-                        hideCallback({variables: {callback_id: rowData.id}});
-                     }},
-                     {name: 'File Browser', icon: <AccountTreeIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
-                        evt.stopPropagation();
-                        localOnOpenTab("fileBrowser");
-                     }},
-                     {name: 'Process Browser', icon: <AccountTreeIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
-                        evt.stopPropagation();
-                        localOnOpenTab("processBrowser");
-                     }},
-                     {name: rowData.locked ? 'Unlock (Locked by ' + rowData.locked_operator.username + ')' : 'Lock Callback', icon: rowData.locked ? (<LockOpenIcon style={{paddingRight: "5px"}}/>) : (<LockIcon style={{paddingRight: "5px"}} />), click: (evt) => {
-                        evt.stopPropagation();
-                        localToggleLock();
-                     }},
-                     {name: "Edit Description", icon: <EditIcon style={{paddingRight: "5px"}} />, click: (evt) => {
-                        evt.stopPropagation();
-                        setOpenEditDescriptionDialog(true);
-                     }},
-                     {name: "Expand Callback", icon: <OpenInNewIcon style={{paddingRight: "5px"}} />, click: (evt) => {
-                        evt.stopPropagation();
-                        window.open("/new/callbacks/" + rowData.id, "_blank").focus();
-                     }},
-                     {name: "View Metadata", icon: <InfoIcon style={{paddingRight: "5px"}} />, click: (evt) => {
-                         evt.stopPropagation();
-                         setOpenMetaDialog(true);
-                     }}
-                 ];
+    const options =  [
+        {name: 'Hide Callback', icon: <VisibilityOffIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
+            evt.stopPropagation();
+            hideCallback({variables: {callback_id: rowData.id}});
+        }},
+        {
+            name: "Exit Callback", icon: <FontAwesomeIcon icon={faSkullCrossbones} style={{cursor: "pointer", marginRight: "10px"}} />, click: (evt) => {
+                taskingData.current = {"parameters": "", "ui_feature": "callback_table:exit", "getConfirmation": true};
+                setOpenTaskingButton(true);
+            }
+        },
+        {name: 'File Browser', icon: <AccountTreeIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
+            evt.stopPropagation();
+            localOnOpenTab("fileBrowser");
+        }},
+        {name: 'Process Browser', icon: <AccountTreeIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
+            evt.stopPropagation();
+            localOnOpenTab("processBrowser");
+        }},
+        {name: rowData.locked ? 'Unlock (Locked by ' + rowData.locked_operator.username + ')' : 'Lock Callback', icon: rowData.locked ? (<LockOpenIcon style={{paddingRight: "5px"}}/>) : (<LockIcon style={{paddingRight: "5px"}} />), click: (evt) => {
+            evt.stopPropagation();
+            localToggleLock();
+        }},
+        {name: "Edit Description", icon: <EditIcon style={{paddingRight: "5px"}} />, click: (evt) => {
+            evt.stopPropagation();
+            setOpenEditDescriptionDialog(true);
+        }},
+        {name: "Expand Callback", icon: <OpenInNewIcon style={{paddingRight: "5px"}} />, click: (evt) => {
+            evt.stopPropagation();
+            window.open("/new/callbacks/" + rowData.id, "_blank").focus();
+        }},
+        {name: "View Metadata", icon: <InfoIcon style={{paddingRight: "5px"}} />, click: (evt) => {
+            evt.stopPropagation();
+            setOpenMetaDialog(true);
+        }}
+    ];
     return (
         <div>
             <ButtonGroup variant="contained" 
@@ -167,7 +177,15 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
                     </Paper>
                 </Grow>
                 )}
-            </Popper>        
+            </Popper>     
+            {openTaskingButton && 
+                <TaskFromUIButton ui_feature={taskingData.current?.ui_feature || " "} 
+                    callback_id={rowData.id} 
+                    parameters={taskingData.current?.parameters || ""}
+                    openDialog={taskingData.current?.openDialog || false}
+                    getConfirmation={taskingData.current?.getConfirmation || false}
+                    onTasked={() => setOpenTaskingButton(false)}/>
+            }  
             {openMetaDialog && 
                 <MythicDialog fullWidth={true} maxWidth="lg" open={openMetaDialog}
                     onClose={()=>{setOpenMetaDialog(false);}} 

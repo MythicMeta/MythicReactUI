@@ -14,11 +14,11 @@ import {snackActions} from '../../utilities/Snackbar';
 import {useTheme} from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
-import Tooltip from '@material-ui/core/Tooltip';
 import ConfirmationNumberIcon from '@material-ui/icons/ConfirmationNumber';
 import EditIcon from '@material-ui/icons/Edit';
 import {TaskTokenDialog} from '../Callbacks/TaskTokenDialog';
 import {TokenDescriptionDialog} from './TokenDescriptionDialog';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const updateCredentialDeleted = gql`
 mutation updateCredentialDeletedMutation($token_id: Int!, $deleted: Boolean!){
@@ -119,13 +119,13 @@ function TokenTableRow(props){
                 <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDeleteDialog} acceptText={props.deleted ? "Restore" : "Remove" }/>
                 
                 <TableCell>{props.deleted ? (
-                    <Tooltip title="Restore Token for use in Tasking">
+                    <MythicStyledTooltip title="Restore Token for use in Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><RestoreFromTrashIcon/></IconButton>
-                    </Tooltip>
+                    </MythicStyledTooltip>
                 ) : (
-                    <Tooltip title="Delete Token so it can't be used in Tasking">
+                    <MythicStyledTooltip title="Delete Token so it can't be used in Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
-                    </Tooltip>
+                    </MythicStyledTooltip>
                 )} </TableCell>
                 <TableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.User}</Typography>
@@ -136,7 +136,7 @@ function TokenTableRow(props){
                 </TableCell>
                 <TableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.TokenId}</Typography>
-                    <Tooltip title="View Token Information"><IconButton size="small" color="primary" onClick={()=>{setViewTokenDialog(true);}}><ConfirmationNumberIcon/></IconButton></Tooltip>
+                    <MythicStyledTooltip title="View Token Information"><IconButton size="small" color="primary" onClick={()=>{setViewTokenDialog(true);}}><ConfirmationNumberIcon/></IconButton></MythicStyledTooltip>
                     <MythicDialog fullWidth={true} maxWidth="md" open={viewTokenDialog} 
                         onClose={()=>{setViewTokenDialog(false);}} 
                         innerDialog={<TaskTokenDialog token_id={props.id} onClose={()=>{setViewTokenDialog(false);}} />}

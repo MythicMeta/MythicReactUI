@@ -73,6 +73,14 @@ mutation PayloadsCallbackAlertMutation($id: Int!, $callback_alert: Boolean!) {
   }
 }
 `;
+const restorePayloadMutation = gql`
+mutation RestorePayloadToUndeleted($id: Int!){
+  update_payload_by_pk(pk_columns: {id: $id}, _set: {deleted: false}){
+    id
+    deleted
+  }
+}
+`;
 
 export function Payloads(props){
     const me = useReactiveVar(meState);
@@ -137,6 +145,25 @@ export function Payloads(props){
           console.log(data);
         }
     });
+    const [restorePayload] = useMutation(restorePayloadMutation, {
+      onCompleted: (data) => {
+        const updated = payloads.map( (payload) => {
+          if(payload.id === data.update_payload_by_pk.id){
+            return {...payload, ...data.update_payload_by_pk};
+          }else{
+            return {...payload};
+          }
+        });
+        setPayloads(updated);
+        if(data.update_payload_by_pk.deleted === false){
+          snackActions.success("Successfully marked payload as not deleted");
+        }
+      },
+      onError: (data) => {
+        snackActions.warning("Failed to mark as not deleted");
+        console.log(data);
+      }
+  });
     const [callbackAlert] = useMutation(payloadsCallbackAlert, {
       onCompleted: (data) => {
         const updated = payloads.map( (payload) => {
@@ -168,9 +195,14 @@ export function Payloads(props){
         
         });
     }
+    const onRestorePayload = (id) => {
+      restorePayload({
+        variables: {id}
+      })
+    }
     return (
       <div style={{display: "flex", flexGrow: 1, flexDirection: "column", marginTop:"10px"}}>
-        <PayloadsTable onDeletePayload={onDeletePayload} onUpdateCallbackAlert={onUpdateCallbackAlert} payload={payloads} />
+        <PayloadsTable onDeletePayload={onDeletePayload} onUpdateCallbackAlert={onUpdateCallbackAlert} payload={payloads} onRestorePayload={onRestorePayload}/>
       </div>
     );
 } 

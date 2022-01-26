@@ -83,7 +83,7 @@ export const ResponseDisplay = (props) =>{
     const [search, setSearch] = React.useState("");
     const [totalCount, setTotalCount] = React.useState(0);
     const oldSelectAllOutput = React.useRef(props.selectAllOutput);
-    const [openBackdrop, setOpenBackdrop] = React.useState(false);
+    const [openBackdrop, setOpenBackdrop] = React.useState(true);
     
     const [fetchMoreResponses] = useLazyQuery(getResponsesLazyQuery, {
       fetchPolicy: "network-only",
@@ -153,6 +153,7 @@ export const ResponseDisplay = (props) =>{
         return;
       }else 
       // we still have some room to view more, but only room for fetchLimit - totalFetched.current
+      setOpenBackdrop(false);
       if(subscriptionData.data.response.length > 0){
         const newResponses = subscriptionData.data.response.filter( r => r.id > highestFetched.current);
         const newerResponses = newResponses.map( (r) => { return {...r, response: String(Buffer.from(r.response,"base64"))}});

@@ -16,8 +16,8 @@ import {useReactiveVar} from '@apollo/client';
 import {useTheme} from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
-import Tooltip from '@material-ui/core/Tooltip';
 import {toggleHideCallbackMutations} from '../Callbacks/CallbackMutations';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 export function CallbackSearchTable(props){
     const [callbacks, setCallbacks] = React.useState([]);
@@ -90,13 +90,13 @@ function CallbackSearchTableRow(props){
                 <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDeleteDialog} acceptText={props.active ? "Hide" : "Restore" }/>
                 
                 <TableCell>{!props.active ? (
-                    <Tooltip title="Restore Callback for Tasking">
+                    <MythicStyledTooltip title="Restore Callback for Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><RestoreFromTrashIcon/></IconButton>
-                    </Tooltip>
+                    </MythicStyledTooltip>
                 ) : (
-                    <Tooltip title="Hide Callback so it can't be used in Tasking">
+                    <MythicStyledTooltip title="Hide Callback so it can't be used in Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
-                    </Tooltip>
+                    </MythicStyledTooltip>
                 )} </TableCell>
                 <TableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.user}</Typography>

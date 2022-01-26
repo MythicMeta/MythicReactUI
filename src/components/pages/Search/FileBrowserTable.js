@@ -11,10 +11,10 @@ import { MythicDialog, MythicModifyStringDialog, MythicViewJSONAsTableDialog } f
 import {DownloadHistoryDialog} from '../Callbacks/DownloadHistoryDialog';
 import HistoryIcon from '@material-ui/icons/History';
 import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
-import Tooltip from '@material-ui/core/Tooltip';
 import { gql, useMutation } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
 import EditIcon from '@material-ui/icons/Edit';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const updateFileComment = gql`
 mutation updateCommentMutation($filebrowserobj_id: Int!, $comment: String!){
@@ -108,9 +108,9 @@ function FileBrowserTableRow(props){
                 </TableCell>
                 <TableCell>
                     {props.filemeta.length > 0 ? (
-                        <Tooltip title="View Download History and Download Files">
+                        <MythicStyledTooltip title="View Download History and Download Files">
                             <Button color="primary" variant="contained" onClick={() => setFileHistoryDialogOpen(true)}><HistoryIcon /></Button>
-                        </Tooltip>
+                        </MythicStyledTooltip>
                     ): (null)}
                 </TableCell>
             </TableRow>

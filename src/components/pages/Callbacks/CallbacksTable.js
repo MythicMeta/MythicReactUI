@@ -109,7 +109,7 @@ export function CallbacksTable(props){
           {key: "process_name", type: 'string', name: "Process Name", fillWidth: true},
           
         ].reduce( (prev, cur) => {
-          if(columnVisibility.visible.includes(cur.name)){
+          if(columnVisibility.visible.includes(cur.name) || cur.name === "Interact"){
             if(filterOptions[cur.key] && String(filterOptions[cur.key]).length > 0){
                 return [...prev, {...cur, filtered: true}];
             }else{
