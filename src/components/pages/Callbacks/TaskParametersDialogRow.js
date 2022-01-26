@@ -22,6 +22,8 @@ import { snackActions } from '../../utilities/Snackbar';
 import {CredentialTableNewCredentialDialog} from '../Search/CredentialTableNewCredentialDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import { Backdrop } from '@material-ui/core';
+import {CircularProgress} from '@material-ui/core';
 
 const getDynamicQueryParams = gql`
 mutation getDynamicParamsMutation($callback: Int!, $command: String!, $payload_type: String!, $parameter_name: String!){
@@ -75,20 +77,29 @@ export function TaskParametersDialogRow(props){
     const [openAdditionalPayloadOnHostMenu, setOpenAdditionalPayloadOnHostmenu] = React.useState(false);
     const [createCredentialDialogOpen, setCreateCredentialDialogOpen] = React.useState(false);
     const [fileValue, setFileValue] = React.useState({name: ""});
+    const [backdropOpen, setBackdropOpen] = React.useState(false);
     const [getDynamicParams] = useMutation(getDynamicQueryParams, {
         onCompleted: (data) => {
             //console.log(data);
             if(data.dynamic_query_function.status === "success"){
-                setChoiceOptions([...data.dynamic_query_function.choices]);
-                if(props.type === "Choice"){
-                    if(data.dynamic_query_function.choices.length > 0){
-                        setValue(data.dynamic_query_function.choices[0]);
-                        props.onChange(props.name, data.dynamic_query_function.choices[0], false);
+                try{
+                    setChoiceOptions([...data.dynamic_query_function.choices]);
+                    if(props.type === "Choice"){
+                        if(data.dynamic_query_function.choices.length > 0){
+                            setValue(data.dynamic_query_function.choices[0]);
+                            props.onChange(props.name, data.dynamic_query_function.choices[0], false);
+                        }
                     }
+                }catch(error){
+                    setBackdropOpen(false);
+                    snackActions.warning("Failed to parse dynamic parameter results");
+                    setChoiceOptions([]);
                 }
+                
             }else{
-                snackActions.warning("Failed to fetch dynamic parameter query: " + data.dynamic_query_function.error);
+                snackActions.warning(data.dynamic_query_function.error);
             }
+            setBackdropOpen(false);
         },
         onError: (data) => {
             snackActions.warning("Failed to perform dynamic parameter query");
@@ -99,7 +110,32 @@ export function TaskParametersDialogRow(props){
         fetchPolicy: "no-cache",
         onCompleted: (data) => {
             snackActions.success("Successfully created new credential");
-            setChoiceOptions([...ChoiceOptions, {...data.insert_credential_one}])
+            let newLength = ChoiceOptions.length;
+            setChoiceOptions([...ChoiceOptions, {...data.insert_credential_one}]);
+            switch(props.type){
+                case "Credential-JSON":
+                    setValue(newLength);
+                    props.onChange(props.name, {...data.insert_credential_one}, false);
+                    break;
+                case "Credential-Account":
+                    setValue(data.insert_credential_one.account);
+                    props.onChange(props.name, data.insert_credential_one.account, false);
+                    break;
+                case "Credential-Realm":
+                    setValue(data.insert_credential_one.realm);
+                    props.onChange(props.name, data.insert_credential_one.realm, false);
+                    break;
+                case "Credential-Type":
+                    setValue(data.insert_credential_one.type);
+                    props.onChange(props.name, data.insert_credential_one.type, false);
+                    break;
+                case "Credential-Credential":
+                    setValue(data.insert_credential_one.credential_text);
+                    props.onChange(props.name, data.insert_credential_one.credential_text, false);
+                    break;
+                default:
+                    break;
+            }
         },
         onError: (data) => {
             snackActions.error("Failed to create credential");
@@ -109,6 +145,7 @@ export function TaskParametersDialogRow(props){
     useEffect( () => {
         if(props.dynamic_query_function !== null){
             if(ChoiceOptions.length === 0){
+                setBackdropOpen(true);
                 getDynamicParams({variables:{
                     callback: props.callback_id,
                     parameter_name: props.name,
@@ -344,22 +381,28 @@ export function TaskParametersDialogRow(props){
             case "Choice":
             case "ChoiceMultiple":
                 return (
-                    <FormControl style={{width: "100%"}}>
-                        <Select
-                          native
-                          autoFocus={props.autoFocus}
-                          multiple={props.type === "ChoiceMultiple"}
-                          value={props.type === "ChoiceMultiple" ? choiceMultipleValue : value}
-                          onChange={props.type === "ChoiceMultiple" ? onChangeChoiceMultiple : onChangeValue}
-                          input={<Input />}
-                        >
-                        {
-                            ChoiceOptions.map((opt, i) => (
-                                <option key={props.name + i} value={opt}>{opt}</option>
-                            ))
-                        }
-                        </Select>
-                    </FormControl>
+                    <React.Fragment>
+                        <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={false}>
+                            <CircularProgress color="inherit" />
+                        </Backdrop>
+                        <FormControl style={{width: "100%"}}>
+                            <Select
+                            native
+                            autoFocus={props.autoFocus}
+                            multiple={props.type === "ChoiceMultiple"}
+                            value={props.type === "ChoiceMultiple" ? choiceMultipleValue : value}
+                            onChange={props.type === "ChoiceMultiple" ? onChangeChoiceMultiple : onChangeValue}
+                            input={<Input />}
+                            >
+                            {
+                                ChoiceOptions.map((opt, i) => (
+                                    <option key={props.name + i} value={opt}>{opt}</option>
+                                ))
+                            }
+                            </Select>
+                        </FormControl>
+                    </React.Fragment>
+                    
                 )
             case "Array":
                 return (

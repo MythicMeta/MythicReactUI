@@ -1,6 +1,8 @@
 import React, {useEffect, useRef} from 'react';
 import {Button} from '@material-ui/core';
 import { MythicViewJSONAsTableDialog, MythicDialog } from '../../MythicComponents/MythicDialog';
+import { MythicDisplayTextDialog } from '../../MythicComponents/MythicDisplayTextDialog';
+import { ResponseDisplayTableDialogTable } from './ResponseDisplayTableDialogTable';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import {useTheme} from '@material-ui/core/styles';
@@ -164,6 +166,9 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
   const theme = useTheme();
   const [openButton, setOpenButton] = React.useState(false);
   const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
+  const [openDictionaryButton, setOpenDictionaryButton] = React.useState(false);
+  const [openStringButton, setOpenStringButton] = React.useState(false);
+  const [openTableButton, setOpenTableButton] = React.useState(false);
   const dropdownAnchorRef = useRef(null);
   const [openDropdownButton, setOpenDropdownButton] = React.useState(false);
   const [taskingData, setTaskingData] = React.useState({});
@@ -181,17 +186,33 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
         break;
       case "dictionary":
         setTaskingData(cellData.button.value[index]);
-        setOpenButton(true);
+        setOpenDictionaryButton(true);
+        break;
+      case "string":
+        setTaskingData(cellData.button.value[index]);
+        setOpenStringButton(true);
+        break;
+      case "table":
+        setTaskingData(cellData.button.value[index]);
+        setOpenTableButton(true);
         break;
     }
     setOpenDropdownButton(false);
   };
   const finishedTasking = () => {
+    setOpenButton(false);
     setOpenTaskingButton(false);
+    setOpenDictionaryButton(false);
+    setOpenStringButton(false);
+    setOpenTableButton(false);
     setTaskingData({});
   }
   const finishedViewingData = () => {
     setOpenButton(false);
+    setOpenTaskingButton(false);
+    setOpenDictionaryButton(false);
+    setOpenStringButton(false);
+    setOpenTableButton(false);
     setTaskingData({});
   }
   const getButtonObject = () => {
@@ -213,6 +234,40 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
                 />
               }
             </React.Fragment>
+        )
+      case "string":
+        return (
+          <React.Fragment>
+            <MythicStyledTooltip title={cellData?.button?.hoverText || "Display Data"} >
+              <Button size="small" variant="contained" color="primary" 
+                onClick={() => setOpenButton(true)} disabled={cellData?.button?.disabled || false}
+                startIcon={cellData?.button?.startIcon ? <FontAwesomeIcon icon={getIconName(cellData?.button?.startIcon)} style={{color: cellData?.button?.startIconColor  || ""}}/> : null}
+                >{cellData?.button?.name || " "}</Button>
+            </MythicStyledTooltip>
+            {openButton &&
+                <MythicDisplayTextDialog fullWidth={true} maxWidth="lg" open={openButton} title={cellData?.button?.title || "Title Here"} value={cellData?.button?.value || ""}
+                    onClose={()=>{setOpenButton(false);}}
+                />
+              }
+          </React.Fragment>
+        )
+      case "table": 
+        return (
+          <React.Fragment>
+            <MythicStyledTooltip title={cellData?.button?.hoverText || "Display Data"} >
+              <Button size="small" variant="contained" color="primary" 
+                onClick={() => setOpenButton(true)} disabled={cellData?.button?.disabled || false}
+                startIcon={cellData?.button?.startIcon ? <FontAwesomeIcon icon={getIconName(cellData?.button?.startIcon)} style={{color: cellData?.button?.startIconColor  || ""}}/> : null}
+                >{cellData?.button?.name || " "}</Button>
+            </MythicStyledTooltip>
+            {openButton &&
+                <MythicDialog fullWidth={true} maxWidth="xl" open={openButton} 
+                    onClose={()=>{setOpenButton(false);}} 
+                    innerDialog={<ResponseDisplayTableDialogTable title={cellData?.button?.title || "Title Here"} 
+                    table={cellData?.button?.value || {}} callback_id={callback_id} onClose={()=>{setOpenButton(false);}} />}
+                />
+              }
+          </React.Fragment>
         )
       case "task":
         return (
@@ -241,14 +296,29 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
                 parameters={taskingData.parameters}
                 onTasked={finishedTasking}/>
             }
-            {openButton && 
-              <MythicDialog fullWidth={true} maxWidth="lg" open={openButton} 
+            {openDictionaryButton && 
+              <MythicDialog fullWidth={true} maxWidth="lg" open={openDictionaryButton} 
                 onClose={finishedViewingData} 
                 innerDialog={<MythicViewJSONAsTableDialog title={taskingData.title} leftColumn={taskingData.leftColumnTitle} 
                 rightColumn={taskingData.rightColumnTitle} value={taskingData.value} onClose={finishedViewingData} />}
             />
             }
-            <Button ref={dropdownAnchorRef} size="small" onClick={()=>{setOpenDropdownButton(true);}} color="primary" variant="contained">{cellData.button.name}</Button>
+            {openStringButton &&
+              <MythicDisplayTextDialog fullWidth={true} maxWidth="lg" open={openStringButton} title={taskingData?.title || "Title Here"} value={taskingData?.value || ""}
+                  onClose={finishedViewingData}
+              />
+            }
+            {openTableButton &&
+                <MythicDialog fullWidth={true} maxWidth="xl" open={openTableButton} 
+                    onClose={finishedViewingData} 
+                    innerDialog={<ResponseDisplayTableDialogTable title={taskingData?.title || "Title Here"} 
+                    table={taskingData?.value || {}} callback_id={callback_id} onClose={finishedViewingData} />}
+                />
+              }
+              <Button size="small" variant="contained" color="primary" ref={dropdownAnchorRef}
+                onClick={() => setOpenDropdownButton(true)} disabled={cellData?.button?.disabled || false}
+                startIcon={cellData?.button?.startIcon ? <FontAwesomeIcon icon={getIconName(cellData?.button?.startIcon)} style={{color: cellData?.button?.startIconColor  || ""}}/> : null}
+                >{cellData?.button?.name || " "}</Button>
                 <Popper open={openDropdownButton} anchorEl={dropdownAnchorRef.current} role={undefined} transition style={{zIndex: 4}}>
                   {({ TransitionProps, placement }) => (
                     <Grow

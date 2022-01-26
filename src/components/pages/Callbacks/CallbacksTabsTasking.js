@@ -67,14 +67,10 @@ export const taskingDataFragment = gql`
           id
         }
         command_name
-        responses_aggregate {
-            aggregate{
-              count
-              max {
-                timestamp
-              }
-            }
-          }
+        responses(limit: 1, order_by: {id: desc}){
+            id
+            timestamp
+        }
         opsec_pre_blocked
         opsec_pre_bypassed
         opsec_post_blocked
@@ -175,9 +171,6 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =
                 return false;
             }
             if(oldArray[i].timestamp !== newArray[i].timestamp){
-                return false;
-            }
-            if(oldArray[i].responses_aggregate.aggregate.count !== newArray[i].responses_aggregate.aggregate.count){
                 return false;
             }
             if(oldArray[i].opsec_pre_blocked !== newArray[i].opsec_pre_blocked){
@@ -314,14 +307,17 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =
         }else{
             // check if there's a "file" component that needs to be displayed
             const fileParamExists = cmd.commandparameters.find(param => param.parameter_type === "File" && cmdGroupNames.includes(param.parameter_group_name));
+            console.log("missing File for group? ", fileParamExists, cmdGroupNames);
             let missingRequiredPrams = false;
             if(cmdGroupNames.length === 1){
                 const missingParams = cmd.commandparameters.filter(param => param.required && param.parameter_group_name === cmdGroupNames[0] && !(param.cli_name in parsed));
                 if(missingParams.length > 0){
                     missingRequiredPrams = true;
+                    console.log("missing required params", missingParams,parsed);
                 }
             }else if(cmdGroupNames > 1 && !force_parsed_popup){
                 // need to force a popup because the tasking is ambiguous
+                console.log("command is ambiguous");
                 force_parsed_popup = true;
             }
             if(fileParamExists || force_parsed_popup || missingRequiredPrams){

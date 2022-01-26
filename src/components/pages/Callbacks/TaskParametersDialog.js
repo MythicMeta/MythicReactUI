@@ -20,6 +20,9 @@ import Input from '@material-ui/core/Input';
 import {UploadTaskFile} from '../../MythicComponents/MythicFileUpload';
 import { Backdrop } from '@material-ui/core';
 import {CircularProgress} from '@material-ui/core';
+import Divider from '@material-ui/core/Divider';
+import {useTheme} from '@material-ui/core/styles';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 //if we need to get all the loaded commands for the callback and filter, use this
 const GetLoadedCommandsQuery = gql`
@@ -273,6 +276,7 @@ query getCredentialsQuery($operation_id: Int!){
 }
 `;
 export function TaskParametersDialog(props) {
+    const theme = useTheme();
     const [backdropOpen, setBackdropOpen] = React.useState(false);
     const [commandInfo, setCommandInfo] = useState({});
     const [parameterGroups, setParameterGroups] = useState([]);
@@ -803,15 +807,16 @@ export function TaskParametersDialog(props) {
     
   return (
     <React.Fragment>
-        <DialogTitle id="form-dialog-title">{props.command.cmd}'s Parameters</DialogTitle>
+        <DialogTitle id="form-dialog-title">{commandInfo.cmd}'s Parameters</DialogTitle>
         <DialogContent dividers={true}>
             <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}}>
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Typography component="div" >
-                <b>Help</b> <pre style={{margin:0}}>{props.command.help_cmd}</pre>
-                <b>Description</b> <pre style={{margin:0, wordBreak: "break-all", overflow: "word-wrap", whiteSpace: "pre-wrap"}}>{props.command.description}</pre>
-                <b>Requires Admin?</b> {props.command.needs_admin ? "True": "False"}
+                <b>Description</b> <pre style={{margin:0, wordBreak: "break-all", overflow: "word-wrap", whiteSpace: "pre-wrap"}}>{commandInfo.description}</pre><br/>
+                <Divider />
+                <b>Requires Admin?</b><pre style={{margin:0}}>{commandInfo.needs_admin ? "True": "False"}</pre><br/>
+                <Divider />
                 {parameterGroups.length > 1 &&
                     <FormControl style={{width: "100%"}} >
                         <TextField
@@ -829,9 +834,10 @@ export function TaskParametersDialog(props) {
                         }
                         </TextField>
                     </FormControl>
+                    
                 }
             </Typography>
-            <TableContainer component={Paper} className="mythicElement"> 
+            <TableContainer component={Paper} elevation={5} className="mythicElement" style={{backgroundColor: theme.tableHover, marginTop: "10px"}}> 
                 <Table size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
                     <TableHead>
                         <TableRow>

@@ -379,27 +379,25 @@ const FileBrowserTableRowActionCell = ({rowData, onTaskRowAction, os}) => {
     const optionsB = [{name: 'Task Token Listing', icon: <ListIcon style={{paddingRight: "5px", color: theme.palette.warning.main}}/>, click: (evt) => {
                         evt.stopPropagation();
                         onTaskRowAction({
-                            path: rowData.parent_path_text,
-                            host: rowData.host,
-                            filename: rowData.name_text,
+                            process_id: rowData.process_id,
+                            architecture: rowData.architecture,
                             uifeature: "process_browser:list_tokens"
                         });
                     }, os: ["Windows"]},
                     {name: 'Task Inject', icon: <GetAppIcon style={{paddingRight: "5px", color: theme.palette.success.main}}/>, click: (evt) => {
                         evt.stopPropagation();
+                        console.log(rowData);
                         onTaskRowAction({
-                            path: rowData.parent_path_text,
-                            host: rowData.host,
-                            filename: rowData.name_text,
+                            process_id: rowData.process_id,
+                            architecture: rowData.architecture,
                             uifeature: "process_browser:inject"
                         });
                     }},
                     {name: 'Task Steal Token', icon: <DeleteIcon style={{paddingRight: "5px", color: theme.palette.error.main}}/>, click: (evt) => {
                         evt.stopPropagation();
                         onTaskRowAction({
-                            path: rowData.parent_path_text,
-                            host: rowData.host,
-                            filename: rowData.name_text,
+                            process_id: rowData.process_id,
+                            architecture: rowData.architecture,
                             uifeature: "process_browser:steal_token"
                         });
                         
@@ -407,9 +405,8 @@ const FileBrowserTableRowActionCell = ({rowData, onTaskRowAction, os}) => {
                     {name: 'Task Kill Process', icon: <DeleteIcon style={{paddingRight: "5px", color: theme.palette.error.main}}/>, click: (evt) => {
                         evt.stopPropagation();
                         onTaskRowAction({
-                            path: rowData.parent_path_text,
-                            host: rowData.host,
-                            filename: rowData.name_text,
+                            process_id: rowData.process_id,
+                            architecture: rowData.architecture,
                             uifeature: "process_browser:kill"
                         });
                         

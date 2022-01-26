@@ -8,7 +8,6 @@ import { useReactiveVar } from '@apollo/client';
 import { meState } from '../../../cache';
 import {useTheme} from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Tooltip from '@material-ui/core/Tooltip';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import IconButton from '@material-ui/core/IconButton';
 import RotateLeftIcon from '@material-ui/icons/RotateLeft';
@@ -250,8 +249,10 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
     const onDiffButton = ({task_id}) => {
         
     }
-    const onTaskRowAction = ({path, host, filename, uifeature}) => {
-        console.log(path, host, filename, uifeature);
+    const onTaskRowAction = ({process_id, architecture, uifeature}) => {
+        taskingData.current = {"parameters": {"process_id": process_id, "architecture": architecture}, "ui_feature": uifeature, openDialog: true};
+        setOpenTaskingButton(true);
+        console.log(process_id, architecture, uifeature);
     }
     const onChangeCallbackID = (callbackID) => {
         currentCallbackIDSetInTable.current = callbackID;
@@ -278,6 +279,7 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
                     <TaskFromUIButton ui_feature={taskingData.current?.ui_feature || " "} 
                         callback_id={currentCallbackIDSetInTable.current} 
                         parameters={taskingData.current?.parameters || ""}
+                        openDialog={taskingData.current?.openDialog || false}
                         onTasked={() => setOpenTaskingButton(false)}/>
                     }
             </div>            

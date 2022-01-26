@@ -429,8 +429,9 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }
         }
         try{
-            const argv = arrgv(command_line);
-            //console.log("argv", argv);
+            let new_command_line = command_line.replaceAll("\\", "\\\\")
+            const argv = arrgv(new_command_line);
+            console.log("argv", argv);
             //console.log("arrayArgs", arrayArgs);
             const yargs_parsed = parser(argv, {
                 string: stringArgs,
@@ -499,8 +500,12 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         if(groupNames.length === 0){
             return parsedCopy;
         }
+        let usedGroupName = groupNames[0];
+        if(groupNames.includes("Default")){
+            usedGroupName = "Default";
+        }
         // figure out how to deal with positional parameters
-        const groupParameters = cmd.commandparameters.filter(c => c.parameter_group_name === groupNames[0]);
+        const groupParameters = cmd.commandparameters.filter(c => c.parameter_group_name === usedGroupName);
         groupParameters.sort((a,b) => a.ui_position < b.ui_position ? -1 : 1);
         // now we have all of the parameters and they're sorted by `ui_position`
         
@@ -536,7 +541,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             snackActions.warning("Unknown command", snackMessageStyles);
             return;
         }
-        let cmdGroupName = "Default";
+        let cmdGroupName = ["Default"];
         let parsedWithPositionalParameters = {};
         if(unmodifiedHistoryValue.includes("modal") || unmodifiedHistoryValue.includes("browserscript")){
             // these are the two kinds that'll introduce dictionary values as original_params
@@ -544,6 +549,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 let params = splitMessage.slice(1).join(" ");
                 parsedWithPositionalParameters = JSON.parse(params);
                 cmdGroupName = determineCommandGroupName(cmd, parsedWithPositionalParameters);
+                cmdGroupName.sort()
             }catch(error){
                 snackActions.warning("Failed to parse modified JSON value", snackMessageStyles);
                 return;
@@ -553,9 +559,12 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             if(!parsed){
                 return;
             }
+            console.log(message, parsed);
             cmdGroupName = determineCommandGroupName(cmd, parsed);
+            cmdGroupName.sort();
             if(cmd.commandparameters.length > 0){
                 parsedWithPositionalParameters = fillOutPositionalArguments(cmd, parsed, cmdGroupName);
+                console.log(parsedWithPositionalParameters);
                 if(parsedWithPositionalParameters["_"].length > 0){
                     snackActions.warning("Too many positional arguments given. Did you mean to quote some of them?", snackMessageStyles);
                     return;

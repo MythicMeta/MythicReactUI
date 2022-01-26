@@ -19,49 +19,46 @@ import SvgIcon from '@material-ui/core/SvgIcon';
 import {gql, useLazyQuery } from '@apollo/client';
 import {TaskDisplayContainer} from './TaskDisplayContainer';
 
-export const taskDisplayFragment = gql`
-fragment taskData on task {
-  comment
-  callback_id
-  commentOperator{
-      username
-  }
-  completed
-  id
-  operator{
-      username
-  }
-  original_params
-  display_params
-  status
-  timestamp
-  command {
-    cmd
-    id
-  }
-  command_name
-  responses_aggregate {
-    aggregate{
-      count
-      max {
+const taskDataFragment = gql`
+    fragment taskData on task {
+        comment
+        callback_id
+        commentOperator{
+            username
+        }
+        completed
+        id
+        operator{
+            username
+        }
+        original_params
+        display_params
+        status
         timestamp
-      }
+        command {
+          cmd
+          id
+        }
+        command_name
+        responses(limit: 1, order_by: {id: desc}){
+            id
+            timestamp
+        }
+        opsec_pre_blocked
+        opsec_pre_bypassed
+        opsec_post_blocked
+        opsec_post_bypassed
+        tasks {
+            id
+        }
+        token {
+            id
+        }
     }
-  }
-  opsec_pre_blocked
-  opsec_pre_bypassed
-  opsec_post_blocked
-  opsec_post_bypassed
-  tasks {
-      id
-  }
-  token {
-    id
-  }
-}
 `;
+
 const getSubTaskingQuery = gql`
-${taskDisplayFragment}
+${taskDataFragment}
 query getSubTasking($task_id: Int!){
     task(where: {parent_task_id: {_eq: $task_id}}, order_by: {id: asc}) {
         ...taskData
@@ -402,25 +399,27 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
     evt.stopPropagation();
     setDisplayComment(!displayComment);
   }
-  const prevResponseCount = useRef(task.responses_aggregate.aggregate.count);
+  const prevResponseMaxId = useRef(0);
   useLayoutEffect( () => {
     scrollContent();
   }, [])
   useEffect( () => {
     //console.log("in use effect", prevResponseCount.current, props.task.responses);
+    let currentData = task?.responses?.length > 0 ? task.responses[0] : {id: 0, timestamp: 0};
     if(!dropdownOpen){
-        if(task.responses_aggregate.aggregate.count > prevResponseCount.current){
-              if(task.responses_aggregate.aggregate.count === 1 && ( (new Date(task.responses_aggregate.aggregate.max.timestamp) > fromNow ))){
-                toggleTaskDropdown();
-              }else{
-                setAlertBadges(task.responses_aggregate.aggregate.count - prevResponseCount.current);
-              }
+      if((new Date(currentData.timestamp + "Z")) > fromNow){
+        if(prevResponseMaxId.current === 0){
+          toggleTaskDropdown();
+        }else if(currentData.id > prevResponseMaxId.current){
+          setAlertBadges(1);
         }
+      }
+        
     }else{
-      prevResponseCount.current = task.responses_aggregate.aggregate.count;
+      prevResponseMaxId.current = currentData.id;
       setAlertBadges(0);
     }
-  }, [task.responses_aggregate.aggregate.count, dropdownOpen]);
+  }, [task.responses, dropdownOpen]);
   const scrollContent = (node, isAppearing) => {
     document.getElementById(`scrolltotask${task.id}`).scrollIntoView({
         behavior: "smooth",
@@ -436,7 +435,6 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
           aria-controls={`panel1c-content-task-${task.id}`}
           id="panel1c-header"
           classes={accordionClasses}
-          
         >  
           <ColoredTaskDisplay task={task} theme={theme}>
               <div id={'scrolltotask' + task.id} style={{width: "100%"}}>
@@ -464,10 +462,8 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
                       </div>
                 </div>
             </div>
-          </ColoredTaskDisplay>
-                        
+          </ColoredTaskDisplay>          
         </AccordionSummary>
-
         <AccordionDetails style={{cursor: "default"}}>
           <TaskDisplayContainer task={task}/>
         </AccordionDetails>

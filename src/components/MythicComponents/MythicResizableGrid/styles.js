@@ -35,10 +35,10 @@ export default makeStyles((theme) => ({
     cell: {
         display: 'flex',
         alignItems: 'center',
-        padding: '0 0.25em',
+        padding: '0 0.5em',
         boxSizing: 'border-box',
         fontFamily: 'monospace',
-        borderBottom: '1px solid #e0e0e0',
+        borderBottom: '1px solid ' + theme.tableHover,
         cursor: "default !important",
     },
     cellInner: {

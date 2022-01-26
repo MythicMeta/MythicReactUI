@@ -7,6 +7,13 @@ import { EventFeedTableInput } from './EventFeedTableInput';
 import {Button} from '@material-ui/core';
 import {VariableSizeList } from 'react-window';
 import Autosizer from 'react-virtualized-auto-sizer';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import Grow from '@material-ui/core/Grow';
+import Popper from '@material-ui/core/Popper';
+import MenuItem from '@material-ui/core/MenuItem';
+import MenuList from '@material-ui/core/MenuList';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 
 const Row = ({data, index, style}) => {
     const op = data[data.length - index - 1];
@@ -55,6 +62,8 @@ const EventList = ({onUpdateDeleted, onUpdateLevel, onUpdateResolution, getSurro
 export function EventFeedTable(props){
     const messagesEndRef = useRef(null);
     const theme = useTheme();
+    const dropdownAnchorRef = React.useRef(null);
+    const [dropdownOpen, setDropdownOpen] = React.useState(false);
     
     const onSubmitMessage = (message) => {
         if(message && message.length > 0){
@@ -64,21 +73,68 @@ export function EventFeedTable(props){
     } 
     const scrollToBottom = () => {
         messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-      }
+    }
+    const dropDownOptions = [
+        {
+            name: "Load More Events",
+            click: props.loadMore
+        },
+        {
+            name: "Load All Errors",
+            click: props.loadNextError
+        },
+        {
+            name: "Resolve Viewable Errors",
+            click: props.resolveViewableErrors
+        },
+        {
+            name: "Resolve All Errors",
+            click: props.resolveAllErrors
+        },
+    ]
+    const handleMenuItemClick = (event, index) => {
+        dropDownOptions[index].click();
+        setDropdownOpen(false);
+    };
     return (
         <React.Fragment>
             <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main,  color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
-                <Typography variant="h4" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
+                <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
                     Operational Event Messages
                 </Typography>
-                <Button variant="contained" color={"primary"} size="small" style={{display: "inline-block", float: "right", marginTop:"5px", marginRight:"10px"}} 
-                    onClick={(evt) => {evt.stopPropagation(); props.loadMore()}}>Load More Events</Button>
-                <Button variant="contained" color={"primary"} size="small" style={{display: "inline-block", float: "right", marginTop:"5px", marginRight:"10px"}} 
-                    onClick={(evt) => {evt.stopPropagation(); props.loadNextError()}}>Load All Errors</Button>
-                <Button variant="contained" color={"primary"} size="small" style={{display: "inline-block", float: "right", marginTop:"5px", marginRight:"10px"}} 
-                    onClick={(evt) => {evt.stopPropagation(); props.resolveViewableErrors()}}>Resolve Viewable Errors</Button>
-                <Button variant="contained" color={"secondary"} size="small" style={{display: "inline-block", float: "right", marginTop:"5px", marginRight:"10px"}} 
-                    onClick={(evt) => {evt.stopPropagation(); props.resolveAllErrors()}}>Resolve All Errors</Button>
+                <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" style={{marginRight: "10px", marginTop:"10px", float: "right"}} color="primary">
+                    <Button size="small" color="primary" aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
+                        aria-expanded={dropdownOpen ? 'true' : undefined}
+                        aria-haspopup="menu"
+                        onClick={() => setDropdownOpen(!dropdownOpen)}>
+                            Actions <ArrowDropDownIcon />
+                    </Button>
+                </ButtonGroup>
+                <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal style={{zIndex: 10}}>
+                {({ TransitionProps, placement }) => (
+                    <Grow
+                    {...TransitionProps}
+                    style={{
+                        transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
+                    }}
+                    >
+                    <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                        <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
+                        <MenuList id="split-button-menu">
+                            {dropDownOptions.map((option, index) => (
+                            <MenuItem
+                                key={option.name}
+                                onClick={(event) => handleMenuItemClick(event, index)}
+                            >
+                                {option.name}
+                            </MenuItem>
+                            ))}
+                        </MenuList>
+                        </ClickAwayListener>
+                    </Paper>
+                    </Grow>
+                )}
+                </Popper>
             </Paper>
             
             <Paper elevation={5} style={{position: "relative", height: "calc(90vh)", backgroundColor: theme.body}} variant={"elevation"}>
