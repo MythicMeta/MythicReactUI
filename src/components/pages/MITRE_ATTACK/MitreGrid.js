@@ -27,9 +27,13 @@ export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFilt
     const [openLicense, setOpenLicense] = React.useState(false);
     const [openFilterTasks, setOpenFilterTasks] = React.useState(false);
     const [openFilterCommands, setOpenFilterCommands] = React.useState(false);
+    const tactics = [
+        "Reconnaissance", "Resource Development", "Initial Access", "Execution", "Persistence", "Privilege Escalation", "Defense Evasion",
+        "Credential Access", "Discovery", "Lateral Movement", "Collection", "Command And Control", "Exfiltration", "Impact"
+    ]
     const dropDownOptions = [
         {
-            name: "Fetch All Command Mappings",
+            name: "Fetch All Commands Mapped to MITRE",
             click: () => {
                 setBackdropOpen(true);
                 setShowCountGrouping("command");
@@ -38,7 +42,7 @@ export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFilt
             }
         },
         {
-            name: "Fetch All Task Mappings",
+            name: "Fetch All Issued Tasks Mapped to MITRE",
             click: () => {
                 setShowCountGrouping("task");
                 setDropdownOpen(false);
@@ -270,20 +274,9 @@ export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFilt
                         innerDialog={<SelectPayloadTypeDialog onClose={()=>{setOpenFilterCommands(false);}} onSubmit={onSubmitGetCommandsFiltered} />}
                     />
                 }
-                <MitreGridColumn column={entries["Reconnaissance"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Resource Development"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Initial Access"]}showCountGrouping={showCountGrouping} />
-                <MitreGridColumn column={entries["Execution"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Persistence"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Privilege Escalation"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Defense Evasion"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Credential Access"]}showCountGrouping={showCountGrouping} />
-                <MitreGridColumn column={entries["Discovery"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Lateral Movement"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Collection"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Command And Control"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Exfiltration"]} showCountGrouping={showCountGrouping}/>
-                <MitreGridColumn column={entries["Impact"]} showCountGrouping={showCountGrouping}/>
+                {tactics.map( t => (
+                    <MitreGridColumn key={t} column={entries[t]} showCountGrouping={showCountGrouping} />
+                ))}
             </div>
         </div>
     )

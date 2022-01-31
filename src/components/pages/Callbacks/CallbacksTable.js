@@ -25,7 +25,6 @@ export function CallbacksTable(props){
     const [allData, setAllData] = React.useState([]);
     const [sortData, setSortData] = React.useState({"sortKey": null, "sortDirection": null, "sortType": null});
     const [openContextMenu, setOpenContextMenu] = React.useState(false);
-    const [selected, setSelected] = React.useState([]);
     const [openAdjustColumnsDialog, setOpenAdjustColumnsDialog] = React.useState(false);
     const [filterOptions, setFilterOptions] = React.useState({});
     const [selectedColumn, setSelectedColumn] = React.useState({});
@@ -183,9 +182,7 @@ export function CallbacksTable(props){
     const updateSleepInfo = React.useCallback( ({id, sleep_info}) => {
       updateSleep({variables: {callback_id: id, sleep_info}})
     }, [])
-    const taskSelected = () => {
-      snackActions.warning("Not Implemented Yet")
-    }
+
     const filterRow = (row) => {
       for(const [key,value] of Object.entries(filterOptions)){
           if(key === "agent"){
@@ -249,7 +246,7 @@ export function CallbacksTable(props){
                           case "PID":
                             return <CallbacksTableStringCell rowData={row} cellData={row.pid} />;
                           case "Last Checkin":
-                            return <CallbacksTableLastCheckinCell rowData={row} cellData={row.id} />;
+                            return <CallbacksTableLastCheckinCell rowData={row} cellData={row.id} parentMountedRef={props.parentMountedRef}/>;
                           case "Description":
                             return <CallbacksTableStringCell rowData={row} cellData={row.description} />;
                           case "Sleep":

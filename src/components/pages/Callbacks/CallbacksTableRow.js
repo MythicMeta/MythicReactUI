@@ -28,13 +28,15 @@ import LockOpenIcon from '@material-ui/icons/LockOpen';
 import EditIcon from '@material-ui/icons/Edit';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faQuestion, faSkullCrossbones} from '@fortawesome/free-solid-svg-icons';
+import {faQuestion, faSkullCrossbones, faFolderOpen, faList} from '@fortawesome/free-solid-svg-icons';
 import {faLinux, faApple, faWindows, faChrome} from '@fortawesome/free-brands-svg-icons';
 import {useSubscription, gql } from '@apollo/client';
 import {DetailedCallbackTable} from './DetailedCallbackTable';
 import InfoIcon from '@material-ui/icons/Info';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import {TaskFromUIButton} from './TaskFromUIButton';
+import {CallbacksTabsTaskMultipleDialog} from './CallbacksTabsTaskMultipleDialog';
+import {CallbacksTabsHideMultipleDialog} from './CallbacksTabsHideMultipleDialog';
 
 const SUB_Callbacks = gql`
 subscription CallbacksSubscription ($callback_id: Int!){
@@ -52,6 +54,8 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
     const [openEditDescriptionDialog, setOpenEditDescriptionDialog] = React.useState(false);
     const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
     const taskingData = React.useRef({"parameters": "", "ui_feature": "callback_table:exit"});
+    const [openTaskMultipleDialog, setOpenTaskMultipleDialog] = React.useState(false);
+    const [openHideMultipleDialog, setOpenHideMultipleDialog] = React.useState(false);
     const editDescriptionSubmit = (description) => {
         updateDescription({description, id: rowData.id})
     }
@@ -101,12 +105,22 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
             hideCallback({variables: {callback_id: rowData.id}});
         }},
         {
+            name: "Hide Multiple", icon: <VisibilityOffIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
+                setOpenHideMultipleDialog(true);
+            }
+        },
+        {
             name: "Exit Callback", icon: <FontAwesomeIcon icon={faSkullCrossbones} style={{cursor: "pointer", marginRight: "10px"}} />, click: (evt) => {
                 taskingData.current = {"parameters": "", "ui_feature": "callback_table:exit", "getConfirmation": true};
                 setOpenTaskingButton(true);
             }
         },
-        {name: 'File Browser', icon: <AccountTreeIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
+        {
+            name: "Task Multiple", icon: <FontAwesomeIcon icon={faList} style={{cursor: "pointer", marginRight: "10px"}} />, click: (evt) => {
+                setOpenTaskMultipleDialog(true);
+            }
+        },
+        {name: 'File Browser', icon: <FontAwesomeIcon icon={faFolderOpen} style={{cursor: "pointer", marginRight: "10px"}} />, click: (evt) => {
             evt.stopPropagation();
             localOnOpenTab("fileBrowser");
         }},
@@ -158,10 +172,11 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
                 <Grow
                     {...TransitionProps}
                     style={{
-                    transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
+                    transformOrigin: placement === 'bottom' ? 'top left' : 'top center',
+                    anchorOrigin: placement === 'bottom' ? 'bottom right' : 'bottom right'
                     }}
                 >
-                    <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                    <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}} elevation={5}>
                     <ClickAwayListener onClickAway={handleClose}>
                         <MenuList id="split-button-menu">
                         {options.map((option, index) => (
@@ -206,6 +221,28 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
                     }
                 />
             }
+            {openTaskMultipleDialog &&
+                <MythicDialog 
+                    fullWidth={true} 
+                    maxWidth="lg"
+                    open={openTaskMultipleDialog}  
+                    onClose={() => {setOpenTaskMultipleDialog(false);}}
+                    innerDialog={
+                        <CallbacksTabsTaskMultipleDialog onClose={() => {setOpenTaskMultipleDialog(false);}} />
+                    }
+                />
+            }
+            {openHideMultipleDialog &&
+                <MythicDialog 
+                    fullWidth={true} 
+                    maxWidth="lg"
+                    open={openHideMultipleDialog}  
+                    onClose={() => {setOpenHideMultipleDialog(false);}}
+                    innerDialog={
+                        <CallbacksTabsHideMultipleDialog onClose={() => {setOpenHideMultipleDialog(false);}} />
+                    }
+                />
+            }
     </div>
     )
 }
@@ -214,26 +251,35 @@ export const CallbacksTableStringCell = ({cellData}) => {
         <div>{cellData}</div>
     )
 }
-export const CallbacksTableLastCheckinCell = ({rowData}) => {
+export const CallbacksTableLastCheckinCell = ({rowData, parentMountedRef}) => {
     const [displayTime, setDisplayTime] = React.useState("");
     const [lastCheckin, setLastCheckin] = React.useState(-1);
+    const mountedRef = React.useRef(true);
     useSubscription(SUB_Callbacks, {
         variables: {callback_id: rowData.id}, fetchPolicy: "network-only",
-        shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
+            if(!mountedRef.current || !parentMountedRef.current){
+                return null;
+            }
             setLastCheckin(subscriptionData.data.callback_by_pk.last_checkin);
         }
     });
-    const updateTime = (curTime) => {
-        setDisplayTime(getTimeDifference(curTime));
-    };
     useInterval( () => {
+        if(!mountedRef.current || !parentMountedRef.current){
+            return null;
+        }
         if(lastCheckin === -1){
             setDisplayTime("Loading...");
             return;
         }
-        updateTime(lastCheckin);
-    });
+        setDisplayTime(getTimeDifference(lastCheckin));
+    }, 1000, mountedRef, parentMountedRef);
+    React.useEffect( () => {
+        return() => {
+            mountedRef.current = false;
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     return (
         <div>
             {displayTime}

@@ -38,6 +38,9 @@ export function EventFeedNotifications(props) {
             if(data.operationeventlog[0].source === "debug"){
                 return;
             }
+            if(data.operationeventlog[0].resolved){
+                return;
+            }
             if(data.operationeventlog[0].operator ){
                 const message = data.operationeventlog[0].operator.username + ":" + data.operationeventlog[0].message;
                 snackActions.toast(message, data.operationeventlog[0].level, { autoHideDuration: 2000});

@@ -98,10 +98,14 @@ export function CallbacksTop({onOpenTab, topDisplay, heights}){
     const theme = useTheme();
     const [callbacks, setCallbacks] = React.useState([]);
     const [callbackEdges, setCallbackEdges] = React.useState([]);
+    const mountedRef = React.useRef(true);
     useSubscription(SUB_Callbacks, {
         variables: {operation_id: me?.user?.current_operation_id || 0}, fetchPolicy: "network-only",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
+          if(!mountedRef.current){
+            return;
+          }
           setCallbacks(subscriptionData.data.callback);
         }
     });
@@ -109,6 +113,9 @@ export function CallbacksTop({onOpenTab, topDisplay, heights}){
         variables: {operation_id: me?.user?.current_operation_id || 0}, fetchPolicy: "network-only",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
+          if(!mountedRef.current){
+            return;
+          }
           setCallbackEdges(subscriptionData.data.callbackgraphedge)
         }
     });
@@ -127,6 +134,12 @@ export function CallbacksTop({onOpenTab, topDisplay, heights}){
         }
       }
     }
+    React.useEffect( () => {
+      return() => {
+        mountedRef.current = false;
+      }
+       // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     return (
       <div style={{height: "100%", width: "100%"}}>
         {topDisplay === "graph" ? (
@@ -138,7 +151,7 @@ export function CallbacksTop({onOpenTab, topDisplay, heights}){
                   Active Callbacks
               </Typography>
             </Paper>
-            <CallbacksTable key={"callbackstable"} onOpenTab={onOpenTabLocal} callbacks={callbacks} callbackgraphedges={callbackEdges} />
+            <CallbacksTable key={"callbackstable"} onOpenTab={onOpenTabLocal} callbacks={callbacks} callbackgraphedges={callbackEdges} parentMountedRef={mountedRef}/>
           </div>
           )}
         </div>

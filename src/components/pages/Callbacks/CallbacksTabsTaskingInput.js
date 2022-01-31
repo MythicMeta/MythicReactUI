@@ -11,7 +11,6 @@ import { snackActions } from '../../utilities/Snackbar';
 import parser from 'yargs-parser';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-const arrgv = require('arrgv');
 
 const GetLoadedCommandsSubscription = gql`
 subscription GetLoadedCommandsSubscription($callback_id: Int!){
@@ -51,7 +50,7 @@ subscription subscriptionCallbackTokens ($callback_id: Int!){
 `;
 const subscriptionTask = gql`
 subscription tasksSubscription($callback_id: Int!){
-    task(where: {callback_id: {_eq: $callback_id}}, order_by: {id: desc}){
+    task(where: {callback_id: {_eq: $callback_id}, parent_task_id: {_is_null: true}}, order_by: {id: desc}){
         id
         original_params
         display_params
@@ -94,13 +93,16 @@ export function CallbacksTabsTaskingInputPreMemo(props){
     const [reverseSearchString, setReverseSearchString] = React.useState('');
     const [reverseSearchOptions, setReverseSearchOptions] = React.useState([]);
     const [reverseSearchIndex, setReverseSearchIndex] = React.useState(-1);
-
+    const mountedRef = React.useRef(true);
     const me = useReactiveVar(meState);
 
     useSubscription(subscriptionCallbackTokens, {
         variables: {callback_id: props.callback_id}, fetchPolicy: "network-only",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
+            if(!mountedRef.current || !props.parentMountedRef.current){
+                return;
+            }
             setTokenOptions(subscriptionData.data.callbacktoken);
         }
       });
@@ -108,6 +110,9 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         variables: {callback_id: props.callback_id}, fetchPolicy: "network-only",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
+            if(!mountedRef.current || !props.parentMountedRef.current){
+                return;
+            }
             setTaskOptions(subscriptionData.data.task);
             const filteredOptions = subscriptionData.data.task.filter( c => applyFilteringToTasks(c));
             setFilteredTaskOptions(filteredOptions);
@@ -117,6 +122,9 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         variables: {callback_id: props.callback_id}, fetchPolicy: "network-only",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
+            if(!mountedRef.current || !props.parentMountedRef.current){
+                return;
+            }
             const cmds = subscriptionData.data.loadedcommands.map( c => {
                 let cmdData = {...c.command};
                 cmdData.attributes = JSON.parse(cmdData.attributes);
@@ -133,6 +141,12 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         const filteredOptions = taskOptions.filter( c => applyFilteringToTasks(c));
         setFilteredTaskOptions(filteredOptions);
     }, [props.filterOptions])
+    React.useEffect( () => {
+        return() => {
+            mountedRef.current = false;
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     const applyFilteringToTasks = (task) => {
         if(task.display_params.includes("help") && task.operator.username !== me.user.username){
             return false;
@@ -403,6 +417,99 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }
         }
     }
+    const parseToArgv = (str) => {
+        const res = [];
+
+        if(!str || typeof str !== 'string') return res;
+
+        let sQuoted = false;
+        let dQuoted = false;
+        let backSlash = false;
+        let notEmpty = false;
+        let buffer = '';
+
+        str.split('').forEach((v, i, s) => {
+            if(sQuoted && v === `'`){
+                sQuoted = false;
+                if(buffer.length > 0 ){
+                    buffer += v;
+                }else{
+                    buffer += v + v;
+                }
+                return;
+            }
+            if(dQuoted && v === `"`){
+                dQuoted = false;
+                if(buffer.length > 0){
+                    buffer += v;
+                }else{
+                    buffer += v + v;
+                }
+                return;
+            }
+            if(!sQuoted && !dQuoted){
+                //console.log("not sQuoted and not dQuoted and not backslash");
+                if(v === `'`){
+                    sQuoted = true;
+                    if(buffer.length > 0 ){
+                        buffer += v;
+                        return;
+                    }
+                    
+                    return;
+                }
+                if(v === '"'){
+                    dQuoted = true;
+                    //console.log("double quoted now, skipping char: ", v);
+                    if(buffer.length > 0 ){
+                        buffer += v;
+                        return;
+                    }
+                    
+                    return;
+                }
+                if(['\t', ' '].includes(v)){
+                    if(buffer.length > 0){
+                        if([`'`, `"`].includes(buffer[buffer.length-1])){
+                            res.push(buffer.slice(0, -1))
+                        }else{
+                            res.push(buffer);
+                        }
+                        
+                        //console.log("pushed buffer:", buffer);
+                        notEmpty = false;
+                    }
+                    buffer = '';
+                    return;
+                }
+            }
+            if(!sQuoted && dQuoted && v === '"'){
+                //console.log("not sQuoted, yes dQuoted, not backSlash, found matching \", skipping: ", v);
+                dQuoted = false;
+                if(buffer.length > 0 ){
+                    buffer += v;
+                }
+                return;
+            }
+
+            //console.log("adding to buffer: ", v);
+            buffer += v;
+        });
+
+        if(buffer.length > 0 || notEmpty){
+            //console.log("pushed end buffer: ", buffer);
+            if([`'`, `"`].includes(buffer[buffer.length-1])){
+                res.push(buffer.slice(0, -1))
+            }else{
+                res.push(buffer);
+            }
+            notEmpty = false;
+        }
+        if(dQuoted) throw new SyntaxError('unexpected end of string while looking for matching double quote');
+        if(sQuoted) throw new SyntaxError('unexpected end of string while looking for matching single quote');
+
+        return res;
+    }
     const parseCommandLine = (command_line, cmd) => {
         // given a command line and the associated command
         let stringArgs = [];
@@ -429,9 +536,10 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }
         }
         try{
-            let new_command_line = command_line.replaceAll("\\", "\\\\")
-            const argv = arrgv(new_command_line);
-            console.log("argv", argv);
+            let new_command_line = command_line;//.replaceAll("\\", "\\\\");
+            //console.log("new_command_line", new_command_line);
+            const argv = parseToArgv(new_command_line);
+            //console.log("argv", argv);
             //console.log("arrayArgs", arrayArgs);
             const yargs_parsed = parser(argv, {
                 string: stringArgs,
@@ -524,10 +632,13 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 parsedCopy[groupParameters[i]["cli_name"]] = parsedCopy["_"].shift();
             }
         }
+        
         if(unSatisfiedArguments.length > 0 && parsedCopy["_"].length > 0){
+            parsedCopy["_"] = parsedCopy["_"].map( c => c.includes(" ") ? "\"" + c + "\"" : c);
             parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = parsedCopy["_"].join(" ");
             parsedCopy["_"] = [];
         }
+        
         return parsedCopy;
 
     }
@@ -559,7 +670,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             if(!parsed){
                 return;
             }
-            console.log(message, parsed);
+            //console.log(message, parsed);
             cmdGroupName = determineCommandGroupName(cmd, parsed);
             cmdGroupName.sort();
             if(cmd.commandparameters.length > 0){

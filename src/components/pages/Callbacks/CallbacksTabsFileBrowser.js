@@ -165,7 +165,8 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
     const [showDeletedFiles, setShowDeletedFiles] = React.useState(false);
     const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
     const taskingData = React.useRef({"parameters": "", "ui_feature": "file_browser:list"});
-    const { subscribeToMore } = useQuery(rootFileQuery, {
+    const mountedRef = React.useRef(true);
+    const { subscribeToMore, loading } = useQuery(rootFileQuery, {
         variables: { operation_id: me.user.current_operation_id },
         onCompleted: (data) => {
             const roots = data.filebrowserobj.reduce((prev, cur) => {
@@ -350,12 +351,12 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
         setBackdropOpen(true);
         setSelectedFolderData(filebrowserobj);
     }, []);
-    const onListFilesButton = ({ fullPath }) => {
-        taskingData.current = ({"parameters": fullPath, "ui_feature": "file_browser:list"});
+    const onListFilesButton = ({ fullPath, hostname }) => {
+        taskingData.current = ({"parameters": {path: fullPath, host: hostname, file: ""}, "ui_feature": "file_browser:list"});
         setOpenTaskingButton(true);
     };
     const onUploadFileButton = ({ hostname, fullPath }) => {
-        taskingData.current = ({"parameters": {remote_path: fullPath}, "ui_feature": "file_browser:upload", "openDialog": true});
+        taskingData.current = ({"parameters": {path: fullPath, host: hostname}, "ui_feature": "file_browser:upload", "openDialog": true});
         setOpenTaskingButton(true);
     };
     const onTaskRowAction = useCallback(({ path, host, filename, uifeature, openDialog, getConfirmation }) => {
@@ -363,9 +364,7 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
             host: host,
             path: path,
             file: filename,
-            openDialog,
-            getConfirmation
-        }, "ui_feature": uifeature});
+        }, "ui_feature": uifeature, openDialog, getConfirmation});
         setOpenTaskingButton(true);
     }, []);
     const onChangeCallbackID = (callbackID) => {
@@ -373,6 +372,9 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
     };
     const subscribeToMoreCallback = useCallback(
         (prev, { subscriptionData }) => {
+            if(!mountedRef.current){
+                return;
+            }
             if (subscriptionData.data.filebrowserobj.length > 0) {
                 getFileDeltas({
                     variables: {
@@ -396,6 +398,13 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
     const toggleShowDeletedFiles = (showStatus) => {
         setShowDeletedFiles(showStatus);
     };
+    React.useEffect( () => {
+        return() => {
+            mountedRef.current = false;
+        }
+         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     return (
         <MythicTabPanel index={index} value={value}>
             <div style={{ display: 'flex', flexGrow: 1, overflowY: 'auto' }}>
@@ -420,16 +429,16 @@ export const CallbacksTabsFileBrowserPanel = ({ index, value, tabInfo }) => {
                             onChangeCallbackID={onChangeCallbackID}
                             toggleShowDeletedFiles={toggleShowDeletedFiles}
                             initialCallbackID={tabInfo.callbackID}
-                            subscribeToNewFileBrowserObjs={() =>
+                            subscribeToNewFileBrowserObjs={() => {
                                 subscribeToMore({
                                     document: fileDataSubscription,
                                     variables: {
                                         now: new Date().toISOString(),
-                                        operation_id: me.user.current_operation_id,
+                                        operation_id: me?.user?.current_operation_id || 0,
                                     },
                                     updateQuery: subscribeToMoreCallback,
                                 })
-                            }
+                            }}
                         />
                     </div>
                     <div style={{ flexGrow: 1 }}>
@@ -510,7 +519,7 @@ const FileBrowserTableTop = ({
             return;
         }
         if (callbackID > 0) {
-            onListFilesButton({ callbackID, fullPath });
+            onListFilesButton({ callbackID, fullPath, hostname });
         } else {
             snackActions.warning('Must select a folder or set a callback number first');
         }

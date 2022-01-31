@@ -315,6 +315,7 @@ export function TaskParametersDialog(props) {
     })
     useQuery(getCommandQuery, {
         variables: {id: props.command.id},
+        fetchPolicy: "no-cache",
         onCompleted: data => {
             // do an initial pass to see what other quries we need to make
             let requiredPiecesInitial = {all: false, loaded: false, edges: false, credentials: false};
@@ -357,6 +358,9 @@ export function TaskParametersDialog(props) {
             setRawParameters({...data});
         }
     });
+    const addedCredential = () => {
+        getAllCredentials({variables: {operation_id: props.operation_id}});
+    }
     const intersect = (a, b) => {
       let setB = new Set(b);
       return [...new Set(a)].filter(x => setB.has(x));
@@ -849,7 +853,7 @@ export function TaskParametersDialog(props) {
                         {parameters.map( (op) => (
                             <TaskParametersDialogRow onSubmit={onSubmit} key={"taskparameterrow" + op.id} onChange={onChange} commandInfo={commandInfo} {...op} 
                                 callback_id={props.callback_id} onAgentConnectAddNewPayloadOnHost={onAgentConnectAddNewPayloadOnHost}
-                                onAgentConnectRemovePayloadOnHost={onAgentConnectRemovePayloadOnHost}
+                                onAgentConnectRemovePayloadOnHost={onAgentConnectRemovePayloadOnHost} addedCredential={addedCredential}
                                 />
                         ))}
                     </TableBody>

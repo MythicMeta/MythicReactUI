@@ -85,10 +85,14 @@ mutation RestorePayloadToUndeleted($id: Int!){
 export function Payloads(props){
     const me = useReactiveVar(meState);
     const [payloads, setPayloads] = React.useState([]);
+    const mountedRef = React.useRef(true);
     useQuery(Get_Payloads, {
       variables: {operation_id: me?.user?.current_operation_id || 0},
       fetchPolicy: "no-cache",
       onCompleted: (data) => {
+        if(!mountedRef.current){
+          return null;
+        }
         const updated = data.payload.reduce( (prev, cur) => {
           const index = prev.findIndex( (p) => p.id === cur.id );
           if(index > -1){
@@ -106,6 +110,9 @@ export function Payloads(props){
       variables: {operation_id: me?.user?.current_operation_id || 0},
       fetchPolicy: "no-cache",
       onSubscriptionData: ({subscriptionData}) => {
+        if(!mountedRef.current){
+          return  null;
+        }
         const updated = subscriptionData.data.payload.reduce( (prev, cur) => {
           const index = prev.findIndex( (p) => p.id === cur.id );
           if(index > -1){
@@ -200,6 +207,12 @@ export function Payloads(props){
         variables: {id}
       })
     }
+    React.useEffect( () => {
+      return() => {
+        mountedRef.current = false;
+      }
+       // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     return (
       <div style={{display: "flex", flexGrow: 1, flexDirection: "column", marginTop:"10px"}}>
         <PayloadsTable onDeletePayload={onDeletePayload} onUpdateCallbackAlert={onUpdateCallbackAlert} payload={payloads} onRestorePayload={onRestorePayload}/>

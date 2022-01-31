@@ -84,7 +84,7 @@ export const ResponseDisplay = (props) =>{
     const [totalCount, setTotalCount] = React.useState(0);
     const oldSelectAllOutput = React.useRef(props.selectAllOutput);
     const [openBackdrop, setOpenBackdrop] = React.useState(true);
-    
+    const mountedRef = React.useRef(true);
     const [fetchMoreResponses] = useLazyQuery(getResponsesLazyQuery, {
       fetchPolicy: "network-only",
       onCompleted: (data) => {
@@ -134,6 +134,12 @@ export const ResponseDisplay = (props) =>{
       }
     });
     React.useEffect( () => {
+      return() => {
+        mountedRef.current = false;
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+    React.useEffect( () => {
       if(props.selectAllOutput !== oldSelectAllOutput.current){
         if(props.selectAllOutput){
           setOpenBackdrop(true);
@@ -147,11 +153,14 @@ export const ResponseDisplay = (props) =>{
     }, [props.selectAllOutput, oldSelectAllOutput])
     const subscriptionDataCallback = React.useCallback( ({subscriptionData}) => {
       console.log("fetchLimit", fetchLimit, "totalCount", totalCount);
+      if(!mountedRef.current){
+        return null; // we're unmounted, so just exit
+      }
       if(totalCount >= fetchLimit){
         // we won't display it   
         console.log("got more than we can see currently", totalCount);
         return;
-      }else 
+      }
       // we still have some room to view more, but only room for fetchLimit - totalFetched.current
       setOpenBackdrop(false);
       if(subscriptionData.data.response.length > 0){
@@ -175,7 +184,7 @@ export const ResponseDisplay = (props) =>{
         setOutput(outputResponses);
         setRawResponses(rawResponseArray);
         highestFetched.current = highestFetchedId;
-      }
+      } 
     }, [setOutput, output, setRawResponses, highestFetched.current, rawResponses, totalCount]);
     
     useSubscription(subResponsesQuery, {variables: {task_id: props.task.id, fetchLimit: fetchLimit}, fetchPolicy: "network_only",
@@ -240,27 +249,43 @@ export const ResponseDisplay = (props) =>{
       <div style={{overflow: "auto", maxWidth: "100%", width: "100%"}}>
         <ResponseDisplayComponent rawResponses={rawResponses} viewBrowserScript={props.viewBrowserScript} output={output} command_id={props.command_id} task={props.task} search={search}/>
       </div>
-      <PaginationBar selectAllOutput={props.selectAllOutput} totalCount={totalCount} onSubmitPageChange={onSubmitPageChange} task={props.task} search={search} />
+      <PaginationBar selectAllOutput={props.selectAllOutput} totalCount={totalCount} onSubmitPageChange={onSubmitPageChange} task={props.task} search={search} parentMountedRef={mountedRef} />
   </React.Fragment>
   )
       
 }
 
-const PaginationBar = ({selectAllOutput, totalCount, onSubmitPageChange, task, search}) => {
+const PaginationBar = ({selectAllOutput, totalCount, onSubmitPageChange, task, search, parentMountedRef}) => {
   const [localTotalCount, setTotalcount] = React.useState(0);
   const [maxCount, setMaxCount] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const mountedRef = React.useRef(true);
   const subscriptionMaxCountCallback = React.useCallback( ({subscriptionData}) => {
+    if(!mountedRef.current || !parentMountedRef.current){
+      return;
+    }
     setMaxCount(subscriptionData.data.response_aggregate.aggregate.count);
   }, [maxCount]);
   useSubscription(getMaxCountQuery, {variables: {task_id: task.id},
     onSubscriptionData: subscriptionMaxCountCallback
   })
   const onChangePage =  (event, value) => {
+    if(!mountedRef.current){
+      return;
+    }
     setCurrentPage(value);
     onSubmitPageChange(value);
   };
   React.useEffect( () => {
+    return() => {
+      mountedRef.current = false;
+    }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[])
+  React.useEffect( () => {
+    if(!mountedRef.current || !parentMountedRef.current){
+      return;
+    }
     if(selectAllOutput){
       setTotalcount(1);
       setCurrentPage(1);
@@ -270,6 +295,7 @@ const PaginationBar = ({selectAllOutput, totalCount, onSubmitPageChange, task, s
       setTotalcount(totalCount);
     }
   }, [totalCount, maxCount, search, selectAllOutput]);
+  
   return (
     <div style={{background: "transparent", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "10px"}} >
       <Pagination count={Math.ceil(localTotalCount / fetchLimit)} page={currentPage} variant="outlined" color="primary" boundaryCount={2} onChange={onChangePage} style={{margin: "10px"}}/>

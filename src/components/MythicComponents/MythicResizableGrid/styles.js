@@ -18,11 +18,11 @@ export default makeStyles((theme) => ({
         justifyContent: 'space-between',
         userSelect: 'none',
         backgroundColor: theme.palette.background.paper,
-        borderTop: '1px solid #e0e0e0',
-        borderRight: '1px solid #e0e0e0',
-        borderBottom: '1px solid #e0e0e0',
+        borderTop: '1px solid ' + theme.tableHover,
+        borderRight: '1px solid ' + theme.tableHover,
+        borderBottom: '1px solid  ' + theme.tableHover,
         '&:first-child': {
-            borderLeft: '1px solid #e0e0e0',
+            borderLeft: '1px solid ' + theme.tableHover,
         },
         '&:hover': {
             backgroundColor: theme.tableHover,

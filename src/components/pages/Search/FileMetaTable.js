@@ -524,6 +524,8 @@ export function FileMetaScreenshotTable(props){
         });
         setFiles(updated);
     }
+    const imageRefs = files.map( f => f.agent_file_id);
+
     return (
         <TableContainer component={Paper} className="mythicElement">   
             <Table stickyHeader size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
@@ -539,11 +541,13 @@ export function FileMetaScreenshotTable(props){
                 </TableHead>
                 <TableBody>
                 
-                {files.map( (op) => (
+                {files.map( (op, index) => (
                     <FileMetaScreenshotTableRow
                         key={"file" + op.id}
                         onEditComment={onEditComment}
                         {...op}
+                        index={index}
+                        imageRefs={imageRefs}
                     />
                 ))}
                 </TableBody>
@@ -573,7 +577,7 @@ function FileMetaScreenshotTableRow(props){
                     <img onClick={() => setOpenScreenshot(true)} src={"/api/v1.4/files/screencaptures/" + props.agent_file_id} style={{width: "350px", cursor: "pointer"}} />
                     <MythicDialog fullWidth={true} maxWidth="xl" open={openScreenshot} 
                         onClose={()=>{setOpenScreenshot(false);}} 
-                        innerDialog={<ResponseDisplayScreenshotModal href={"/api/v1.4/files/screencaptures/" + props.agent_file_id} onClose={()=>{setOpenScreenshot(false);}} />} />
+                        innerDialog={<ResponseDisplayScreenshotModal images={props.imageRefs} startIndex={props.index} onClose={()=>{setOpenScreenshot(false);}} />} />
                         {props.chunks_received < props.total_chunks ? (<Typography color="secondary" style={{wordBreak: "break-all"}} >{props.chunks_received} / {props.total_chunks} Chunks Received</Typography>) : (null)}
                 </TableCell>
                 <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.filename_text}</Typography></TableCell>

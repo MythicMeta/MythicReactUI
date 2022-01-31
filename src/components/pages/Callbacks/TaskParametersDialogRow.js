@@ -78,12 +78,14 @@ export function TaskParametersDialogRow(props){
     const [createCredentialDialogOpen, setCreateCredentialDialogOpen] = React.useState(false);
     const [fileValue, setFileValue] = React.useState({name: ""});
     const [backdropOpen, setBackdropOpen] = React.useState(false);
+    const usingDynamicParamChoices = React.useRef(false);
     const [getDynamicParams] = useMutation(getDynamicQueryParams, {
         onCompleted: (data) => {
             //console.log(data);
             if(data.dynamic_query_function.status === "success"){
                 try{
                     setChoiceOptions([...data.dynamic_query_function.choices]);
+                    usingDynamicParamChoices.current = true;
                     if(props.type === "Choice"){
                         if(data.dynamic_query_function.choices.length > 0){
                             setValue(data.dynamic_query_function.choices[0]);
@@ -110,6 +112,7 @@ export function TaskParametersDialogRow(props){
         fetchPolicy: "no-cache",
         onCompleted: (data) => {
             snackActions.success("Successfully created new credential");
+            props.addedCredential();
             let newLength = ChoiceOptions.length;
             setChoiceOptions([...ChoiceOptions, {...data.insert_credential_one}]);
             switch(props.type){
@@ -217,6 +220,11 @@ export function TaskParametersDialogRow(props){
            if(props.dynamic_query_function === null && value===""){
                 setChoiceOptions([...props.choices]);
                 setValue(props.value);
+           }else if(props.choices.length != ChoiceOptions.length){
+               if(!usingDynamicParamChoices.current){
+                    setChoiceOptions([...props.choices]);
+               }    
+               
            }
            
        }

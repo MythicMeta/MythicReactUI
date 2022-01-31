@@ -30,7 +30,7 @@ export const ResponseDisplayScreenshot = (props) =>{
       {openScreenshot &&
       <MythicDialog fullWidth={true} maxWidth="xl" open={openScreenshot} 
           onClose={()=>{setOpenScreenshot(false);}} 
-          innerDialog={<ResponseDisplayScreenshotModal href={"/api/v1.4/files/screencaptures/" + props.agent_file_id + "?time=" + now} onClose={()=>{setOpenScreenshot(false);}} />}
+          innerDialog={<ResponseDisplayScreenshotModal images={props.agent_file_id} onClose={()=>{setOpenScreenshot(false);}} />}
       />
       }
       <pre style={{display: "inline-block"}}>

@@ -245,7 +245,6 @@ export function MitreAttack(props){
           }
           return {...p};
         }, {});
-        
         setMitreAttack(mitre);
         setBackdropOpen(false);
       },

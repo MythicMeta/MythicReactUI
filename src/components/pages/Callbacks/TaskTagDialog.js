@@ -58,6 +58,10 @@ const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(0.5, 0),
   },
+  divider: {
+    backgroundColor: "rgb(100, 170, 204)",
+    border: "2px solid rgba(100, 170, 204)"
+  }
 }));
 
 function not(a, b) {
@@ -155,7 +159,7 @@ export function TaskTagDialog(props) {
             className={classes.cardHeader}
             title={title}
           />
-          <Divider />
+          <Divider classes={{root: classes.divider}}/>
           <List dense component="div" role="list" style={{padding:0}}>
             {items.map((value) => {
               const labelId = `transfer-list-item-${value.id}-label`;

@@ -46,7 +46,6 @@ export function ReportingTable(props){
     const [includeMITREPerTask, setIncludeMITREPerTask] = React.useState(false);
     const [includeMITREOverview, setIncludeMITREOverview] = React.useState(false);
     const [includeOutput, setIncludeOutput] = React.useState(false);
-    const [includeGraphs, setIncludeGraphs] = React.useState(false);
     const [excludedCallbackHost, setExcludedCallbackHost] = React.useState("");
     const [excludedCallbackUser, setExcludedCallbackUser] = React.useState("");
     const [excludedCallbackID, setExcludedCallbackID] = React.useState("");
@@ -75,9 +74,6 @@ export function ReportingTable(props){
         if(evt.target.value !== "json"){
             setIncludeOutput(false);
         }
-        if(evt.target.value === "json"){
-            setIncludeGraphs(false);
-        }
     }
     const changeExcludedCallbackUser = (name, value, error) => {
         setExcludedCallbackUser(value);
@@ -100,7 +96,6 @@ export function ReportingTable(props){
         }})
     }
     useEffect( () => {
-        console.log(data);
         if(data?.operationeventlog?.length > 0){
             const dataUUID = data.operationeventlog[0].message.split(":").pop().trim();
             snackActions.success("", {persist: true, content: key => <MythicSnackDownload id={key} title="Download Generated Report" downloadLink={window.location.origin + "/api/v1.4/files/download/" + dataUUID} />});
@@ -176,24 +171,27 @@ export function ReportingTable(props){
                         <TableCell>Exclude Callbacks With Matching Values</TableCell>
                         <TableCell>
                                 <Table>
-                                    <TableRow>
-                                        <TableCell style={{width: "10rem"}}>Exclude Users</TableCell>
-                                        <TableCell>
-                                            <MythicTextField onChange={changeExcludedCallbackUser} value={excludedCallbackUser} name={"Excluded Usernames"}/>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>Exclude Hosts</TableCell>
-                                        <TableCell>
-                                            <MythicTextField onChange={changeExcludedCallbackHost} value={excludedCallbackHost} name={"Excluded Hostnames"}/>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>Exclude IDs</TableCell>
-                                        <TableCell>
-                                            <MythicTextField onChange={changeExcludedCallbackID} value={excludedCallbackID} name={"Excluded Callback IDs"}/>
-                                        </TableCell>
-                                    </TableRow>
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell style={{width: "10rem"}}>Exclude Users</TableCell>
+                                            <TableCell>
+                                                <MythicTextField onChange={changeExcludedCallbackUser} value={excludedCallbackUser} name={"Excluded Usernames"}/>
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Exclude Hosts</TableCell>
+                                            <TableCell>
+                                                <MythicTextField onChange={changeExcludedCallbackHost} value={excludedCallbackHost} name={"Excluded Hostnames"}/>
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Exclude IDs</TableCell>
+                                            <TableCell>
+                                                <MythicTextField onChange={changeExcludedCallbackID} value={excludedCallbackID} name={"Excluded Callback IDs"}/>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                    
                                 </Table>
                         </TableCell>
                     </TableRow>
@@ -204,20 +202,3 @@ export function ReportingTable(props){
     </React.Fragment>
     )
 }
-
-/**
- *                     {
-                        selectedOutputFormat !== "json" &&
-                        <TableRow hover>
-                            <TableCell>Include Graphs</TableCell>
-                            <TableCell>
-                                <Switch
-                                    checked={includeGraphs}
-                                    onChange={evt => setIncludeGraphs(!includeOutput)}
-                                    inputProps={{ 'aria-label': 'primary checkbox' }}
-                                    name="active"
-                                />
-                            </TableCell>
-                        </TableRow>
-                    }
- */

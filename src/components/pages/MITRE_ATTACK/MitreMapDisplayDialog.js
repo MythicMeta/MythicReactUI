@@ -12,7 +12,7 @@ import {useTheme} from '@material-ui/core/styles';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
+import { Button, Link} from '@material-ui/core/';
 
 export function MitreMapDisplayDialog({entry, showCountGrouping, onClose}){
     const [commands, setCommands] = React.useState([]);
@@ -57,7 +57,7 @@ export function MitreMapDisplayDialog({entry, showCountGrouping, onClose}){
     }, [entry, showCountGrouping]);
     return (
         <React.Fragment>
-          <DialogTitle id="form-dialog-title">{entry.name} - <a href={"https://attack.mitre.org/techniques/" + entry.t_num.replace(".", "/")} target="_blank">{entry.t_num}</a></DialogTitle>
+          <DialogTitle id="form-dialog-title">{entry.name} - <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"https://attack.mitre.org/techniques/" + entry.t_num.replace(".", "/")} >{entry.t_num}</Link></DialogTitle>
           <DialogContent dividers={true}>
             {showCountGrouping === "command" ? 
             (

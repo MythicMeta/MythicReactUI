@@ -221,7 +221,7 @@ const TaskStatusDisplay = ({task, theme}) => {
     return (<Typography size="small" component="span" style={{padding: "0", color: theme.palette.error.main, marginLeft: "5%", display: "inline-block", fontSize: theme.typography.pxToRem(15)}}>{task.status.toLowerCase()}</Typography>)
   }else if(task.status === "cleared"){
     return (<Typography size="small" component="span"  style={{padding: "0", color: theme.palette.warning.main, marginLeft: "5%", display: "inline-block", fontSize: theme.typography.pxToRem(15)}}>cleared</Typography>)
-  }else if(task.completed){
+  }else if(task.status === "completed"){
     return (null)//return (<Typography size="small" style={{padding: "0", color: theme.palette.success.main, marginLeft: "5%", display: "inline-block", fontSize: theme.typography.pxToRem(15)}}>completed</Typography>)
   }else if(task.status === "submitted"){
     return (<Typography size="small" component="span"  style={{padding: "0", color: theme.palette.info.main, marginLeft: "5%", display: "inline-block", fontSize: theme.typography.pxToRem(15)}}>{task.status.toLowerCase()}</Typography>)
@@ -242,8 +242,6 @@ const ColoredTaskDisplay = ({task, theme, children}) => {
       setThemeColor(theme.palette.error.main);
     }else if(task.status.toLowerCase() === "cleared"){
       setThemeColor(theme.palette.warning.main);
-    }else if(task.completed){
-      setThemeColor(theme.palette.success.main);
     }else if(task.status === "submitted"){
       setThemeColor(theme.palette.info.main);
     }else if(task.opsec_pre_blocked && !task.opsec_pre_bypassed){
@@ -252,6 +250,8 @@ const ColoredTaskDisplay = ({task, theme, children}) => {
       setThemeColor(theme.palette.warning.main);
     }else if(task.status.toLowerCase() === "processing"){
       setThemeColor(theme.palette.warning.main);
+    }else if(task.status === "completed"){
+        setThemeColor(theme.palette.success.main);
     }else{
       setThemeColor(theme.palette.info.main);
     }
@@ -427,13 +427,14 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
         inline: "start"
       })
   }
+
   return(
-    <Paper className={classes.root} elevation={5} style={{marginRight: 0}}>
+    <Paper className={classes.root} elevation={5} style={{marginRight: 0}} id={`taskHeader-${task.id}`}>
       <Accordion TransitionProps={{ unmountOnExit: true, onEntered: scrollContent }} defaultExpanded={false} onChange={toggleTaskDropdown} expanded={dropdownOpen} >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls={`panel1c-content-task-${task.id}`}
-          id="panel1c-header"
+          id={`panel1c-header-${task.id}`}
           classes={accordionClasses}
         >  
           <ColoredTaskDisplay task={task} theme={theme}>

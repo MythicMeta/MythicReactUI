@@ -32,19 +32,23 @@ export function getTimeDifference(checkin_time) {
     return output;
 }
 //https://overreacted.io/making-setinterval-declarative-with-react-hooks/
-export function useInterval(callback, delay) {
+export function useInterval(callback, delay, mountedRef, parentMountedRef) {
   const savedCallback = useRef();
 
   useEffect(() => {
     savedCallback.current = callback;
   });
-
   useEffect(() => {
     function tick() {
+      if(!mountedRef.current || !parentMountedRef.current){
+        return;
+      }
       savedCallback.current();
     }
-
+    if(!mountedRef.current || !parentMountedRef.current){
+      return;
+    }
     let id = setInterval(tick, delay);
     return () => clearInterval(id);
-  }, [delay]);
+  }, [delay, mountedRef]);
 }

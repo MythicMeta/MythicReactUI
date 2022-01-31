@@ -113,7 +113,7 @@ query getBatchTasking($callback_id: Int!, $offset: Int!, $fetchLimit: Int!){
     }
 }
 `;
-export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =>{
+export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, parentMountedRef}) =>{
     const [taskLimit, setTaskLimit] = React.useState(10);
     const [openParametersDialog, setOpenParametersDialog] = React.useState(false);
     const [commandInfo, setCommandInfo] = React.useState({});
@@ -129,6 +129,7 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =
         "everythingButList": []
     });
     const [canScroll, setCanScroll] = React.useState(true);
+    const mountedRef = React.useRef(true);
     useEffect( () => {
         taskingDataRef.current = taskingData;
     }, [taskingData]);
@@ -192,6 +193,9 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =
         return true;
     }
     const subscriptionDataCallback = useCallback( ({subscriptionData}) => {
+        if(!mountedRef.current || !parentMountedRef.current){
+            return null;
+        }
         if(!fetched){
             setFetched(true);
         }
@@ -286,6 +290,10 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =
     useEffect( () => {
         getInfiniteScrollTasking({variables: {callback_id: tabInfo.callbackID, offset: taskingData.task.length, fetchLimit}});
         setCanScroll(true);
+        return() => {
+            mountedRef.current = false;
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     const loadMoreTasks = () => {
         getInfiniteScrollTasking({variables: {callback_id: tabInfo.callbackID, offset: taskingData.task.length, fetchLimit}});
@@ -307,7 +315,7 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =
         }else{
             // check if there's a "file" component that needs to be displayed
             const fileParamExists = cmd.commandparameters.find(param => param.parameter_type === "File" && cmdGroupNames.includes(param.parameter_group_name));
-            console.log("missing File for group? ", fileParamExists, cmdGroupNames);
+            //console.log("missing File for group? ", fileParamExists, cmdGroupNames);
             let missingRequiredPrams = false;
             if(cmdGroupNames.length === 1){
                 const missingParams = cmd.commandparameters.filter(param => param.required && param.parameter_group_name === cmdGroupNames[0] && !(param.cli_name in parsed));
@@ -381,7 +389,7 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab}) =
             </div>
             <div ref={messagesEndRef} />
         <CallbacksTabsTaskingInput onSubmitFilter={onSubmitFilter} onSubmitCommandLine={onSubmitCommandLine} changeSelectedToken={changeSelectedToken}
-            filterOptions={filterOptions} callback_id={tabInfo.callbackID} callback_os={tabInfo.os} />
+            filterOptions={filterOptions} callback_id={tabInfo.callbackID} callback_os={tabInfo.os} parentMountedRef={mountedRef} />
         {openParametersDialog && 
             <MythicDialog fullWidth={true} maxWidth="md" open={openParametersDialog} 
                 onClose={()=>{setOpenParametersDialog(false);}} 

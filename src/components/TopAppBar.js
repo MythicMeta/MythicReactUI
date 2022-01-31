@@ -52,6 +52,7 @@ import {faSocks} from '@fortawesome/free-solid-svg-icons';
 import {faCamera} from '@fortawesome/free-solid-svg-icons';
 import {mythicVersion, mythicUIVersion} from '../index';
 import {MythicStyledTooltip} from '../components/MythicComponents/MythicStyledTooltip';
+import VpnKeyIcon from '@material-ui/icons/VpnKey';
 
 
 const drawerWidth = 240;
@@ -201,6 +202,11 @@ export function TopAppBar(props) {
                 <MythicStyledTooltip title="Screenshots" arrow >
                   <IconButton component={Link} to='/new/search?searchField=Filename&tab=files&location=Screenshots' color="inherit">
                       <FontAwesomeIcon icon={faCamera} />
+                  </IconButton>
+                </MythicStyledTooltip>
+                <MythicStyledTooltip title="Credentials" arrow >
+                  <IconButton component={Link} to='/new/search?searchField=Account&tab=credentials' color="inherit">
+                      <VpnKeyIcon className="mythicElement" />
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Active Callbacks">

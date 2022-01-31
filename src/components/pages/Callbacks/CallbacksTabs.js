@@ -39,11 +39,15 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
     const classes = useStyles();
     const me = useReactiveVar(meState);
     const [callbackTokens, setCallbackTokens] = React.useState([]);
+    const mountedRef = React.useRef(true);
     useSubscription(SUB_Callbacks, {
         variables: { operation_id: me?.user?.current_operation_id || 0},
         fetchPolicy: 'network-only',
         shouldResubscribe: true,
         onSubscriptionData: ({ subscriptionData }) => {
+            if(!mountedRef.current){
+                return;
+            }
             setCallbackTokens(subscriptionData.data.callbacktoken);
         },
     });
@@ -52,6 +56,12 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
         setValue(newValue);
         localStorage.setItem('clickedTab', openTabs[newValue].tabID);
     };
+    React.useEffect( () => {
+        return() => {
+            mountedRef.current = false;
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     const onCloseTabLocal = ({ tabID, index }) => {
         if (index > 0) {
             setValue(index - 1);
@@ -136,6 +146,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
                                 value={value}
                                 index={index}
                                 callbacktokens={callbackTokens}
+                                parentMountedRef={mountedRef}
                             />
                         );
                     case 'fileBrowser':
@@ -152,6 +163,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
                                 tabInfo={tab}
                                 value={value}
                                 index={index}
+                                parentMountedRef={mountedRef}
                             />
                         );
                     case 'processBrowser':
@@ -168,6 +180,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
                                 tabInfo={tab}
                                 value={value}
                                 index={index}
+                                parentMountedRef={mountedRef}
                             />
                         );
                     default:

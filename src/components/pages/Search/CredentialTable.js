@@ -12,13 +12,21 @@ import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
 import { toLocalTime } from '../../utilities/Time';
 import { gql, useMutation } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
-import EditIcon from '@material-ui/icons/Edit';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import {useTheme} from '@material-ui/core/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import { copyStringToClipboard } from '../../utilities/Clipboard';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faCopy} from '@fortawesome/free-solid-svg-icons';
+import {Button, Link} from '@material-ui/core';
+import Grow from '@material-ui/core/Grow';
+import Popper from '@material-ui/core/Popper';
+import MenuItem from '@material-ui/core/MenuItem';
+import MenuList from '@material-ui/core/MenuList';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 
 const updateCredentialComment = gql`
 mutation updateCommentMutation($credential_id: Int!, $comment: String!){
@@ -137,11 +145,12 @@ export function CredentialTable(props){
             <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
-                        <TableCell style={{width: "5rem"}}>Delete</TableCell>
+                        <TableCell style={{width: "4rem"}}>Delete</TableCell>
+                        <TableCell style={{width: "4rem"}}>Edit</TableCell>
                         <TableCell >Account</TableCell>
                         <TableCell >Realm</TableCell>
                         <TableCell >Credential</TableCell>
-                        <TableCell >Comment</TableCell>
+                        <TableCell style={{width: "20rem"}}>Comment</TableCell>
                         <TableCell style={{width: "15rem"}}>Timestamp</TableCell>
                         <TableCell >Task / Operator</TableCell>
                         <TableCell style={{width: "5rem"}}>Type</TableCell>
@@ -174,6 +183,10 @@ function CredentialTableRow(props){
     const [editAccountDialogOpen, setEditAccountDialogOpen] = React.useState(false);
     const [editRealmDialogOpen, setEditRealmDialogOpen] = React.useState(false);
     const [editCredentialDialogOpen, setEditCredentialDialogOpen] = React.useState(false);
+    const dropdownAnchorRef = React.useRef(null);
+    const [openDropdownButton, setOpenDropdownButton] = React.useState(false);
+    const maxDisplayLength = 200;
+    const displayCred = props.credential_text.length > maxDisplayLength ? props.credential_text.slice(0, maxDisplayLength) + "..." : props.credential_text;
     const [updateComment] = useMutation(updateCredentialComment, {
         onCompleted: (data) => {
             snackActions.success("updated comment");
@@ -219,6 +232,47 @@ function CredentialTableRow(props){
     const onAcceptDelete = () => {
         updateDeleted({variables: {credential_id: props.id, deleted: !props.deleted}})
     }
+    const onCopyToClipboard = (data) => {
+        let result = copyStringToClipboard(data);
+        if(result){
+          snackActions.success("Copied text!");
+        }else{
+          snackActions.error("Failed to copy text");
+        }
+    }
+    const options =  [
+        {
+            name: 'Edit Account', click: (evt) => {
+                evt.stopPropagation();
+                setEditAccountDialogOpen(true);
+            }
+        },
+        {
+            name: "Edit Realm", click: (evt) => {
+                setEditRealmDialogOpen(true);
+            }
+        },
+        {
+            name: "Edit Credential", click: (evt) => {
+                setEditCredentialDialogOpen(true);
+            }
+        },
+        {   
+            name: 'Edit Comment', click: (evt) => {
+                setEditCommentDialogOpen(true);
+            }
+        },
+    ];
+    const handleMenuItemClick = (event, index) => {
+        options[index].click(event);
+        setOpenDropdownButton(false);
+    };
+    const handleClose = (event) => {
+        if (dropdownAnchorRef.current && dropdownAnchorRef.current.contains(event.target)) {
+          return;
+        }
+        setOpenDropdownButton(false);
+      };
     return (
         <React.Fragment>
             <TableRow hover>
@@ -258,27 +312,70 @@ function CredentialTableRow(props){
                     </MythicStyledTooltip>
                 )} </TableCell>
                 <TableCell>
-                    <IconButton onClick={() => setEditAccountDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
+                    <Button size="small" variant="contained" color="primary" ref={dropdownAnchorRef}
+                        onClick={() => setOpenDropdownButton(true)} >{"Edit"}
+                    </Button>
+                    <Popper open={openDropdownButton} anchorEl={dropdownAnchorRef.current} role={undefined} transition style={{zIndex: 4}}>
+                    {({ TransitionProps, placement }) => (
+                        <Grow
+                        {...TransitionProps}
+                        style={{
+                            transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
+                        }}
+                        >
+                        <Paper variant="outlined" style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                            <ClickAwayListener onClickAway={handleClose}>
+                            <MenuList id="split-button-menu"  >
+                                {options.map((option, index) => (
+                                <MenuItem
+                                    key={option.name + index}
+                                    onClick={(event) => handleMenuItemClick(event, index)}
+                                >
+                                    {option.name}
+                                </MenuItem>
+                                ))}
+                            </MenuList>
+                            </ClickAwayListener>
+                        </Paper>
+                        </Grow>
+                    )}
+                    </Popper>
+                </TableCell>
+                <TableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.account}</Typography>
                 </TableCell>
                 <TableCell >
-                    <IconButton onClick={() => setEditRealmDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.realm}</Typography>
                 </TableCell>
                 <TableCell >
-                    <IconButton onClick={() => setEditCredentialDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
-                    <Typography variant="body2" style={{wordBreak: "break-all", maxWidth: "40rem"}}>{props.credential_text}</Typography>
+                    {props.credential_text.length > 64 ? 
+                    (
+                        <React.Fragment>
+                            <MythicStyledTooltip title={"Copy to clipboard"}>
+                                <IconButton onClick={() => onCopyToClipboard(props.credential_text)} size="small">
+                                    <FontAwesomeIcon icon={faCopy} />
+                                </IconButton>
+                            </MythicStyledTooltip>
+                            <Typography variant="body2" style={{wordBreak: "break-all", maxWidth: "40rem"}}>{displayCred}</Typography>
+                        </React.Fragment>
+                    )
+                    :
+                    (
+                        <React.Fragment>
+                            <Typography variant="body2" style={{wordBreak: "break-all", maxWidth: "40rem"}}>{displayCred}</Typography>
+                        </React.Fragment>   
+                    )}
+                    
                 </TableCell>
                 <TableCell>
-                    <IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.comment}</Typography>
                     </TableCell>
                 <TableCell>
-                <Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me.user.view_utc_time)}</Typography>
+                <Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me?.user?.view_utc_time || false)}</Typography>
                 </TableCell>
                 <TableCell>
                     {props.task_id !== null ? (
-                        props.task_id
+                        <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task_id}>{props.task_id}</Link>
                     ): (props.operator.username)}
                 </TableCell>
                 <TableCell>{props.type}</TableCell>
