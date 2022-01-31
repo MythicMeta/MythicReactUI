@@ -29,7 +29,6 @@ export const ResponseDisplayPlaintext = (props) =>{
         width={"100%"}
         minLines={2}
         maxLines={50}
-        readOnly
         setOptions={{
           showLineNumbers: true,
           tabSize: 4,

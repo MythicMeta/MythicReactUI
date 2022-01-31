@@ -12,7 +12,6 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 import {OperationTableRowNotificationsDialog} from './OperationTableRowNotificationsDialog';
 import { snackActions } from '../../utilities/Snackbar';
-import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
 
 const updateCurrentOpertionMutation = gql`
 mutation updateCurrentOpertionMutation($operator_id: Int!, $operation_id: Int!) {
@@ -26,12 +25,12 @@ mutation updateCurrentOpertionMutation($operator_id: Int!, $operation_id: Int!) 
 export function OperationTableRow(props){
     const [openUpdateNotifications, setOpenUpdateNotifications] = React.useState(false);
     const [openUpdateOperators, setOpenUpdateOperators] = React.useState(false);
-    const [openChangeCurrentOperation, setOpenChangeCurrentOperation] = React.useState(false);
     const me = useReactiveVar(meState);
     const [updateCurrentOperation] = useMutation(updateCurrentOpertionMutation, {
       onCompleted: (data) => {
         if(data.updateCurrentOperation.status === "success"){
-          meState({...meState, user: {...meState["user"], current_operation_id: data.updateCurrentOperation.operation_id, current_operation_name: data.updateCurrentOperation.operation_name}})
+          meState({...meState(), user: {...meState().user, current_operation_id: data.updateCurrentOperation.operation_id, current_operation: props.name}});
+          localStorage.setItem("user", JSON.stringify(meState().user));
           snackActions.success("Updated current operation");
         }else{
           snackActions.error(data.updateCurrentOperation.error);
@@ -71,13 +70,8 @@ export function OperationTableRow(props){
                 </TableCell>
                 <TableCell>{props.id === me.user.current_operation_id ? ("Current Operation") : (
                   <React.Fragment>
-                    <Button size="small"startIcon={<PlayArrowIcon/>} onClick={()=>{setOpenChangeCurrentOperation(true);}} color="primary" variant="contained">Make Current</Button>
-                    {openChangeCurrentOperation &&
-                      <MythicConfirmDialog onClose={() => {setOpenChangeCurrentOperation(false);}} onSubmit={makeCurrentOperation} 
-                        open={openChangeCurrentOperation} title={"Change Current Operation?"} acceptText={"Update"}
-                        dialogText={"Changing operations will force you to log in again"}/>
-                    }
-                    
+                    <Button size="small"startIcon={<PlayArrowIcon/>} onClick={makeCurrentOperation} color="primary" variant="contained">Make Current</Button>
+                   
                   </React.Fragment>
                 )}</TableCell>
             </TableRow>
