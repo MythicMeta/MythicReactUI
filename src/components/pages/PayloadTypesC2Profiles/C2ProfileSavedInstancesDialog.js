@@ -94,17 +94,14 @@ export function C2ProfileSavedInstancesDialog(props) {
                   }else if(param.parameter_type === "Dictionary"){
                       let tmp = JSON.parse(param.default_value);
                       let initial = tmp.reduce( (prev, op) => {
-                          // find all the options that have a default_show of true
-                          if(op.default_show){
-                              return [...prev, {value: op.default_value, key: op.name === "*" ? "": op.name, name: op.name, custom: op.name === "*" ? true : false} ];
-                          }else{
-                              return [...prev];
-                          }
+                        return [...prev, {...op, value: op.default_value, key: op.name === "*" ? "": op.name, default_show: op.default_show} ];
                       }, [] );
                       return {...param, value: initial}
                   }else if(param.parameter_type === "Date"){
                     let tmpDate = new Date();
-                    tmpDate.setDate(tmpDate.getDate() + parseInt(param.default_value));
+                    if(param.default_value !== ""){
+                      tmpDate.setDate(tmpDate.getDate() + parseInt(param.default_value));
+                    }
                     return {...param, value: tmpDate.toISOString().slice(0,10)}
                   }else{
                       return {...param, value: param.default_value}
@@ -129,7 +126,28 @@ export function C2ProfileSavedInstancesDialog(props) {
           let inst = {...cur, ...cur.c2profileparameter};
           if(inst.parameter_type === "Dictionary" || inst.parameter_type === "Array"){
             inst["value"] = JSON.parse(inst["value"]);
-        }
+            // now need to reconcile inst["value"] being the final array
+            // and needing to add back in the 'max' and 'default_show' values
+            const original = JSON.parse(inst.default_value);
+            const fixedArray = inst.value.map( (p) => {
+                // p looks like {"name": "something", "key": "something", "value": "something", "custom": true/false}
+                // we're missing the "max" limiter from the original that we need to add back in
+                const originalPiece = original.find( o => o["name"] === p["name"]);
+                if(originalPiece !== undefined){
+                    return {...originalPiece, ...p, "default_show": p.value === "" ? false : true}
+                }
+                return {...p, "default_show": false}
+            });
+            // now that we've added in the `max` value for each of the keys we had, we need to add back in the original possibilities that we didn't select
+            const final = original.reduce( (prev, current) => {
+                //console.log("looking for", cur, "in", prev)
+                if(prev.findIndex( o => o["name"] === current["name"]) > -1 ){
+                    return [...prev]
+                }
+                return [...prev, {...current, default_show: false, "key": current.name === "*" ? "": current.name, value: current.default_value}]
+            }, [...fixedArray])
+            return {...inst, value: final};
+          }
           return inst;
         })
         updates.sort( (a, b) => a.name < b.name ? -1 : 1);
@@ -191,7 +209,7 @@ export function C2ProfileSavedInstancesDialog(props) {
         }
         return param;
       });
-      console.log(c2params);
+      //console.log(c2params);
       setCurrentParameters(c2params);
     }
     const onChangeCreatedInstanceName = (evt) => {

@@ -264,18 +264,25 @@ export function C2ProfilesCard(props) {
               <Button disabled color="secondary">Container Offline</Button>
             )}
              <Button size="small" variant="contained" color="primary" onClick={() => {setOpenProfileSavedInstancesDialog(true);}}><BookmarkIcon /> Saved Instances</Button>
-            <MythicDialog fullWidth={true} maxWidth="lg" open={openProfileDialog} 
+             {openProfileDialog &&
+              <MythicDialog fullWidth={true} maxWidth="lg" open={openProfileDialog} 
                 onClose={()=>{setOpenProfileDialog(false);}} 
                 innerDialog={<C2ProfileOutputDialog {...props} payload_name={props.name} onClose={()=>{setOpenProfileDialog(false);}} profile_id={props.id} />}
-            />
+              />
+             }
+            {openProfileConfigDialog &&
             <MythicDialog fullWidth={true} maxWidth="lg" open={openProfileConfigDialog} 
-                onClose={()=>{setOpenProfileConfigDialog(false);}} 
-                innerDialog={<C2ProfileConfigDialog {...props} onConfigSubmit={onConfigSubmit} payload_name={props.name} onClose={()=>{setOpenProfileConfigDialog(false);}} profile_id={props.id} />}
+              onClose={()=>{setOpenProfileConfigDialog(false);}} 
+              innerDialog={<C2ProfileConfigDialog {...props} onConfigSubmit={onConfigSubmit} payload_name={props.name} onClose={()=>{setOpenProfileConfigDialog(false);}} profile_id={props.id} />}
             />
-            <MythicDialog fullWidth={true} maxWidth="lg" open={openProfileSavedInstancesDialog} 
+            }
+            {openProfileSavedInstancesDialog &&
+              <MythicDialog fullWidth={true} maxWidth="xl" open={openProfileSavedInstancesDialog} 
                 onClose={()=>{setOpenProfileSavedInstancesDialog(false);}} 
                 innerDialog={<C2ProfileSavedInstancesDialog {...props} onClose={()=>{setOpenProfileSavedInstancesDialog(false);}} />}
             />
+            }
+            
             <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal style={{zIndex: 4}}>
               {({ TransitionProps, placement }) => (
                 <Grow

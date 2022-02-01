@@ -9,6 +9,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/theme-xcode';
+import {useTheme} from '@material-ui/core/styles';
 
 const getProfileConfigQuery = gql`
 query getProfileConfigOutput($id: Int!, $filename: String!) {
@@ -23,6 +24,7 @@ query getProfileConfigOutput($id: Int!, $filename: String!) {
 
 export function C2ProfileConfigDialog(props) {
     const [config, setConfig] = useState("");
+    const theme = useTheme();
     const { loading, error } = useQuery(getProfileConfigQuery, {
         variables: {id: props.profile_id, filename: "config.json"},
         onCompleted: data => {
@@ -57,7 +59,7 @@ export function C2ProfileConfigDialog(props) {
         <DialogContent dividers={true}>
             <AceEditor 
               mode="json"
-              theme={"monokai"}
+              theme={theme.palette.type === "dark" ? "monokai" : "xcode"}
               onChange={onChange}
               fontSize={14}
               showGutter={true}

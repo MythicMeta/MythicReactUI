@@ -71,7 +71,7 @@ export function Step4C2Profiles(props){
         onCompleted: data => {
             const profiles = data.c2profile.map( (c2) => {
                 if(props.prevData !== undefined){
-                    console.log(props.prevData);
+                    //console.log(props.prevData);
                     for(let p = 0; p < props.prevData.length; p++){
                         if(props.prevData[p]["name"] === c2.name){
                             // we selected this c2 profile before and clicked back, so re-fill it out
@@ -214,6 +214,25 @@ export function Step4C2Profiles(props){
             let inst = {...cur, ...cur.c2profileparameter};
             if(inst.parameter_type === "Dictionary" || inst.parameter_type === "Array"){
                 inst["value"] = JSON.parse(inst["value"]);
+                const original = JSON.parse(inst.default_value);
+                const fixedArray = inst.value.map( (p) => {
+                    // p looks like {"name": "something", "key": "something", "value": "something", "custom": true/false}
+                    // we're missing the "max" limiter from the original that we need to add back in
+                    const originalPiece = original.find( o => o["name"] === p["name"]);
+                    if(originalPiece !== undefined){
+                        return {...originalPiece, ...p, "default_show": p.value === "" ? false : true}
+                    }
+                    return {...p, "default_show": false}
+                });
+                // now that we've added in the `max` value for each of the keys we had, we need to add back in the original possibilities that we didn't select
+                const final = original.reduce( (prev, current) => {
+                    //console.log("looking for", cur, "in", prev)
+                    if(prev.findIndex( o => o["name"] === current["name"]) > -1 ){
+                        return [...prev]
+                    }
+                    return [...prev, {...current, default_show: false, "key": current.name === "*" ? "": current.name, value: current.default_value}]
+                }, [...fixedArray])
+                return {...inst, value: final};
             }
             return inst;
           })
