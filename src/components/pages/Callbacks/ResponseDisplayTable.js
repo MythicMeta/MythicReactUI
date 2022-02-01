@@ -102,13 +102,13 @@ const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
       {cellData?.plaintextHoverText? (
         <MythicStyledTooltip title={cellData.plaintextHoverText}>
           <pre style={{display: "inline-block"}}>
-            {cellData?.plaintext || " "}
+            {cellData?.plaintext?.replaceAll("\n", "") || " "}
           </pre>
           
         </MythicStyledTooltip>
       ) : (
         <pre style={{display: "inline-block"}}>
-            {cellData?.plaintext || " "}
+            {cellData?.plaintext?.replaceAll("\n","") || " "}
           </pre>
       )}
       {cellData?.endIcon? 
@@ -139,7 +139,7 @@ const getStringSize = ({cellData}) => {
       const size = parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
       return size;
   }catch(error){
-    return cellData?.plaintext || ""
+    return cellData?.plaintext?.replaceAll("\n", "") || ""
     
   }
 }
