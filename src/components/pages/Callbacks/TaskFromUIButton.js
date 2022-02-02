@@ -173,7 +173,7 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked,
             }else{
                 savedFinalVariables.current = parameters;
                 if(typeof(parameters) === "string"){
-                    onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: parameters, tasking_location: taskingLocation}});
+                    onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: parameters, tasking_location: "command_line"}});
                 }else{
                     onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: JSON.stringify(parameters), tasking_location: taskingLocation}});
                 }
@@ -186,7 +186,7 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked,
             }else{
                 savedFinalVariables.current = parameters;
                 if(typeof(parameters) === "string"){
-                    onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: parameters, tasking_location: taskingLocation}});
+                    onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: parameters, tasking_location: "command_line"}});
                 }else{
                     onSubmitTasking({variables: {callback_id: callback_id, command: selectedCommand.cmd, params: JSON.stringify(parameters), tasking_location: taskingLocation}});
                 }

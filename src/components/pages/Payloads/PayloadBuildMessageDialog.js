@@ -3,9 +3,13 @@ import Button from '@material-ui/core/Button';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import MythicTextField from '../../MythicComponents/MythicTextField';
 import {useQuery, gql} from '@apollo/client';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import AceEditor from 'react-ace';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-xcode';
+import {useTheme} from '@material-ui/core/styles';
 
 const getDescriptionQuery = gql`
 query getDescriptionQuery ($payload_id: Int!) {
@@ -21,6 +25,7 @@ query getDescriptionQuery ($payload_id: Int!) {
 export function PayloadBuildMessageDialog(props) {
     const [payloadData, setPayloadData] = useState({});
     const [viewError, setViewError] = useState(false);
+    const theme = useTheme();
     const { loading, error } = useQuery(getDescriptionQuery, {
         variables: {payload_id: props.payload_id},
         onCompleted: data => {
@@ -48,10 +53,22 @@ export function PayloadBuildMessageDialog(props) {
     <React.Fragment>
         <DialogTitle id="form-dialog-title">Payload Build Messages</DialogTitle>
         <DialogContent dividers={true}>
-          <pre style={{}}>
-            {viewError ? payloadData["error"] : payloadData["message"]}
-          </pre>
-            
+          <AceEditor 
+              mode="json"
+              theme={theme.palette.type === "dark" ? "monokai" : "xcode"}
+              fontSize={14}
+              showGutter={true}
+              height={"100px"}
+              highlightActiveLine={true}
+              value={viewError ? payloadData["error"] : payloadData["message"]}
+              width={"100%"}
+              minLines={2}
+              maxLines={50}
+              setOptions={{
+                showLineNumbers: true,
+                tabSize: 4,
+                useWorker: false
+              }}/>
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={props.onClose} color="primary">

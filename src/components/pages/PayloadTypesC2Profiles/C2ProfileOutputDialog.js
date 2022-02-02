@@ -1,4 +1,4 @@
-import React, { useEffect }  from 'react';
+import React from 'react';
 import Button from '@material-ui/core/Button';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -56,7 +56,7 @@ export function C2ProfileOutputDialog(props) {
               value={data.getProfileOutput.output}
               width={"100%"}
               minLines={2}
-              maxLines={100}
+              maxLines={50}
               setOptions={{
                 showLineNumbers: true,
                 tabSize: 4,

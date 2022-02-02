@@ -296,7 +296,7 @@ export function TopAppBar(props) {
                     <MenuItem component={Link} target="_blank" to="/docs/agents" onClick={handleDocumentationClose}>Agent Documentation</MenuItem>
                     <MenuItem component={Link} target="_blank" to="/docs/wrappers" onClick={handleDocumentationClose}>Wrapper Documentation</MenuItem>
                     <MenuItem component={Link} target="_blank" to="/docs/c2-profiles" onClick={handleDocumentationClose}>C2 Profile Documentation</MenuItem>
-                    <MenuItem component={Link} href="https://docs.mythic-c2.net" target="_blank" onClick={handleDocumentationClose}>Mythic Documentation</MenuItem>
+                    <MenuItem component={Link} to={{pathname: "https://docs.mythic-c2.net"}} target="_blank" onClick={handleDocumentationClose}>Mythic Documentation</MenuItem>
                 </Menu>
                 <TopAppBarNotifications />
                 { me?.user?.username ? 

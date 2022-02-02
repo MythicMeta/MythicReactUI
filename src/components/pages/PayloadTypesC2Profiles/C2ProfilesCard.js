@@ -212,14 +212,19 @@ export function C2ProfilesCard(props) {
               Docs
             </Button>
             <Button size="small" onClick={()=>{setOpenBuildingDialog(true);}} color="primary" variant="contained">Build Info</Button>
-            <MythicDialog fullWidth={true} maxWidth="lg" open={openBuildingDialog} 
+            {openBuildingDialog &&
+              <MythicDialog fullWidth={true} maxWidth="lg" open={openBuildingDialog} 
                 onClose={()=>{setOpenBuildingDialog(false);}} 
                 innerDialog={<C2ProfileBuildDialog {...props} onClose={()=>{setOpenBuildingDialog(false);}} payload_name={props.name} />}
             />
-            <MythicDialog fullWidth={true} maxWidth="lg" open={openProfileStartStopDialog} 
+            }
+            {openProfileStartStopDialog &&
+              <MythicDialog fullWidth={true} maxWidth="lg" open={openProfileStartStopDialog} 
                 onClose={()=>{setOpenProfileStartStopDialog(false);}} 
                 innerDialog={<C2ProfileStartStopOutputDialog output={output} onClose={()=>{setOpenProfileStartStopDialog(false);}} payload_name={props.name} />}
             />
+            }
+            
             {props.container_running ? (
                    props.running ?
                    (

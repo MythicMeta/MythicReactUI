@@ -99,10 +99,11 @@ export function CredentialTableNewCredentialDialog(props) {
                   ))}
                 </Select>
               </FormControl>
-              <MythicTextField value={account} onChange={onAccountChange} name="Account Name"/>
               <MythicTextField value={realm} onChange={onRealmChange} name="Realm or Domain"/>
-              <MythicTextField value={comment} onChange={onCommentChange} name="Comment"/>
+              <MythicTextField value={account} onChange={onAccountChange} name="Account Name"/>
               <MythicTextField multiline value={credential} onChange={onCredentialChange} name="Credential"/>
+              <MythicTextField value={comment} onChange={onCommentChange} name="Comment"/>
+              
             </React.Fragment>
         </DialogContent>
         <DialogActions>
