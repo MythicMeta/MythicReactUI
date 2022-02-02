@@ -193,7 +193,7 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
         return true;
     }
     const subscriptionDataCallback = useCallback( ({subscriptionData}) => {
-        if(!mountedRef.current || !parentMountedRef.current){
+        if((mountedRef && !mountedRef.current) || (parentMountedRef && !parentMountedRef.current)){
             return null;
         }
         if(!fetched){

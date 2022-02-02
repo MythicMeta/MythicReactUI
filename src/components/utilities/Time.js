@@ -40,15 +40,15 @@ export function useInterval(callback, delay, mountedRef, parentMountedRef) {
   });
   useEffect(() => {
     function tick() {
-      if(!mountedRef.current || !parentMountedRef.current){
+      if((mountedRef && !mountedRef.current) || (parentMountedRef && !parentMountedRef.current)){
         return;
       }
       savedCallback.current();
     }
-    if(!mountedRef.current || !parentMountedRef.current){
+    if( (mountedRef && !mountedRef.current) || (parentMountedRef && !parentMountedRef.current)){
       return;
     }
     let id = setInterval(tick, delay);
     return () => clearInterval(id);
-  }, [delay, mountedRef]);
+  }, [delay, mountedRef, parentMountedRef]);
 }
