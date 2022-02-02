@@ -634,7 +634,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         }
         
         if(unSatisfiedArguments.length > 0 && parsedCopy["_"].length > 0){
-            parsedCopy["_"] = parsedCopy["_"].map( c => c.includes(" ") ? "\"" + c + "\"" : c);
+            parsedCopy["_"] = parsedCopy["_"].map( c => typeof(c) === "string" && c.includes(" ") ? "\"" + c + "\"" : c);
             parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = parsedCopy["_"].join(" ");
             parsedCopy["_"] = [];
         }
