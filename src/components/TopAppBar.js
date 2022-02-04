@@ -370,7 +370,7 @@ export function TopAppBar(props) {
               </ListItem>
               <Collapse in={openCreate} unmountOnExit>
                   <List component="div" disablePadding>
-                    <ListItem button className={classes.nested} component={Link} to='/new/createpayload' key={"createpayload"} onClick={handleDrawerClose}>
+                    <ListItem button className={classes.nested} component={Link} to='/new/createpayload' key={"createpayload"} onClick={handleDrawerClose} state={{from: 'TopAppBar'}}>
                       <ListItemIcon><PostAddIcon className="mythicElement"/></ListItemIcon>
                       <ListItemText primary={"Create Payload"} />
                     </ListItem>

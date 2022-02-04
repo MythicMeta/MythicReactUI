@@ -86,7 +86,7 @@ export function Step5Build(props){
             <br/>
             <MythicTextField onEnter={finished} autoFocus={true} required={false} placeholder={"Filename"} value={filename} multiline={false} onChange={onChangeFilename} display="inline-block"/>
             <MythicTextField onEnter={finished} required={false} placeholder={"description"} value={description} multiline={false} onChange={onChangeDescription} display="inline-block"/>
-            <CreatePayloadNavigationButtons first={props.first} last={props.last} canceled={canceled} finished={finished} />
+            <CreatePayloadNavigationButtons first={props.first} last={props.last} canceled={canceled} finished={finished} startOver={props.startOver} />
             <br/><br/>
             <PayloadSubscriptionNotification/>
         </div>

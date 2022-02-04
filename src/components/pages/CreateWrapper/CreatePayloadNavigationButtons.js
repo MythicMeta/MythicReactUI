@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '@material-ui/core/Button';
+import { Link } from 'react-router-dom';
 
 /*
     Takes in props for Boolean of first/last
@@ -23,8 +24,30 @@ export function CreatePayloadNavigationButtons(props){
                 onClick={props.finished}
                 disabled={props.disableNext}
               >
-                {props.last ? 'Create Payload' : 'Next'}
+                {props.last ? 'Create Wrapped Payload' : 'Next'}
               </Button>
+              {props.last &&
+              <React.Fragment>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  style={{marginLeft: "10px"}}
+                  onClick={props.startOver}
+                >
+                  Start Over
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  component={Link}
+                  style={{marginLeft: "10px"}}
+                  to={"/new/createpayload"}
+                >
+                  Create Another Payload
+                </Button>
+              </React.Fragment>
+                
+              }
         </div>
     );
 } 

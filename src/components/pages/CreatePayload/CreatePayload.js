@@ -26,7 +26,7 @@ export function CreatePayload(props){
             case 3:
               return <Step4C2Profiles buildOptions={payload[1]} prevData={payload[3]} finished={handleStepData} canceled={cancelStep} first={false} last={false} />;
             case 4:
-              return <Step5Build buildOptions={payload} canceled={cancelStep} first={false} last={true} />;
+              return <Step5Build buildOptions={payload} canceled={cancelStep} first={false} last={true} startOver={startOver} />;
             default:
               return 'Unknown step';
           }
@@ -38,7 +38,9 @@ export function CreatePayload(props){
       const cancelStep = () => {
         handleBack();
       }
-      
+      React.useEffect( () => {
+        startOver();
+      }, [props.location.key])
       const steps = getSteps();
 
       const handleNext = () => {
@@ -48,6 +50,9 @@ export function CreatePayload(props){
       const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
       };
+      const startOver = () => {
+        setActiveStep(0);
+      }
 
     return (
         <div style={{height: "calc(95vh)"}}>

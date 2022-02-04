@@ -2,34 +2,10 @@ import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
-import { useSubscription, gql } from '@apollo/client';
 import { CallbacksTabsTaskingLabel, CallbacksTabsTaskingPanel } from './CallbacksTabsTasking';
 import { CallbacksTabsFileBrowserLabel, CallbacksTabsFileBrowserPanel } from './CallbacksTabsFileBrowser';
 import { CallbacksTabsProcessBrowserLabel, CallbacksTabsProcessBrowserPanel } from './CallbacksTabsProcessBrowser';
-import { meState } from '../../../cache';
-import { useReactiveVar } from '@apollo/client';
 
-const SUB_Callbacks = gql`
-    subscription CallbacksSubscription($operation_id: Int!) {
-        callbacktoken(
-            where: {
-                deleted: { _eq: false }
-                callback: { operation_id: { _eq: $operation_id }, active: { _eq: true } }
-            }
-        ) {
-            token {
-                TokenId
-                id
-                User
-                description
-            }
-            callback {
-                id
-            }
-            id
-        }
-    }
-`;
 const useStyles = makeStyles((theme) => ({
     root: {
         width: '100%',
@@ -37,20 +13,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelectedTab, onEditTabDescription }) {
     const classes = useStyles();
-    const me = useReactiveVar(meState);
-    const [callbackTokens, setCallbackTokens] = React.useState([]);
     const mountedRef = React.useRef(true);
-    useSubscription(SUB_Callbacks, {
-        variables: { operation_id: me?.user?.current_operation_id || 0},
-        fetchPolicy: 'network-only',
-        shouldResubscribe: true,
-        onSubscriptionData: ({ subscriptionData }) => {
-            if(!mountedRef.current){
-                return;
-            }
-            setCallbackTokens(subscriptionData.data.callbacktoken);
-        },
-    });
     const [value, setValue] = React.useState(0);
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -145,7 +108,6 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
                                 tabInfo={tab}
                                 value={value}
                                 index={index}
-                                callbacktokens={callbackTokens}
                                 parentMountedRef={mountedRef}
                             />
                         );

@@ -203,7 +203,7 @@ export const drawC2PathElements = (edges, dagreRef, reZoom, view_config, node_ev
              .on("click", function(d) { d3.event.preventDefault(); node_events["click"](parent, node, d) })
              .on("contextmenu", (d) => {createContextMenu(g, node, node_events["contextmenu"], width, height, "#callbacksgraph")});
          node.intersect = function(point) {
-             return dagreD3.intersect.circle(node, 20, point);
+             return dagreD3.intersect.circle(node, 25, point);
          };
          return shapeSvg;
      };

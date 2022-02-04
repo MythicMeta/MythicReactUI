@@ -248,17 +248,17 @@ const SearchTabFilesSearchPanel = (props) => {
     }
     const handleSearchValueChange = (name, value, error) => {
         setSearch(value);
-        props.changeSearchParam("search", value);
     }
     const handleSearchHostValueChange = (name, value, error) => {
         setSearchHost(value);
-        props.changeSearchParam("host", value);
     }
     const submitSearch = (event, querySearch, querySearchHost, querySearchField, querySearchLocation) => {
         let adjustedSearchField = querySearchField ? querySearchField : searchField;
         let adjustedSearch = querySearch ? querySearch : search;
         let adjustedSearchHost = querySearchHost ? querySearchHost : searchHost;
         let adjustedSearchLocation = querySearchLocation ? querySearchLocation : searchLocation;
+        props.changeSearchParam("host", adjustedSearchHost);
+        props.changeSearchParam("search", adjustedSearch);
         switch(adjustedSearchField){
             case "Filename":
                 props.onFilenameSearch({search:adjustedSearch, searchHost:adjustedSearchHost, offset: 0, adjustedSearchLocation})
@@ -399,6 +399,7 @@ const SearchTabFilesSearchPanel = (props) => {
         </Grid>
     )
 }
+
 export const SearchTabFilesPanel = (props) =>{
     const [fileMetaData, setFileMetaData] = React.useState([]);
     const [fileBrowserData, setFileBrowserData] = React.useState([]);

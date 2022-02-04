@@ -79,16 +79,17 @@ const SearchTabTasksSearchPanel = (props) => {
     }
     const handleSearchValueChange = (name, value, error) => {
         setSearch(value);
-        props.changeSearchParam("search", value);
+        
     }
     const handleFilterTaskStatusValueChange = (name, value, error) => {
         setFilterTaskStatus(value);
-        props.changeSearchParam("taskStatus", value);
     }
     const submitSearch = (event, querySearch, querySearchField, queryTaskStatus) => {
             let adjustedSearchField = querySearchField ? querySearchField : searchField;
             let adjustedSearch = querySearch ? querySearch : search;
             let adjustedTaskStatus = queryTaskStatus ? queryTaskStatus : filterTaskStatus;
+            props.changeSearchParam("search", adjustedSearch);
+            props.changeSearchParam("taskStatus", adjustedTaskStatus);
             switch(adjustedSearchField){
             case "Output":
                 props.onOutputSearch({search:adjustedSearch, offset: 0, taskStatus: adjustedTaskStatus})

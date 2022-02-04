@@ -23,7 +23,7 @@ export function CreatePayloadWrapper(props){
             case 2:
               return <Step3SelectPayload buildOptions={payload[1]} prevData={payload[2]} finished={handleStepData} canceled={cancelStep} first={false} last={false} />;
             case 3:
-              return <Step5Build buildOptions={payload} canceled={cancelStep} first={false} last={true} />;
+              return <Step5Build buildOptions={payload} canceled={cancelStep} first={false} last={true} startOver={startOver}/>;
             default:
               return 'Unknown step';
           }
@@ -45,6 +45,12 @@ export function CreatePayloadWrapper(props){
       const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
       };
+      const startOver = () => {
+        setActiveStep(0);
+      }
+      React.useEffect( () => {
+        startOver();
+      }, [props.location.key])
 
     return (
         <div style={{height: "calc(95vh)"}}>

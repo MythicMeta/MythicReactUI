@@ -118,11 +118,12 @@ const SearchTabTokensSearchPanel = (props) => {
     }
     const handleSearchValueChange = (name, value, error) => {
         setSearch(value);
-        props.changeSearchParam("search", value);
+        
     }
     const submitSearch = (event, querySearch, querySearchField) => {
         let adjustedSearchField = querySearchField ? querySearchField : searchField;
         let adjustedSearch = querySearch ? querySearch : search;
+        props.changeSearchParam("search", adjustedSearch);
         switch(adjustedSearchField){
             case "User/Group":
                 props.onUserGroupSearch({search:adjustedSearch, offset: 0})
