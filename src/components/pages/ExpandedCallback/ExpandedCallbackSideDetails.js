@@ -200,7 +200,7 @@ export function ExpandedCallbackSideDetailsTable(props){
     const editDescriptionSubmit = (description) => {
         props.updateDescription({description, id: props.id})
     }
-    const options = [{name: props.locked ? 'Unlock (Locked by ' + props.locked_operator.username + ')' : 'Lock Callback', icon: props.locked ? (<LockOpenIcon style={{paddingRight: "5px"}}/>) : (<LockIcon style={{paddingRight: "5px"}} />), click: (evt) => {
+    const options = [{name: props.locked ? 'Locked (by ' + props.locked_operator.username + ')' : 'Unlocked', icon: props.locked ? (<LockIcon style={{paddingRight: "5px"}}/>) : (<LockOpenIcon style={{paddingRight: "5px"}} />), click: (evt) => {
                         evt.stopPropagation();
                         toggleLock();
                      }},
@@ -225,16 +225,17 @@ export function ExpandedCallbackSideDetailsTable(props){
                         <TableCell>
                             {props.locked ? (
                                 <React.Fragment>
-                                    <LockOpenIcon style={{paddingRight: "5px", display: "inline-block", paddingTop: "6px"}}/>
+                                    <LockIcon style={{paddingRight: "5px", display: "inline-block", paddingTop: "6px"}}/>
                                     <Typography style={{display: "inline-block"}}>
-                                        {'Unlock (Locked by ' + props.locked_operator.username + ')'}
+                                        {'Locked (by ' + props.locked_operator.username + ')'}
                                     </Typography>
                                 </React.Fragment>
                             ) : (
                                 <React.Fragment>
-                                    <LockIcon style={{paddingRight: "5px", display: "inline-block", paddingTop: "6px"}}/>
+                                    <LockOpenIcon style={{paddingRight: "5px", display: "inline-block", paddingTop: "6px"}}/>
+                                    
                                     <Typography style={{display: "inline-block"}}>
-                                        {'Lock Callback'}
+                                        {'Unlocked'}
                                     </Typography>
                                 </React.Fragment>
                             )}

@@ -1,10 +1,9 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import useStyles from './styles';
 
-const Cell = ({ VariableSizeGridProps: { style, rowIndex, columnIndex, data } }) => {
+const CellPreMemo = ({ VariableSizeGridProps: { style, rowIndex, columnIndex, data } }) => {
     const rowClassName = data.gridUUID + "row" + rowIndex;
     const classes = useStyles();
-
     const handleDoubleClick = useCallback(
         (e) => {
             data.onDoubleClickRow(e, rowIndex - 1); // minus 1 to account for header row
@@ -41,5 +40,6 @@ const Cell = ({ VariableSizeGridProps: { style, rowIndex, columnIndex, data } })
         </div>
     );
 };
-
+const Cell = React.memo(CellPreMemo);
 export default Cell;
+

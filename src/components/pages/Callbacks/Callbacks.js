@@ -42,6 +42,7 @@ export function Callbacks() {
     const [openTabs, setOpenTabs] = React.useState([]);
     const [clickedTabId, setClickedTabId] = React.useState('');
     const [heights, setHeights] = React.useState({ top: '30%', bottom: '68%' });
+    const openTabRef = React.useRef();
     useEffect(() => {
         const oldTabs = localStorage.getItem('openTabs');
         if (oldTabs !== undefined && oldTabs !== null) {
@@ -66,21 +67,26 @@ export function Callbacks() {
             }
         }
     }, []);
-    const onOpenTab = (tabData) => {
+    useEffect( () => {
+        openTabRef.current = openTabs;
+    }, [openTabs])
+    const onOpenTab = React.useRef( (tabData) => {
         let found = false;
-        openTabs.forEach((tab) => {
+        openTabRef.current.forEach((tab) => {
             if (tab.tabID === tabData.tabID) found = true;
         });
         //console.log("found is", found, tabData.tabID, tabData.tabType, tabData.callbackID, openTabs);
         if (!found) {
-            const tabs = [...openTabs, { ...tabData }];
+            const tabs = [...openTabRef.current, { ...tabData }];
             localStorage.setItem('openTabs', JSON.stringify(tabs));
             setOpenTabs(tabs);
         }
         localStorage.setItem('clickedTab', tabData.tabID);
         setClickedTabId(tabData.tabID);
-    };
-    const onEditTabDescription = (tabInfo, description) => {
+        
+    });
+    
+    const onEditTabDescription = React.useCallback( (tabInfo, description) => {
         const tabs = openTabs.map((t) => {
             if (t.tabID === tabInfo.tabID) {
                 return { ...t, customDescription: description };
@@ -90,17 +96,14 @@ export function Callbacks() {
         });
         setOpenTabs(tabs);
         localStorage.setItem('openTabs', JSON.stringify(tabs));
-    };
-    const onCloseTab = ({ tabID, index }) => {
+    }, [openTabs]);
+    const onCloseTab = React.useCallback( ({ tabID, index }) => {
         const tabSet = openTabs.filter((tab) => {
             return tab.tabID !== tabID;
         });
         localStorage.setItem('openTabs', JSON.stringify(tabSet));
         setOpenTabs(tabSet);
-    };
-    const clearSelectedTab = React.useCallback(() => {
-        setClickedTabId('');
-    }, []);
+    }, [openTabs]);
 
     const onSubmitHeights = React.useCallback((newHeights) => {
         setHeights(newHeights);
@@ -111,13 +114,12 @@ export function Callbacks() {
             <React.Fragment>
                 <SpeedDialWrapper setTopDisplay={setTopDisplay} heights={heights} onSubmitHeights={onSubmitHeights} />
                 <div style={{ flexGrow: 1, flexBasis: heights.top, height: heights.top }}>
-                    <CallbacksTop topDisplay={topDisplay} onOpenTab={onOpenTab} heights={heights} />
+                    <CallbacksTop topDisplay={topDisplay} onOpenTab={onOpenTab.current} heights={heights} />
                 </div>
                 <div style={{ flexGrow: 1, flexBasis: heights.bottom, height: heights.bottom }}>
                     <CallbacksTabs
                         onCloseTab={onCloseTab}
                         onEditTabDescription={onEditTabDescription}
-                        clearSelectedTab={clearSelectedTab}
                         tabHeight={heights.bottom}
                         maxHeight={heights.bottom}
                         key={'callbackstabs'}

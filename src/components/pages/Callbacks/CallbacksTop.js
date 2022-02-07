@@ -93,7 +93,7 @@ subscription CallbacksSubscription ($operation_id: Int!){
   }
 }
  `;
-export function CallbacksTop({onOpenTab, topDisplay, heights}){
+export function CallbacksTop(props){
     const me = useReactiveVar(meState);
     const theme = useTheme();
     const [callbacks, setCallbacks] = React.useState([]);
@@ -119,7 +119,7 @@ export function CallbacksTop({onOpenTab, topDisplay, heights}){
           setCallbackEdges(subscriptionData.data.callbackgraphedge)
         }
     });
-    const onOpenTabLocal = ({tabType, tabID, callbackID}) => {
+    const onOpenTabLocal = React.useCallback( ({tabType, tabID, callbackID}) => {
       for(let i = 0; i < callbacks.length; i++){
         if(callbacks[i]["id"] === callbackID){
           const tabData = {tabID, tabType, callbackID, 
@@ -130,10 +130,10 @@ export function CallbacksTop({onOpenTab, topDisplay, heights}){
               callbackDescription: callbacks[i]["description"],
               host: callbacks[i]["host"],
               os: callbacks[i]["payload"]["os"]};
-          onOpenTab(tabData);
+          props.onOpenTab(tabData);
         }
       }
-    }
+    }, [callbacks, props.onOpenTab]);
     React.useEffect( () => {
       return() => {
         mountedRef.current = false;
@@ -142,8 +142,8 @@ export function CallbacksTop({onOpenTab, topDisplay, heights}){
     }, [])
     return (
       <div style={{height: "100%", width: "100%"}}>
-        {topDisplay === "graph" ? (
-          <CallbacksGraph maxHeight={"100%"} topHeight={heights.top} key={"callbacksgraph"} onOpenTab={onOpenTabLocal} callbacks={callbacks} callbackgraphedges={callbackEdges} />
+        {props.topDisplay === "graph" ? (
+          <CallbacksGraph maxHeight={"100%"} topHeight={props.heights.top} key={"callbacksgraph"} onOpenTab={onOpenTabLocal} callbacks={callbacks} callbackgraphedges={callbackEdges} />
         ) : (
           <div style={{height: "100%", width: "100%", display: "flex", flexDirection: "column"}}>
             <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px", width: "100%"}} variant={"elevation"}>

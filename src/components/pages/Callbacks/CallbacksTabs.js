@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
     },
 }));
-export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelectedTab, onEditTabDescription }) {
+export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, onEditTabDescription }) {
     const classes = useStyles();
     const mountedRef = React.useRef(true);
     const [value, setValue] = React.useState(0);
@@ -34,13 +34,14 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, clearSelecte
         onCloseTab({ tabID, index });
     };
     useEffect(() => {
+        console.log(clickedTabId);
         for (let i = 0; i < openTabs.length; i++) {
             if (openTabs[i].tabID === clickedTabId) {
                 setValue(i);
             }
         }
-        clearSelectedTab();
-    }, [clickedTabId, openTabs, clearSelectedTab]);
+    }, [clickedTabId, openTabs]);
+    
     return (
         <div className={classes.root} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, height: "100%" }}>
             <AppBar color='default' position='static'>

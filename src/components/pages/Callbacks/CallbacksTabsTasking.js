@@ -230,6 +230,7 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
     }, [fetched, setFetched, setCanScroll, taskLimit])
     useSubscription(getTaskingQuery, {
         variables: {callback_id: tabInfo.callbackID, fromNow:fromNow, limit: taskLimit},
+        shouldResubscribe: true,
         onError: data => {
             console.error(data)
         },

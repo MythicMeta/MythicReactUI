@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {MythicTransferListDialog} from '../../MythicComponents/MythicTransferList';
 import {MythicDialog} from '../../MythicComponents/MythicDialog';
 import {
@@ -20,7 +20,7 @@ import {
 import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
 import {TableFilterDialog} from './TableFilterDialog';
 
-export function CallbacksTable(props){
+function CallbacksTablePreMemo(props){
     
     const [allData, setAllData] = React.useState([]);
     const [sortData, setSortData] = React.useState({"sortKey": null, "sortDirection": null, "sortType": null});
@@ -304,4 +304,4 @@ export function CallbacksTable(props){
         </div>             
     )
 }
-
+export const CallbacksTable = React.memo(CallbacksTablePreMemo);

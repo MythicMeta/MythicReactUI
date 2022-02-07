@@ -251,21 +251,21 @@ export const CallbacksTableStringCell = ({cellData}) => {
         <div>{cellData}</div>
     )
 }
-export const CallbacksTableLastCheckinCell = ({rowData, parentMountedRef}) => {
+export const CallbacksTableLastCheckinCell = React.memo( (props) => {
     const [displayTime, setDisplayTime] = React.useState("");
     const [lastCheckin, setLastCheckin] = React.useState(-1);
     const mountedRef = React.useRef(true);
     useSubscription(SUB_Callbacks, {
-        variables: {callback_id: rowData.id}, fetchPolicy: "network-only",
+        variables: {callback_id: props.rowData.id}, fetchPolicy: "network-only", shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
-            if(!mountedRef.current || !parentMountedRef.current){
+            if(!mountedRef.current || !props.parentMountedRef.current){
                 return null;
             }
             setLastCheckin(subscriptionData.data.callback_by_pk.last_checkin);
         }
     });
     useInterval( () => {
-        if(!mountedRef.current || !parentMountedRef.current){
+        if(!mountedRef.current || !props.parentMountedRef.current){
             return null;
         }
         if(lastCheckin === -1){
@@ -273,7 +273,7 @@ export const CallbacksTableLastCheckinCell = ({rowData, parentMountedRef}) => {
             return;
         }
         setDisplayTime(getTimeDifference(lastCheckin));
-    }, 1000, mountedRef, parentMountedRef);
+    }, 1000, mountedRef, props.parentMountedRef);
     React.useEffect( () => {
         return() => {
             mountedRef.current = false;
@@ -286,7 +286,7 @@ export const CallbacksTableLastCheckinCell = ({rowData, parentMountedRef}) => {
         </div>
         
     )
-}
+});
 export const CallbacksTablePayloadTypeCell = ({rowData}) => {
     return (
         <MythicStyledTooltip title={rowData.payload.payloadtype.ptype}>
@@ -418,7 +418,7 @@ export const CallbacksTableC2Cell = ({rowData, initialCallbackGraphEdges}) => {
         
     )
 }
-export const CallbacksTableOSCell = ({rowData, cellData}) => {
+export const CallbacksTableOSCell = React.memo( ({rowData, cellData}) => {
     const [openOSDialog, setOpenOSDialog] = React.useState(false);
     const getOSIcon = useCallback( () => {
         switch(rowData.payload.os.toLowerCase()){
@@ -454,7 +454,7 @@ export const CallbacksTableOSCell = ({rowData, cellData}) => {
         
                 
     )
-}
+});
 export const CallbacksTableSleepCell = ({rowData, cellData, updateSleepInfo}) => {
     const theme = useTheme();
     const [openSleepDialog, setOpenSleepDialog] = React.useState(false);
