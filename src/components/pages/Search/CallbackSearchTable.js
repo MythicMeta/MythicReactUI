@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import {IconButton, Typography, Link} from '@material-ui/core';
+import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -18,6 +19,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import {toggleHideCallbackMutations} from '../Callbacks/CallbackMutations';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import {DetailedCallbackTable} from '../Callbacks/DetailedCallbackTable';
+import InfoIcon from '@material-ui/icons/Info';
 
 export function CallbackSearchTable(props){
     const [callbacks, setCallbacks] = React.useState([]);
@@ -47,9 +50,9 @@ export function CallbackSearchTable(props){
                         <TableCell >Host</TableCell>
                         <TableCell >Description</TableCell>
                         <TableCell >IP</TableCell>
-                        <TableCell >Process Name</TableCell>
                         <TableCell >ID</TableCell>
                         <TableCell>Checkin Times</TableCell>
+                        <TableCell>Details</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -71,7 +74,7 @@ function CallbackSearchTableRow(props){
     const me = useReactiveVar(meState);
     const theme = useTheme();
     const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
-
+    const [openMetaDialog, setOpenMetaDialog] = React.useState(false);
     const [updateDeleted] = useMutation(toggleHideCallbackMutations, {
         onCompleted: (data) => {
             snackActions.success("Updated active status");
@@ -112,9 +115,6 @@ function CallbackSearchTableRow(props){
                     {props.ip}
                 </TableCell>
                 <TableCell>
-                    {props.process_name}
-                </TableCell>
-                <TableCell>
                 <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" 
                         href={"/new/callbacks/" + props.id}>
                             {props.id}
@@ -128,7 +128,15 @@ function CallbackSearchTableRow(props){
                         Latest: {toLocalTime(props.last_checkin, me.user.view_utc_time)}
                     </Typography>
                 </TableCell>
-                
+                <TableCell>
+                    <InfoIcon onClick={() => setOpenMetaDialog(true)} style={{color: theme.palette.info.main}}/>
+                    {openMetaDialog && 
+                        <MythicDialog fullWidth={true} maxWidth="lg" open={openMetaDialog}
+                            onClose={()=>{setOpenMetaDialog(false);}} 
+                            innerDialog={<DetailedCallbackTable onClose={()=>{setOpenMetaDialog(false);}} callback_id={props.id} />}
+                        />
+                    }
+                </TableCell>
             </TableRow>
         </React.Fragment>
     )

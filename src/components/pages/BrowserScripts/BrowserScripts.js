@@ -9,7 +9,7 @@ import {snackActions} from '../../utilities/Snackbar';
 
 const SUB_BrowserScripts = gql`
 subscription SubscribeBrowserScripts($operator_id: Int!) {
-  browserscript(where: {operator_id: {_eq: $operator_id}, for_new_ui: {_eq: true}}) {
+  browserscript(where: {operator_id: {_eq: $operator_id}, for_new_ui: {_eq: true}}, order_by: {payloadtype: {ptype: asc}}) {
     active
     author
     user_modified
@@ -103,20 +103,32 @@ mutation deleteBrowserScriptMutation($browserscript_id: Int!){
 
 export function BrowserScripts(props){
     const me = useReactiveVar(meState);
-    const [browserScripts, setBrowserScripts] = React.useState({"browserscript": []});
+    const [browserScripts, setBrowserScripts] = React.useState([]);
     const [operationBrowserScripts, setOperationBrowserScripts] = React.useState({"browserscriptoperation": []});
+    const mountedRef = React.useRef(true);
     useSubscription(SUB_BrowserScripts, {
       variables: {operator_id: me.user.id}, fetchPolicy: "no-cache",
       shouldResubscribe: true,
       onSubscriptionData: ({subscriptionData}) => {
         console.log(subscriptionData)
-        setBrowserScripts(subscriptionData.data);
+        if(!mountedRef.current){return}
+        let scripts = [...subscriptionData.data.browserscript];
+        scripts.sort((a,b) => {
+          if(a.payloadtype.ptype === b.payloadtype.ptype){
+            return a.command.cmd.localeCompare(b.command.cmd);
+          }else{
+            return 0;
+          }
+        
+        } )
+        setBrowserScripts(scripts);
       }
     });
       useSubscription(SUB_OperationBrowserScripts, {
         variables: {operation_id: me.user.current_operation_id}, fetchPolicy: "no-cache",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
+          if(!mountedRef.current){return}
           setOperationBrowserScripts(subscriptionData.data);
         }
     });
@@ -181,9 +193,14 @@ export function BrowserScripts(props){
     const onDelete = ({browserscript_id}) => {
       deleteBrowserScript({variables: {browserscript_id}});
     }
+    React.useRef( () => {
+      return () => {
+        mountedRef.current = false;
+      }
+    }, [])
     return (
     <React.Fragment>
-        <BrowserScriptsTable {...browserScripts} operation_id={me.user.current_operation_id} onToggleActive={onToggleActive} 
+        <BrowserScriptsTable browserscripts={browserScripts} operation_id={me.user.current_operation_id} onToggleActive={onToggleActive} 
           onSubmitEdit={onSubmitEdit} onRevert={onRevert} onSubmitNew={onSubmitCreateNewBrowserScript} onDelete={onDelete}
           onSubmitApplyToOperation={onSubmitApplyToOperation} 
           onSubmitRemoveFromOperation={onSubmitRemoveFromOperation}

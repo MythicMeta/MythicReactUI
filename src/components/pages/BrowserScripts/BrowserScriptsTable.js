@@ -49,7 +49,7 @@ export function BrowserScriptsTable(props){
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                {props.browserscript.map( (op) => (
+                {props.browserscripts.map( (op) => (
                     <BrowserScriptsTableRow onSubmitApplyToOperation={props.onSubmitApplyToOperation} 
                     onSubmitRemoveFromOperation={props.onSubmitRemoveFromOperation} 
                     operation_id={props.operation_id} onToggleActive={props.onToggleActive} 

@@ -85,6 +85,7 @@ const doubleClickRow = () => {
 
 }
 const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
+
   return (
     <div style={{...cellData?.cellStyle || null}}>
       {cellData?.copyIcon? 
@@ -109,6 +110,42 @@ const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
       ) : (
         <pre style={{display: "inline-block"}}>
             {cellData?.plaintext?.replaceAll("\n","") || " "}
+          </pre>
+      )}
+      {cellData?.endIcon? 
+       <MythicStyledTooltip title={cellData?.endIconHoverText || ""}>
+          <FontAwesomeIcon icon={getIconName(cellData?.endIcon)} style={{color: cellData?.endIconColor  || ""}}/>
+        </MythicStyledTooltip>: null
+      }
+    </div>
+          
+  )
+}
+const ResponseDisplayTableNumberCell = ({cellData, rowData}) => {
+  return (
+    <div style={{...cellData?.cellStyle || null}}>
+      {cellData?.copyIcon? 
+        <MythicStyledTooltip title={"Copy to clipboard"}>
+            <IconButton onClick={() => onCopyToClipboard(cellData["plaintext"])} size="small">
+                <FontAwesomeIcon icon={faCopy} />
+            </IconButton>
+        </MythicStyledTooltip> : null}
+      {cellData?.startIcon? 
+        <MythicStyledTooltip title={cellData?.startIconHoverText || ""} >
+            <FontAwesomeIcon icon={getIconName(cellData?.startIcon)} style={{marginRight: "5px", color: cellData?.startIconColor  || ""}}/>
+        </MythicStyledTooltip>
+         : null
+      }
+      {cellData?.plaintextHoverText? (
+        <MythicStyledTooltip title={cellData.plaintextHoverText}>
+          <pre style={{display: "inline-block"}}>
+            {cellData?.plaintext  || " "}
+          </pre>
+          
+        </MythicStyledTooltip>
+      ) : (
+        <pre style={{display: "inline-block"}}>
+            {cellData?.plaintext || " "}
           </pre>
       )}
       {cellData?.endIcon? 
@@ -430,6 +467,11 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
               case "button":
                 rowData.push(
                   <ResponseDisplayTableActionCell callback_id={callback_id} cellData={row[table.headers[i]['plaintext']]} rowData={row}/>
+                )
+                break;
+              case "number":
+                rowData.push(
+                  <ResponseDisplayTableNumberCell callback_id={callback_id} cellData={row[table.headers[i]["plaintext"]]} rowData={row} />
                 )
                 break;
               default:

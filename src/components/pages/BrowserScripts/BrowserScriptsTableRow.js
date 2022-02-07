@@ -43,7 +43,7 @@ export function BrowserScriptsTableRow(props){
     }
     return (
         <React.Fragment>
-            <TableRow key={"payload" + props.id}>
+            <TableRow key={"payload" + props.id} hover>
                 <TableCell>
                     <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
                     <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onConfirmDelete} open={openDeleteDialog}/>
