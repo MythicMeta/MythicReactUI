@@ -18,7 +18,7 @@ import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { SelectPayloadTypeDialog } from './SelectPayloadTypeDialog';
 
 
-export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFiltered, onGetTasksFiltered}){
+export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFiltered, onGetTasksFiltered, onFilterByTags}){
     const theme = useTheme();
     const dropdownAnchorRef = React.useRef(null);
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
@@ -62,6 +62,14 @@ export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFilt
                 setDropdownOpen(false);
                 setOpenFilterTasks(true);
                 
+            }
+        },
+        {
+            name: "Fetch Task Mappings by Task Tag",
+            click: () => {
+                setDropdownOpen(false);
+                setShowCountGrouping("task");
+                onFilterByTags();
             }
         },
         {

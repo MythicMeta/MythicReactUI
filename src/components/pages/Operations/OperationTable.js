@@ -15,6 +15,7 @@ import {useTheme} from '@material-ui/core/styles';
 import {SettingsOperatorDialog} from '../Settings/SettingsOperatorDialog';
 import {snackActions} from '../../utilities/Snackbar';
 import {useMutation, gql} from '@apollo/client';
+import {MythicModifyStringDialog} from '../../MythicComponents/MythicDialog';
 
 const newOperatorMutation = gql`
 mutation NewOperator($username: String!, $password: String!) {
@@ -35,8 +36,8 @@ mutation MyMutation($operation_id: Int!, $channel: String!, $complete: Boolean!,
 }
 `;
 const newOperationMutation = gql`
-mutation newOperationMutation{
-    createOperation{
+mutation newOperationMutation($name: String){
+    createOperation(name: $name){
         status
         error
         operation{
@@ -55,6 +56,7 @@ mutation newOperationMutation{
 export function OperationTable(props){
     const theme = useTheme();
     const [openNewOperator, setOpenNewOperatorDialog] = React.useState(false);
+    const [openNewOperation, setOpenNewOperationDialog] = React.useState(false);
     const [newOperator] = useMutation(newOperatorMutation, {
         update: (cache, {data}) => {
             if(data.createOperator.status === "success"){
@@ -117,8 +119,8 @@ export function OperationTable(props){
             setOpenNewOperatorDialog(false);
         }
     }
-    const onSubmitNewOperation = () => {
-        newOperation()
+    const onSubmitNewOperation = (operation_name) => {
+        newOperation({variables: {name: operation_name}})
     }
     return (
         <React.Fragment>
@@ -126,13 +128,27 @@ export function OperationTable(props){
             <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
                 Operations
             </Typography>
-            <Button size="small" onClick={onSubmitNewOperation} style={{marginRight: "20px", float: "right", marginTop: "10px"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="primary" variant="contained">New Operation</Button>
+            <Button size="small" onClick={() => {setOpenNewOperationDialog(true);}} style={{marginRight: "20px", float: "right", marginTop: "10px"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="primary" variant="contained">New Operation</Button>
             
             <Button size="small" onClick={()=>{setOpenNewOperatorDialog(true);}} style={{marginRight: "20px", float: "right", marginTop: "10px"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="primary" variant="contained">New Operator</Button>
             {openNewOperator &&
                 <MythicDialog open={openNewOperator} 
                     onClose={()=>{setOpenNewOperatorDialog(false);}} 
                     innerDialog={<SettingsOperatorDialog title="New Operator" onAccept={onSubmitNewOperator} handleClose={()=>{setOpenNewOperatorDialog(false);}}  {...props}/>}
+                />
+            }
+            {openNewOperation &&
+                <MythicDialog 
+                    fullWidth={true} 
+                    open={openNewOperation}  
+                    onClose={() => {setOpenNewOperationDialog(false);}}
+                    innerDialog={
+                        <MythicModifyStringDialog title={"New Operation's Name"} 
+                            onClose={() => {setOpenNewOperationDialog(false);}} 
+                            value={""} 
+                            onSubmit={onSubmitNewOperation} 
+                        />
+                    }
                 />
             }
             

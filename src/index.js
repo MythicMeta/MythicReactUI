@@ -17,11 +17,11 @@ import jwt_decode from 'jwt-decode';
 import {meState} from './cache';
 
 export const mythicVersion = "2.3.7";
-export const mythicUIVersion = "0.0.22";
+export const mythicUIVersion = "0.0.25";
 
 let fetchingNewToken = false;
 
-const cache = new InMemoryCache({
+let cache = new InMemoryCache({
     typePolicies: {
         Query: {
             fields: {
@@ -36,7 +36,7 @@ const cache = new InMemoryCache({
     }
 });
 
-const retryLink = new RetryLink({
+let retryLink = new RetryLink({
   delay: {
     initial: 20,
     max: 300,
@@ -47,7 +47,7 @@ const retryLink = new RetryLink({
     retryIf: (error, _operation) => !!error
   }
 });
-const httpLink = new HttpLink({
+let httpLink = new HttpLink({
     uri: window.location.origin + "/graphql/",
     options: {
         reconnect: true,   
@@ -226,7 +226,7 @@ const GetNewToken = async () =>{
       });
   return json;
 }
-const websocketAddress =() =>{
+const websocketAddress = () =>{
     return window.location.protocol === "https:" ? "wss://" + window.location.host + "/graphql/" : "ws://" + window.location.host + "/graphql/";
 }
 const websocketClient = new SubscriptionClient(websocketAddress(), {

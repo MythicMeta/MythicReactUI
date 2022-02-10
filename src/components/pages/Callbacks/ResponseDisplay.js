@@ -89,7 +89,7 @@ export const ResponseDisplay = (props) =>{
       fetchPolicy: "network-only",
       onCompleted: (data) => {
         const responses = data.response.reduce( (prev, cur) => {
-          return prev + Buffer.from(cur.response, "base64");
+          return prev + atob(cur.response, "base64");
         }, "");
         const maxID = data.response.reduce( (prev, cur) => {
           if(cur.id > prev){
@@ -99,7 +99,7 @@ export const ResponseDisplay = (props) =>{
         }, highestFetched.current);
         highestFetched.current = maxID;
         setOutput(responses);
-        const responseArray = data.response.map( r => String(Buffer.from(r.response, "base64")));
+        const responseArray = data.response.map( r => String(atob(r.response, "base64")));
         setRawResponses(responseArray);
         if(!props.selectAllOutput){
           setTotalCount(data.response_aggregate.aggregate.count);
@@ -114,7 +114,7 @@ export const ResponseDisplay = (props) =>{
       fetchPolicy: "network-only",
       onCompleted: (data) => {
         const responses = data.response.reduce( (prev, cur) => {
-          return prev + Buffer.from(cur.response, "base64");
+          return prev + atob(cur.response, "base64");
         }, "");
         const maxID = data.response.reduce( (prev, cur) => {
           if(cur.id > prev){
@@ -124,7 +124,7 @@ export const ResponseDisplay = (props) =>{
         }, highestFetched.current);
         highestFetched.current = maxID;
         setOutput(responses);
-        const responseArray = data.response.map( r => String(Buffer.from(r.response, "base64")));
+        const responseArray = data.response.map( r => String(atob(r.response, "base64")));
         setRawResponses(responseArray);
         setTotalCount(1);
         setOpenBackdrop(false);
@@ -165,7 +165,7 @@ export const ResponseDisplay = (props) =>{
       setOpenBackdrop(false);
       if(subscriptionData.data.response.length > 0){
         const newResponses = subscriptionData.data.response.filter( r => r.id > highestFetched.current);
-        const newerResponses = newResponses.map( (r) => { return {...r, response: String(Buffer.from(r.response,"base64"))}});
+        const newerResponses = newResponses.map( (r) => { return {...r, response: String(atob(r.response,"base64"))}});
         newerResponses.sort( (a,b) => a.id > b.id ? 1 : -1);
         let outputResponses = output;
         let rawResponseArray = [...rawResponses];
@@ -398,7 +398,7 @@ const ResponseDisplayComponent = ({rawResponses, viewBrowserScript, output, comm
     onCompleted: (data) => {
       if(data.browserscriptoperation.length > 0){
         try{
-          let unb64script = Buffer.from(data.browserscriptoperation[0]["script"], "base64");
+          let unb64script = atob(data.browserscriptoperation[0]["script"], "base64");
           let fun = Function('"use strict";return(' + unb64script + ')')();
           script.current = fun;
           setViewBrowserScript(true);
@@ -412,7 +412,7 @@ const ResponseDisplayComponent = ({rawResponses, viewBrowserScript, output, comm
         
       }else if(data.browserscript.length > 0){
         try{
-          let unb64script = Buffer.from(data.browserscript[0]["script"], "base64");
+          let unb64script = atob(data.browserscript[0]["script"], "base64");
           let fun = Function('"use strict";return(' + unb64script + ')')();
           script.current = fun;
           setViewBrowserScript(true);
