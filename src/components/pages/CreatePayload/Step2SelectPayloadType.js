@@ -1,10 +1,10 @@
 import React, {  } from 'react';
 import {useQuery, gql} from '@apollo/client';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Select from '@material-ui/core/Select';
+import CircularProgress from '@mui/material/CircularProgress';
+import Select from '@mui/material/Select';
 import { CreatePayloadNavigationButtons} from './CreatePayloadNavigationButtons';
 import {CreatePayloadBuildParametersTable} from './CreatePayloadBuildParametersTable';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 
 const GET_Payload_Types = gql`
 query getPayloadTypesBuildParametersQuery($os: String!) {

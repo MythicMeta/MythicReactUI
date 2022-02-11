@@ -1,11 +1,11 @@
 import React from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
 import {MythicDialog} from './MythicDialog';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogContent from '@material-ui/core/DialogContent';
-import {useTheme} from '@material-ui/core/styles';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogContent from '@mui/material/DialogContent';
+import {useTheme} from '@mui/material/styles';
 
 export function MythicConfirmDialog(props) {
     const theme = useTheme();
@@ -27,9 +27,9 @@ export function MythicConfirmDialog(props) {
             )}
             <DialogActions>
               <Button onClick={props.onClose} variant="contained" color="primary">
-                {props.cancelText ? (props.cancelText) : ("Close")}
+                {props.cancelText ? (props.cancelText) : ("Cancel")}
               </Button>
-              <Button onClick={handleSubmit} autoFocus variant="contained" style={{backgroundColor: theme.palette.warning.main}}>
+              <Button onClick={handleSubmit} autoFocus variant="contained" color="error">
                 {props.acceptText ? (props.acceptText) : ("Remove")}
               </Button>
             </DialogActions>

@@ -1,8 +1,9 @@
 import React from 'react';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-import Badge from '@material-ui/core/Badge';
+import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
+import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
+import Badge from '@mui/material/Badge';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import { faLanguage } from '@fortawesome/free-solid-svg-icons';
 
@@ -31,32 +32,35 @@ const useStyles = makeStyles((theme) => ({
     color: 'red',
   },
 }));
-const StyledAvatar = withStyles((theme) => ({
-    badge: {
-        boxShadow: "0 0 0 2px white",
-        '&::after': {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          borderRadius: '50%',
-          animation: '$ripple 1.2s infinite ease-in-out',
-          border: '1px solid currentColor',
-          content:'""'
-        },
+const StyledAvatar = styled(Badge)(({theme}) => ({
+  '& .MuiBadge-badge': {
+      boxShadow: "0 0 0 2px white",
+      width: 15,
+      height: 15,
+      zIndex: 0,
+      '&::after': {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        animation: 'ripple 1.2s infinite ease-in-out',
+        border: '1px solid currentColor',
+        content:'""'
       },
-  '@keyframes ripple': {
-    '0%': {
-      transform: 'scale(.8)',
-      opacity: 1,
     },
-    '100%': {
-      transform: 'scale(2.4)',
-      opacity: 0,
-    },
+'@keyframes ripple': {
+  '0%': {
+    transform: 'scale(.8)',
+    opacity: 1,
   },
-}))(Badge);
+  '100%': {
+    transform: 'scale(2.4)',
+    opacity: 0,
+  },
+},
+}));
 
 export function TranslationContainerCard(props) {
   const classes = useStyles();
@@ -68,7 +72,7 @@ export function TranslationContainerCard(props) {
 
   return (
     <Card className={classes.root} elevation={5}>
-        <StyledAvatar overlap="circle" classes={{badge: classes[running]}} invisible={false} anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
+        <StyledAvatar overlap="circular" color={props.container_running ? "success" : "error"} variant="dot" anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
             <FontAwesomeIcon icon={faLanguage} size="6x" style={{width: "125px", height: "125px"}} />
         </StyledAvatar>
         <div>

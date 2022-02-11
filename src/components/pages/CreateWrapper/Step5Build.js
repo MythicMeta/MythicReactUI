@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import { gql, useMutation} from '@apollo/client';
 import { CreatePayloadNavigationButtons} from './CreatePayloadNavigationButtons';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import {PayloadSubscriptionNotification} from './PayloadSubscriptionNotification';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {snackActions} from '../../utilities/Snackbar';

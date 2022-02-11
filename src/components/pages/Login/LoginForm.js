@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import {Button} from '@material-ui/core';
+import {Button} from '@mui/material';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import logo from '../../../assets/mythic.svg';
 import { Redirect } from 'react-router-dom';

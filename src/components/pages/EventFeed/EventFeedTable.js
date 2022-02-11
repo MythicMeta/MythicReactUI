@@ -1,19 +1,19 @@
 import React, { useEffect, useRef } from 'react';
 import { EventFeedTableEvents } from './EventFeedTableEvents';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
 import { EventFeedTableInput } from './EventFeedTableInput';
-import {Button} from '@material-ui/core';
+import {Button} from '@mui/material';
 import {VariableSizeList } from 'react-window';
 import Autosizer from 'react-virtualized-auto-sizer';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import Grow from '@material-ui/core/Grow';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 
 const Row = ({data, index, style}) => {
     const op = data[data.length - index - 1];
@@ -118,7 +118,7 @@ export function EventFeedTable(props){
                         transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
                     }}
                     >
-                    <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                    <Paper style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
                         <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
                         <MenuList id="split-button-menu">
                             {dropDownOptions.map((option, index) => (

@@ -1,17 +1,18 @@
 import React from 'react';
 import { useQuery, gql} from '@apollo/client';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import Tooltip from '@material-ui/core/Tooltip';
+import LinearProgress from '@mui/material/LinearProgress';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import Tooltip from '@mui/material/Tooltip';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const GetC2ProfilesAndPayloadTypes = gql`
 query GetC2AndPayloadType {
@@ -99,9 +100,9 @@ export function AgentC2Overview(props){
                     {c2Profiles.map( (c2) => (
                       <TableCell key={'payload' + c2}>
                         {payload.payloadtypec2profiles.includes(c2) ? 
-                        <Tooltip title={payload.ptype + " supports " + c2}>
-                            <CheckCircleIcon style={{color: theme.palette.success.main}}/>
-                        </Tooltip>
+                        <MythicStyledTooltip title={payload.ptype + " supports " + c2}>
+                            <CheckCircleIcon color="success"/>
+                        </MythicStyledTooltip>
                      : ""}
                       </TableCell>
                     ))}
@@ -128,9 +129,9 @@ export function AgentC2Overview(props){
                           {payloadTypeRows.map( (wr) => (
                             <TableCell key={'payload' + wr.ptype}>
                               {payload.wrapped.includes(wr.ptype) ? 
-                              <Tooltip title={payload.ptype + " wraps " + wr.ptype}>
-                                  <CheckCircleIcon style={{color: theme.palette.success.main}}/>
-                              </Tooltip>
+                              <MythicStyledTooltip title={payload.ptype + " wraps " + wr.ptype}>
+                                  <CheckCircleIcon color="success"/>
+                              </MythicStyledTooltip>
                           : ""}
                             </TableCell>
                           ))}

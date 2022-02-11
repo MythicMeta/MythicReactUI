@@ -1,19 +1,19 @@
 import React from 'react';
 import {useQuery, gql, useLazyQuery} from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from '@mui/material/CircularProgress';
 import { CreatePayloadNavigationButtons} from './CreatePayloadNavigationButtons';
 import {CreatePayloadC2ProfileParametersTable} from './CreatePayloadC2ProfileParametersTable';
-import Typography from '@material-ui/core/Typography';
-import Switch from '@material-ui/core/Switch';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Typography from '@mui/material/Typography';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import * as RandExp from 'randexp';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
 
 
 const GET_Payload_Types = gql`

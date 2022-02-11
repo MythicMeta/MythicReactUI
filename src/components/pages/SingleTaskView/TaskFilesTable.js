@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Link from '@material-ui/core/Link';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Link from '@mui/material/Link';
 
 
 export function TaskFilesTable(props){
@@ -35,19 +35,19 @@ export function TaskFilesTable(props){
         
         <Paper elevation={5} style={{position: "relative", backgroundColor: theme.body}} variant={"elevation"}>
         <TableContainer component={Paper} className="mythicElement">
-          <Table  size="small" style={{"tableLayout": "fixed", "maxWidth": "calc(100vw)", "overflow": "scroll"}}>
+          <Table  size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
                         <TableCell>Filename</TableCell>
-                        <TableCell>Type</TableCell>
-                        <TableCell>Remote Path</TableCell>
-                        <TableCell>Comment</TableCell>
-                        <TableCell>Hashes</TableCell>
+                        <TableCell style={{width: "10rem"}}>Type</TableCell>
+                        <TableCell >Remote Path</TableCell>
+                        <TableCell style={{width: "15rem"}}>Comment</TableCell>
+                        <TableCell style={{width: "15rem"}}>Hashes</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                   {files.map( (file) => (
-                    <TableRow key={"file" + file.id}>
+                    <TableRow key={"file" + file.id} hover>
                       <TableCell>
                         {!file.deleted && file.complete ? (
                           <Link href={window.origin + "/api/v1.4/files/download/" + file.agent_file_id} style={{textDecoration: "underline", color: "inherit"}}>{file.filename_text}</Link>
@@ -66,8 +66,8 @@ export function TaskFilesTable(props){
                           )
                         )}
                       </TableCell>
-                      <TableCell>{file.full_remote_path_text === "" ? ("") : (file.host + ":" + file.full_remote_path_text) }</TableCell>
-                      <TableCell>{file.comment}</TableCell>
+                      <TableCell style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>{file.full_remote_path_text === "" ? ("") : (file.host + ":" + file.full_remote_path_text) }</TableCell>
+                      <TableCell style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>{file.comment}</TableCell>
                       <TableCell>MD5:<br/>{file.md5}<br/>SHA1:<br/>{file.sha1}</TableCell>
                     </TableRow>
                   ))}

@@ -1,19 +1,19 @@
 import React, {useEffect} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import Switch from '@material-ui/core/Switch';
-import Select from '@material-ui/core/Select';
-import Chip from '@material-ui/core/Chip';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import ListItemText from '@material-ui/core/ListItemText';
-import { makeStyles } from '@material-ui/core/styles';
-import Checkbox from '@material-ui/core/Checkbox';
+import Switch from '@mui/material/Switch';
+import Select from '@mui/material/Select';
+import Chip from '@mui/material/Chip';
+import Input from '@mui/material/Input';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import ListItemText from '@mui/material/ListItemText';
+import makeStyles from '@mui/styles/makeStyles';
+import Checkbox from '@mui/material/Checkbox';
 import {useQuery, gql } from '@apollo/client';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
@@ -214,8 +214,8 @@ export function CallbacksTabsTaskingFilterDialog(props) {
           <Button onClick={props.onClose} variant="contained" >
             Close
           </Button>
-          <Button onClick={onSubmit} color="primary" variant="contained" >
-            Submit
+          <Button onClick={onSubmit} color="success" variant="contained" >
+            Filter
           </Button>
         </DialogActions>
   </React.Fragment>

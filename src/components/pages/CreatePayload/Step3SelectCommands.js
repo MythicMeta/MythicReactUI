@@ -1,19 +1,19 @@
 import React, {useEffect} from 'react';
 import {useQuery, gql} from '@apollo/client';
 import { CreatePayloadNavigationButtons} from './CreatePayloadNavigationButtons';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { MythicConfirmDialog } from '../../MythicComponents/MythicConfirmDialog';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import { makeStyles } from '@material-ui/core/styles';
-import CardHeader from '@material-ui/core/CardHeader';
-import Divider from '@material-ui/core/Divider';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import makeStyles from '@mui/styles/makeStyles';
+import CardHeader from '@mui/material/CardHeader';
+import Divider from '@mui/material/Divider';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -312,7 +312,7 @@ function CommandTransferSelect(props) {
   }
 return (
   <React.Fragment>
-      <Grid container spacing={2} justify="center" alignItems="center" className={classes.root}>
+      <Grid container spacing={2} justifyContent="center" alignItems="center" className={classes.root}>
         <Grid item xs={5}>{customList("Available Commands", left)}</Grid>
         <Grid item>
           <Grid container direction="column" alignItems="center">
@@ -360,7 +360,7 @@ return (
         </Grid>
         <Grid item xs={5}>{customList("Commands Included", right)}</Grid>
       </Grid>
-      <Grid container justify="center" alignItems="flex-start" className={classes.root}>
+      <Grid container justifyContent="center" alignItems="flex-start" className={classes.root}>
         <Grid item xs={12} style={{height: "100%", marginBottom: "10px"}}>
           {hoveredCommand["cmd"] !== undefined &&
             <Paper className={classes.paper} style={{width: "100%"}} elevation={5}>

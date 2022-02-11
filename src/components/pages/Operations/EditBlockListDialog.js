@@ -1,23 +1,23 @@
 import React, {useEffect} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Paper from '@material-ui/core/Paper';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent'
-import Divider from '@material-ui/core/Divider';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import makeStyles from '@mui/styles/makeStyles';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Paper from '@mui/material/Paper';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent'
+import Divider from '@mui/material/Divider';
 import {useQuery, gql} from '@apollo/client';
-import {useTheme} from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import {useTheme} from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import { snackActions } from '../../utilities/Snackbar';
 
@@ -27,7 +27,6 @@ const useStyles = makeStyles((theme) => ({
   },
   paper: {
     overflow: 'auto',
-    backgroundColor: "rgb(76,80,86) !important"
   },
   button: {
     margin: theme.spacing(0.5, 0),
@@ -43,7 +42,7 @@ function PayloadTypeBlockListPreMemo(props){
     const theme = useTheme();
     const [checked, setChecked] = React.useState([]);
     const [left, setLeft] = React.useState([]);
-    const [right, setRight] = React.useState([]);
+    const [right, setRight] = React.useState(props.right);
     const [leftTitle, setLeftTitle] = React.useState("");
     const [rightTitle, setRightTitle] = React.useState("");
     const leftChecked = intersection(checked, left);
@@ -112,7 +111,6 @@ function PayloadTypeBlockListPreMemo(props){
         
       }, [])
       setLeft(left);
-      setRight(props.right);
       setLeftTitle(props.leftTitle);
       setRightTitle(props.rightTitle);
     }, [props.left, props.right, props.leftTitle, props.rightTitle, props.itemKey]);
@@ -153,7 +151,7 @@ function PayloadTypeBlockListPreMemo(props){
     );
     
   return (
-    <Grid container spacing={2} justify="center" alignItems="center" className={classes.root}>
+    <Grid container spacing={2} justifyContent="center" alignItems="center" className={classes.root}>
       <Grid item xs={12}>
         <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main, marginBottom: "5px", marginTop: "10px", marginRight: "5px"}} variant={"elevation"}>
             <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
@@ -213,7 +211,7 @@ function PayloadTypeBlockListPreMemo(props){
 const PayloadTypeBlockList = React.memo(PayloadTypeBlockListPreMemo);
 const getPayloadTypesAndCommandsQuery = gql`
   query getPayloadTypesAndCommands{
-    payloadtype(where: {deleted: {_eq: false}}, order_by: {ptype: asc}) {
+    payloadtype(where: {deleted: {_eq: false}, wrapper: {_eq: false}}, order_by: {ptype: asc}) {
       commands(order_by: {cmd: asc}) {
         cmd
         id
@@ -296,7 +294,7 @@ export function EditBlockListDialog({dialogTitle, onSubmit, blockListName: propB
         <Button onClick={onClose} variant="contained" color="primary">
           Close
         </Button>
-        <Button onClick={submit} variant="contained" color="secondary">
+        <Button onClick={submit} variant="contained" color="success">
           Submit
         </Button>
       </DialogActions>

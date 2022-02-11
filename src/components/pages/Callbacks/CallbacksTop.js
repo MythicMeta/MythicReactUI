@@ -4,9 +4,9 @@ import {CallbacksTable} from './CallbacksTable';
 import {CallbacksGraph} from './CallbacksGraph';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import {useTheme} from '@material-ui/core/styles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
 
 const SUB_Callbacks = gql`
 subscription CallbacksSubscription ($operation_id: Int!){
@@ -145,14 +145,14 @@ export function CallbacksTop(props){
         {props.topDisplay === "graph" ? (
           <CallbacksGraph maxHeight={"100%"} topHeight={props.heights.top} key={"callbacksgraph"} onOpenTab={onOpenTabLocal} callbacks={callbacks} callbackgraphedges={callbackEdges} />
         ) : (
-          <div style={{height: "100%", width: "100%", display: "flex", flexDirection: "column"}}>
+          <Paper style={{height: "100%", width: "100%", display: "flex", flexDirection: "column"}}>
             <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px", width: "100%"}} variant={"elevation"}>
               <Typography variant="h4" style={{textAlign: "left", display: "inline-block", marginLeft: "20px", color: theme.pageHeaderColor}}>
                   Active Callbacks
               </Typography>
             </Paper>
             <CallbacksTable key={"callbackstable"} onOpenTab={onOpenTabLocal} callbacks={callbacks} callbackgraphedges={callbackEdges} parentMountedRef={mountedRef}/>
-          </div>
+          </Paper>
           )}
         </div>
     );

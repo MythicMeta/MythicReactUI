@@ -1,22 +1,21 @@
 import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicComponents/MythicTabPanel';
 import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import FingerprintIcon from '@material-ui/icons/Fingerprint';
-import FormLabel from '@material-ui/core/FormLabel';
-import Grid from '@material-ui/core/Grid';
-import SearchIcon from '@material-ui/icons/Search';
-import Tooltip from '@material-ui/core/Tooltip';
-import {useTheme} from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import Grid from '@mui/material/Grid';
+import SearchIcon from '@mui/icons-material/Search';
+import Tooltip from '@mui/material/Tooltip';
+import {useTheme} from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import Pagination from '@material-ui/lab/Pagination';
-import { Typography } from '@material-ui/core';
+import Pagination from '@mui/material/Pagination';
+import { Typography } from '@mui/material';
 import {ArtifactTable} from './ArtifactTable';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const artifactFragment = gql`
 fragment artifactData on taskartifact{
@@ -194,16 +193,15 @@ const SearchTabArtifactsSearchPanel = (props) => {
                         endAdornment: 
                         <React.Fragment>
                             <Tooltip title="Search">
-                                <IconButton onClick={submitSearch}><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton onClick={submitSearch} size="large"><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
                             </Tooltip>
                         </React.Fragment>,
                         style: {padding: 0}
                     }}/>
             </Grid>
             <Grid item xs={6}>
-                <FormLabel component="legend">Search Artifacts by</FormLabel>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    style={{marginBottom: "10px", width: "15rem"}}
                     value={searchField}
                     onChange={handleSearchFieldChange}
                 >
@@ -215,7 +213,7 @@ const SearchTabArtifactsSearchPanel = (props) => {
                 </Select>
             </Grid>
         </Grid>
-    )
+    );
 }
 export const SearchTabArtifactsPanel = (props) =>{
     const [artifactData, setArtifactData] = React.useState([]);
@@ -374,54 +372,27 @@ export const SearchTabArtifactsPanel = (props) =>{
         }})
     }
     const onChangePage = (event, value) => {
-        if(value === 1){
-            switch(searchField){
-                case "Artifact":
-                    onArtifactSearch({search, offset: 0});
-                    break;
-                case "Command":
-                    onCommandSearch({search, offset: 0});
-                    break;
-                case "Type":
-                    onTypeSearch({search, offset: 0});
-                    break;
-                case "Host":
-                    onHostSearch({search, offset: 0});
-                    break;
-                case "Task":
-                    onTaskSearch({search, offset: 0});
-                    break;
-                case "Callback":
-                    onCallbackSearch({search, offset: 0});
-                    break;
-                default:
-                    break;
-            }
-            
-        }else{
-            switch(searchField){
-                case "Artifact":
-                    onArtifactSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                case "Command":
-                    onCommandSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                case "Type":
-                    onTypeSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                case "Host":
-                    onHostSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                case "Task":
-                    onTaskSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                case "Callback":
-                    onCallbackSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                default:
-                    break;
-            }
-            
+        switch(searchField){
+            case "Artifact":
+                onArtifactSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            case "Command":
+                onCommandSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            case "Type":
+                onTypeSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            case "Host":
+                onHostSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            case "Task":
+                onTaskSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            case "Callback":
+                onCallbackSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            default:
+                break;
         }
     }
     return (

@@ -1,9 +1,9 @@
 import React from 'react';
-import {Button} from '@material-ui/core';
+import {Button} from '@mui/material';
 import {ResponseDisplayScreenshotModal} from './ResponseDisplayScreenshotModal';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
-import Tooltip from '@material-ui/core/Tooltip';
-import { makeStyles } from '@material-ui/core/styles';
+import Tooltip from '@mui/material/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles((theme) => ({
   tooltip: {

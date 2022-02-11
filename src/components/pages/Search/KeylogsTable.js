@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import Grid from '@material-ui/core/Grid';
+import Grid from '@mui/material/Grid';
 
 export function KeylogsTable(props){
     const [keylogs, setKeylogs] = React.useState([]);

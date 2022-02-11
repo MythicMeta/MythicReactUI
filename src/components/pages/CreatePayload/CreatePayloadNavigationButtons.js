@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 
 /*
@@ -20,7 +20,7 @@ export function CreatePayloadNavigationButtons(props){
               </Button>
               <Button
                 variant="contained"
-                color="primary"
+                color={props.last ? "success" : "primary"}
                 onClick={props.finished}
               >
                 {props.last ? 'Create Payload' : 'Next'}
@@ -29,7 +29,7 @@ export function CreatePayloadNavigationButtons(props){
               <React.Fragment>
                   <Button
                   variant="contained"
-                  color="secondary"
+                  color="warning"
                   onClick={props.startOver}
                   style={{marginLeft: "10px"}}
                   >
@@ -37,7 +37,7 @@ export function CreatePayloadNavigationButtons(props){
                   </Button>
                 <Button
                   variant="contained"
-                  color="secondary"
+                  color="info"
                   component={Link}
                   style={{marginLeft: "10px"}}
                   to={"/new/createwrapper"}

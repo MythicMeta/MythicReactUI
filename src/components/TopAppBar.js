@@ -1,58 +1,59 @@
 import React from 'react';
 import clsx from 'clsx';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
-import MenuIcon from '@material-ui/icons/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import Menu from '@material-ui/core/Menu';
+import { useTheme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import MenuIcon from '@mui/icons-material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import Menu from '@mui/material/Menu';
 import { Link } from 'react-router-dom';
-import Drawer from '@material-ui/core/Drawer';
-import List from '@material-ui/core/List';
-import Divider from '@material-ui/core/Divider';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import Divider from '@mui/material/Divider';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
 import { useReactiveVar } from '@apollo/client';
 import { meState, menuOpen, FailedRefresh } from '../cache';
-import Switch from '@material-ui/core/Switch';
+import Switch from '@mui/material/Switch';
 import { TopAppBarNotifications } from './TopAppBarNotifications';
 import { EventFeedNotifications } from './EventFeedNotifications';
 import {Redirect} from 'react-router-dom';
-import WifiIcon from '@material-ui/icons/Wifi';
-import HelpIcon from '@material-ui/icons/Help';
-import PhoneCallbackIcon from '@material-ui/icons/PhoneCallback';
+import WifiIcon from '@mui/icons-material/Wifi';
+import HelpIcon from '@mui/icons-material/Help';
+import PhoneCallbackIcon from '@mui/icons-material/PhoneCallback';
 import {ReactComponent as ReactLogo} from './mythic_red_small.svg';
-import HomeIcon from '@material-ui/icons/Home';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import Collapse from '@material-ui/core/Collapse';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import LayersIcon from '@material-ui/icons/Layers';
-import TableChartIcon from '@material-ui/icons/TableChart';
-import PostAddIcon from '@material-ui/icons/PostAdd';
-import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
-import EditIcon from '@material-ui/icons/Edit';
-import { Typography } from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
-import BarChartIcon from '@material-ui/icons/BarChart';
-import HeadsetIcon from '@material-ui/icons/Headset';
-import CodeIcon from '@material-ui/icons/Code';
+import HomeIcon from '@mui/icons-material/Home';
+import ListSubheader from '@mui/material/ListSubheader';
+import Collapse from '@mui/material/Collapse';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import LayersIcon from '@mui/icons-material/Layers';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import EditIcon from '@mui/icons-material/Edit';
+import { Typography } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import HeadsetIcon from '@mui/icons-material/Headset';
+import CodeIcon from '@mui/icons-material/Code';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faBiohazard, faFlagCheckered} from '@fortawesome/free-solid-svg-icons';
-import AttachmentIcon from '@material-ui/icons/Attachment';
-import FingerprintIcon from '@material-ui/icons/Fingerprint';
+import AttachmentIcon from '@mui/icons-material/Attachment';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import {faSocks} from '@fortawesome/free-solid-svg-icons';
 import {faCamera} from '@fortawesome/free-solid-svg-icons';
 import {mythicVersion, mythicUIVersion} from '../index';
 import {MythicStyledTooltip} from '../components/MythicComponents/MythicStyledTooltip';
-import VpnKeyIcon from '@material-ui/icons/VpnKey';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
 
 const drawerWidth = 240;
@@ -84,6 +85,7 @@ const useStyles = makeStyles((theme) => ({
   },
   appBar: {
     width: "100%",
+    backgroundColor: "#7f93c0",
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -165,70 +167,90 @@ export function TopAppBar(props) {
         
         { me?.loggedIn ? (
         <Toolbar variant="dense" >
-            <IconButton edge="start" className={clsx(classes.menuButton, isOpen && classes.hide)} color="inherit" aria-label="menu" onClick={handleDrawerOpen}>
+            <IconButton
+              edge="start"
+              className={clsx(classes.menuButton, isOpen && classes.hide)}
+              color="inherit"
+              aria-label="menu"
+              onClick={handleDrawerOpen}
+              size="large">
                 <MenuIcon />
             </IconButton>
             <div style={{width: "100%"}}>
                 <MythicStyledTooltip title="C2 Profiles and Payload Types">
-                  <IconButton component={Link} to='/new/payloadtypes' color="inherit">
+                  <IconButton component={Link} to='/new/payloadtypes' color="inherit" size="large">
                     <HeadsetIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Payloads">
-                    <IconButton component={Link} to='/new/payloads' color="inherit">
+                    <IconButton component={Link} to='/new/payloads' color="inherit" size="medium">
                       <FontAwesomeIcon icon={faBiohazard} />
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Search Operation">
-                  <IconButton component={Link} to='/new/search' color="inherit">
+                  <IconButton component={Link} to='/new/search' color="inherit" size="large">
                     <SearchIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Files">
-                  <IconButton component={Link} to='/new/search?searchField=Filename&tab=files&location=Downloads' color="inherit">
+                  <IconButton
+                    component={Link}
+                    to='/new/search?searchField=Filename&tab=files&location=Downloads'
+                    color="inherit"
+                    size="large">
                     <AttachmentIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Artifacts">
-                  <IconButton component={Link} to='/new/search?searchField=Artifact&tab=artifacts' color="inherit">
+                  <IconButton
+                    component={Link}
+                    to='/new/search?searchField=Artifact&tab=artifacts'
+                    color="inherit"
+                    size="large">
                     <FingerprintIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="SOCKS">
-                  <IconButton component={Link} to='/new/search?tab=socks' color="inherit">
+                  <IconButton component={Link} to='/new/search?tab=socks' color="inherit" size="medium">
                       <FontAwesomeIcon icon={faSocks} />
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Screenshots" arrow >
-                  <IconButton component={Link} to='/new/search?searchField=Filename&tab=files&location=Screenshots' color="inherit">
+                  <IconButton
+                    component={Link}
+                    to='/new/search?searchField=Filename&tab=files&location=Screenshots'
+                    color="inherit"
+                    size="medium">
                       <FontAwesomeIcon icon={faCamera} />
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Credentials" arrow >
-                  <IconButton component={Link} to='/new/search?searchField=Account&tab=credentials' color="inherit">
+                  <IconButton
+                    component={Link}
+                    to='/new/search?searchField=Account&tab=credentials'
+                    color="inherit"
+                    size="large">
                       <VpnKeyIcon className="mythicElement" />
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Active Callbacks">
-                  <IconButton component={Link} to='/new/callbacks' color="inherit">
+                  <IconButton component={Link} to='/new/callbacks' color="inherit" size="large">
                     <PhoneCallbackIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="Reporting" >
-                  <IconButton component={Link} to='/new/reporting' color="inherit">
+                  <IconButton component={Link} to='/new/reporting' color="inherit" size="medium">
                       <FontAwesomeIcon icon={faFlagCheckered} />
                   </IconButton>
                 </MythicStyledTooltip>
                 <MythicStyledTooltip title="MITRE ATT&CK" >
-                  <IconButton component={Link} to='/new/mitre' color="inherit">
+                  <IconButton component={Link} to='/new/mitre' color="inherit" size="medium">
                     <TableChartIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
-                <Button style={{display: "inline-flex", alignItems: "center", paddingRight: "10px", color: "white"}} component={Link} to="/new/operations">
-                    <Typography >
+                <Link style={{display: "inline-flex", alignItems: "center", paddingRight: "10px", color: "white", textDecoration: "none"}} to="/new/operations">
                         {me?.user?.current_operation || "No Operation Set"}
-                    </Typography>
-                </Button>
+                </Link>
                 <Menu
                     id="menu-appbar"
                     nodeRef={settingsRef}
@@ -244,34 +266,34 @@ export function TopAppBar(props) {
                     }}
                     open={anchorEl}
                     onClose={handleClose}
-                    MenuListProps={{style: {backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}}
+                    MenuListProps={{style: {backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}}
                 >
                     <MenuItem component={Link} to="/new/settings" onClick={handleClose} name="settings">User Management</MenuItem>
                     <MenuItem component={Link} to="/new/login" onClick={handleLogout}>Logout</MenuItem>
                 </Menu>
                 <div style={{display: "inline-flex", justifyContent: "flex-end", float: "right"}}>
                 <IconButton
-                    aria-label="account of current user"
-                    aria-controls="menu-appbar"
-                    aria-haspopup="true"
-                    onClick={handleMenu}
-                    ref={settingsRef}
-                    color="inherit"
-                    style={{float: "right"}}
-                >
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={handleMenu}
+                  ref={settingsRef}
+                  color="inherit"
+                  style={{float: "right"}}
+                  size="large">
                   <MythicStyledTooltip title="Settings or Logout">
                     <AccountCircle />
                   </MythicStyledTooltip>
                 </IconButton>
                 <IconButton
-                    aria-label="documentation links"
-                    aria-controls="menu-appbar"
-                    aria-haspopup="true"
-                    onClick={handleDocumentationMenu}
-                    ref={documentationRef}
-                    color="inherit"
-                    style={{float:"right"}}
-                >
+                  aria-label="documentation links"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={handleDocumentationMenu}
+                  ref={documentationRef}
+                  color="inherit"
+                  style={{float:"right"}}
+                  size="large">
                   <MythicStyledTooltip title="Help Documentation">
                     <HelpIcon />  
                   </MythicStyledTooltip>
@@ -291,7 +313,7 @@ export function TopAppBar(props) {
                     }}
                     open={documentationAnchorEl}
                     onClose={handleDocumentationClose}
-                    MenuListProps={{style: {backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}}
+                    MenuListProps={{style: {backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}}
                 >
                     <MenuItem component={Link} target="_blank" to="/docs/agents" onClick={handleDocumentationClose}>Agent Documentation</MenuItem>
                     <MenuItem component={Link} target="_blank" to="/docs/wrappers" onClick={handleDocumentationClose}>Wrapper Documentation</MenuItem>
@@ -318,12 +340,12 @@ export function TopAppBar(props) {
             classes={{
               paper: classes.drawerPaper,
             }}
-            onEscapeKeyDown={handleDrawerClose}
+            onClose={handleDrawerClose}
           >
         <div className={classes.drawerHeader} role="presentation">
           <ReactLogo style={{width: "90%"}}/>
           v{mythicVersion}
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton onClick={handleDrawerClose} size="large">
             {theme.direction === 'ltr' ? <ChevronLeftIcon className="mythicElement"/> : <ChevronRightIcon className="mythicElement"/>}
           </IconButton>
         </div>

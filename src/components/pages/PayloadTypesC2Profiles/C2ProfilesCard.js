@@ -1,28 +1,29 @@
 import React from 'react';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import Badge from '@material-ui/core/Badge';
+import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Badge from '@mui/material/Badge';
 import {C2ProfileBuildDialog} from './C2ProfileBuildDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
-import WifiIcon from '@material-ui/icons/Wifi';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Grow from '@material-ui/core/Grow';
-import Paper from '@material-ui/core/Paper';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
+import WifiIcon from '@mui/icons-material/Wifi';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Grow from '@mui/material/Grow';
+import Paper from '@mui/material/Paper';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
 import {useMutation, gql} from '@apollo/client';
 import {C2ProfileOutputDialog} from './C2ProfileOutputDialog';
 import {C2ProfileConfigDialog} from './C2ProfileConfigDialog';
 import {C2ProfileStartStopOutputDialog} from './C2ProfileStartStopOutputDialog';
 import {snackActions} from '../../utilities/Snackbar';
-import {useTheme} from '@material-ui/core/styles';
-import BookmarkIcon from '@material-ui/icons/Bookmark';
+import {useTheme} from '@mui/material/styles';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import {C2ProfileSavedInstancesDialog} from './C2ProfileSavedInstancesDialog';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
@@ -44,31 +45,19 @@ const useStyles = makeStyles((theme) => ({
     transform: 'rotate(180deg)',
   },
   running: {
-    backgroundColor: '#44b700',
-    color: '#44b700',
+    
   },
   notrunning: {
     backgroundColor: 'red',
     color: 'red',
   },
-  successButton: {
-    backgroundColor: theme.palette.success.main,
-    color: 'white',
-    "&:hover":{
-      backgroundColor: theme.palette.success.dark
-    }
-  },
-  errorButton: {
-    backgroundColor: theme.palette.error.main,
-    color: 'white',
-    "&:hover":{
-      backgroundColor: theme.palette.error.dark
-    }
-  }
 }));
-const StyledAvatar = withStyles((theme) => ({
-    badge: {
+const StyledAvatar = styled(Badge)(({theme}) => ({
+    '& .MuiBadge-badge': {
         boxShadow: "0 0 0 2px white",
+        width: 15,
+        height: 15,
+        zIndex: 0,
         '&::after': {
           position: 'absolute',
           top: 0,
@@ -76,7 +65,7 @@ const StyledAvatar = withStyles((theme) => ({
           width: '100%',
           height: '100%',
           borderRadius: '50%',
-          animation: '$ripple 1.2s infinite ease-in-out',
+          animation: 'ripple 1.2s infinite ease-in-out',
           border: '1px solid currentColor',
           content:'""'
         },
@@ -91,7 +80,7 @@ const StyledAvatar = withStyles((theme) => ({
       opacity: 0,
     },
   },
-}))(Badge);
+}));
 const startStopProfileMutation = gql`
 mutation StartStopProfile($id: Int!, $action: String) {
   startStopProfile(id: $id, action: $action) {
@@ -114,10 +103,6 @@ export function C2ProfilesCard(props) {
   let date = new Date();
   const theme = useTheme();
   const classes = useStyles(theme);
-  let now = date.getTime() + date.getTimezoneOffset() * 60000;
-  let heartbeat = new Date(props.last_heartbeat);
-  let difference = (now - heartbeat.getTime()) / 1000;
-  const running = difference < 30 ? 'running' : 'notrunning';
   const [openBuildingDialog, setOpenBuildingDialog] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const dropdownAnchorRef = React.useRef(null);
@@ -177,13 +162,13 @@ export function C2ProfilesCard(props) {
     }
   return (
     <Card className={classes.root} elevation={5} style={{maxWidth: "100%"}}>
-        <StyledAvatar overlap="circle" classes={{badge: classes[running]}} invisible={false} anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
+          <StyledAvatar overlap="circular" color={props.container_running ? "success" : "error"} variant="dot" anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
             {props.is_p2p ? 
             (<FontAwesomeIcon icon={faLink}  style={{width: "100px", height: "100px", marginTop: "25px"}} />)
             : 
             (<WifiIcon style={{width: "100px", height: "100px", marginTop: "25px"}}/>)
             }
-        </StyledAvatar>
+          </StyledAvatar>
         <div style={{maxWidth: "60%"}}>
           <Typography variant="h4" component="h1" style={{textAlign:"left", marginLeft: "10px", display: "inline-block"}}>{props.name}</Typography>
           {!props.is_p2p && props.running &&
@@ -211,7 +196,7 @@ export function C2ProfilesCard(props) {
             <Button size="small" variant="contained" color="primary" href={"/docs/c2-profiles/" + props.name.toLowerCase()} target="_blank">
               Docs
             </Button>
-            <Button size="small" onClick={()=>{setOpenBuildingDialog(true);}} color="primary" variant="contained">Build Info</Button>
+            <Button size="small" onClick={()=>{setOpenBuildingDialog(true);}} color="info" variant="contained">Build Info</Button>
             {openBuildingDialog &&
               <MythicDialog fullWidth={true} maxWidth="lg" open={openBuildingDialog} 
                 onClose={()=>{setOpenBuildingDialog(false);}} 
@@ -228,15 +213,15 @@ export function C2ProfilesCard(props) {
             {props.container_running ? (
                    props.running ?
                    (
-                    <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button">
-                       <Button size="small" className={props.running ? classes.successButton : classes.errorButton} onClick={onStartStopProfile} style={{width: "100%"}}>Stop Profile</Button>
+                    <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" color={props.running ? "success" : "error"} >
+                       <Button size="small" color={props.running ? "success" : "error"} onClick={onStartStopProfile} style={{width: "100%"}}>Stop Profile</Button>
                        <Button
                           size="small"
                           aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
                           aria-expanded={dropdownOpen ? 'true' : undefined}
                           aria-label="select merge strategy"
                           aria-haspopup="menu"
-                          className={props.running ? classes.successButton : classes.errorButton}
+                          color={props.running ? "success" : "error"}
                           onClick={handleDropdownToggle}
                         >
                           <ArrowDropDownIcon />
@@ -248,15 +233,15 @@ export function C2ProfilesCard(props) {
                      props.is_p2p ? (
                       null
                      ) : (
-                      <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button">
-                        <Button size="small" onClick={onStartStopProfile} className={props.running ? classes.successButton : classes.errorButton} style={{width: "100%"}}>Start Profile</Button>
+                      <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" color={props.running ? "success" : "error"} >
+                        <Button size="small" onClick={onStartStopProfile} color={props.running ? "success" : "error"} style={{width: "100%"}}>Start Profile</Button>
                         <Button
                           size="small"
                           aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
                           aria-expanded={dropdownOpen ? 'true' : undefined}
                           aria-label="select merge strategy"
                           aria-haspopup="menu"
-                          className={props.running ? classes.successButton : classes.errorButton}
+                          color={props.running ? "success" : "error"}
                           onClick={handleDropdownToggle}
                         >
                           <ArrowDropDownIcon />
@@ -296,7 +281,7 @@ export function C2ProfilesCard(props) {
                     transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
                   }}
                 >
-                  <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                  <Paper style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
                     <ClickAwayListener onClickAway={handleDropdownClose}>
                       <MenuList id="split-button-menu">
                         <MenuItem key={"dropdownprofile" + props.id + "menu1"} onClick={()=>{setOpenProfileConfigDialog(true);}}>View/Edit Config</MenuItem>

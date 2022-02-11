@@ -1,23 +1,22 @@
 import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicComponents/MythicTabPanel';
 import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import AttachmentIcon from '@material-ui/icons/Attachment';
-import FormLabel from '@material-ui/core/FormLabel';
-import Grid from '@material-ui/core/Grid';
-import SearchIcon from '@material-ui/icons/Search';
-import Tooltip from '@material-ui/core/Tooltip';
-import {useTheme} from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import AttachmentIcon from '@mui/icons-material/Attachment';
+import Grid from '@mui/material/Grid';
+import SearchIcon from '@mui/icons-material/Search';
+import Tooltip from '@mui/material/Tooltip';
+import {useTheme} from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery } from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import Pagination from '@material-ui/lab/Pagination';
-import { Button, Typography } from '@material-ui/core';
+import Pagination from '@mui/material/Pagination';
+import { Button, Typography } from '@mui/material';
 import {FileMetaDownloadTable, FileMetaUploadTable, FileMetaScreenshotTable} from './FileMetaTable';
 import {FileBrowserTable} from './FileBrowserTable';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const fileMetaFragment = gql`
 fragment filemetaData on filemeta{
@@ -359,16 +358,15 @@ const SearchTabFilesSearchPanel = (props) => {
                         endAdornment: 
                         <React.Fragment>
                             <Tooltip title="Search">
-                                <IconButton onClick={submitSearch}><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton onClick={submitSearch} size="large"><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
                             </Tooltip>
                         </React.Fragment>,
                         style: {padding: 0}
                     }}/>
             </Grid>
             <Grid item xs={2}>
-                <FormLabel component="legend">Search File's</FormLabel>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    style={{marginBottom: "10px", width: "15rem"}}
                     value={searchField}
                     onChange={handleSearchFieldChange}
                 >
@@ -380,9 +378,8 @@ const SearchTabFilesSearchPanel = (props) => {
                 </Select>
             </Grid>
             <Grid item xs={2}>
-            <FormLabel component="legend">Search Location</FormLabel>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    style={{marginBottom: "10px", width: "15rem"}}
                     value={searchLocation}
                     onChange={handleSearchLocationChange}
                 >
@@ -397,7 +394,7 @@ const SearchTabFilesSearchPanel = (props) => {
                 <Button variant="contained" color="primary" component="label">Host File in Mythic <input onChange={onFileChange} type="file" hidden /></Button>
             </Grid>
         </Grid>
-    )
+    );
 }
 
 export const SearchTabFilesPanel = (props) =>{
@@ -630,36 +627,19 @@ export const SearchTabFilesPanel = (props) =>{
         }
     }
     const onChangePage = (event, value) => {
-        if(value === 1){
-            switch(searchField){
-                case "Filename":
-                    onFilenameSearch({search, searchHost, offset: 0});
-                    break;
-                case "Hash":
-                    onHashSearch({search, searchHost, offset: 0});
-                    break;
-                case "Comments":
-                    onCommentSearch({search, searchHost, offset: 0});
-                    break;
-                default:
-                    break;
-            }
-            
-        }else{
-            switch(searchField){
-                case "Filename":
-                    onFilenameSearch({search, searchHost, offset: (value - 1) * fetchLimit});
-                    break;
-                case "Hash":
-                    onHashSearch({search, searchHost, offset: (value - 1) * fetchLimit });
-                    break;
-                case "Comments":
-                    onCommentSearch({search, searchHost, offset: (value - 1) * fetchLimit });
-                    break;
-                default:
-                    break;
-            }
-            
+
+        switch(searchField){
+            case "Filename":
+                onFilenameSearch({search: search, searchHost:searchHost, offset: (value - 1) * fetchLimit, adjustedSearchLocation: searchLocation});
+                break;
+            case "Hash":
+                onHashSearch({search: search, searchHost:searchHost, offset: (value - 1) * fetchLimit, adjustedSearchLocation: searchLocation });
+                break;
+            case "Comments":
+                onCommentSearch({search: search, searchHost:searchHost, offset: (value - 1) * fetchLimit, adjustedSearchLocation: searchLocation });
+                break;
+            default:
+                break;
         }
     }
     

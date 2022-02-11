@@ -1,13 +1,13 @@
 import React, {useEffect} from 'react';
-import {Button, Switch} from '@material-ui/core';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
+import {Button, Switch} from '@mui/material';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {EditScriptDialog} from './EditScriptDialog';
-import IconButton from '@material-ui/core/IconButton';
-import DeleteIcon from '@material-ui/icons/Delete';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
-import {useTheme} from '@material-ui/core/styles';
+import {useTheme} from '@mui/material/styles';
 
 export function BrowserScriptsTableRow(props){
     const theme = useTheme();

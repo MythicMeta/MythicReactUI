@@ -1,7 +1,7 @@
 import React from 'react';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import { makeStyles } from '@material-ui/core/styles';
+import AppBar from '@mui/material/AppBar';
+import Tabs from '@mui/material/Tabs';
+import makeStyles from '@mui/styles/makeStyles';
 import {SearchTabTasksLabel, SearchTabTasksPanel} from './SearchTabTasks';
 import {SearchTabFilesLabel, SearchTabFilesPanel} from './SearchTabFiles';
 import {SearchTabCredentialsLabel, SearchTabCredentialsPanel} from './SearchTabCredentials';

@@ -105,7 +105,7 @@ const ResizableGridWrapper = ({
         }));
         const updatedWidths = columnWidths.map((columnWidth, index) => {
             if (columnIndex === index) {
-                return Math.floor(Math.max(longestElementInColumn * 8 + 32, MIN_COLUMN_WIDTH));
+                return Math.floor(Math.max(longestElementInColumn * 10 + 40, MIN_COLUMN_WIDTH));
             }
             return Math.floor(columnWidth);
         });

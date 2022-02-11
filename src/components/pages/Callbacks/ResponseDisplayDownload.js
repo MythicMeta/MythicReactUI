@@ -1,8 +1,8 @@
 import React from 'react';
-import GetAppIcon from '@material-ui/icons/GetApp';
-import Tooltip from '@material-ui/core/Tooltip';
-import { makeStyles } from '@material-ui/core/styles';
-import { Button } from '@material-ui/core';
+import GetAppIcon from '@mui/icons-material/GetApp';
+import Tooltip from '@mui/material/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
+import { Button } from '@mui/material';
 
 const useStyles = makeStyles((theme) => ({
   tooltip: {

@@ -6,28 +6,28 @@ import {
     MythicModifyStringDialog,
     MythicViewJSONAsTableDialog,
 } from '../../MythicComponents/MythicDialog';
-import FolderOpenIcon from '@material-ui/icons/FolderOpen';
-import Paper from '@material-ui/core/Paper';
-import DescriptionIcon from '@material-ui/icons/Description';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ErrorIcon from '@material-ui/icons/Error';
-import { useTheme } from '@material-ui/core/styles';
-import { Button } from '@material-ui/core';
-import Grow from '@material-ui/core/Grow';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import EditIcon from '@material-ui/icons/Edit';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import Paper from '@mui/material/Paper';
+import DescriptionIcon from '@mui/icons-material/Description';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+import { useTheme } from '@mui/material/styles';
+import { Button } from '@mui/material';
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import EditIcon from '@mui/icons-material/Edit';
 import { DownloadHistoryDialog } from './DownloadHistoryDialog';
-import HistoryIcon from '@material-ui/icons/History';
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import Divider from '@material-ui/core/Divider';
-import ListIcon from '@material-ui/icons/List';
-import DeleteIcon from '@material-ui/icons/Delete';
-import GetAppIcon from '@material-ui/icons/GetApp';
+import HistoryIcon from '@mui/icons-material/History';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import Divider from '@mui/material/Divider';
+import ListIcon from '@mui/icons-material/List';
+import DeleteIcon from '@mui/icons-material/Delete';
+import GetAppIcon from '@mui/icons-material/GetApp';
 import 'react-virtualized/styles.css';
-import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
+import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
 import { copyStringToClipboard } from '../../utilities/Clipboard';
 import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
@@ -502,7 +502,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
                         <Paper
                             style={{
                                 backgroundColor:
-                                    theme.palette.type === 'dark'
+                                    theme.palette.mode === 'dark'
                                         ? theme.palette.primary.dark
                                         : theme.palette.primary.light,
                                 color: 'white',

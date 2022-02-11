@@ -1,29 +1,29 @@
 import React, {useEffect} from 'react';
-import Table from '@material-ui/core/Table';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import Switch from '@material-ui/core/Switch';
-import Input from '@material-ui/core/Input';
-import {Button} from '@material-ui/core';
+import Table from '@mui/material/Table';
+import TableContainer from '@mui/material/TableContainer';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import Switch from '@mui/material/Switch';
+import Input from '@mui/material/Input';
+import {Button} from '@mui/material';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import Paper from '@material-ui/core/Paper';
-import TableHead from '@material-ui/core/TableHead';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
-import DeleteIcon from '@material-ui/icons/Delete';
-import {useTheme} from '@material-ui/core/styles';
-import CancelIcon from '@material-ui/icons/Cancel';
-import {Typography} from '@material-ui/core';
+import Paper from '@mui/material/Paper';
+import TableHead from '@mui/material/TableHead';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {useTheme} from '@mui/material/styles';
+import CancelIcon from '@mui/icons-material/Cancel';
+import {Typography} from '@mui/material';
 import {useMutation, gql } from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import {CredentialTableNewCredentialDialog} from '../Search/CredentialTableNewCredentialDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
-import { Backdrop } from '@material-ui/core';
-import {CircularProgress} from '@material-ui/core';
+import { Backdrop } from '@mui/material';
+import {CircularProgress} from '@mui/material';
 
 const getDynamicQueryParams = gql`
 mutation getDynamicParamsMutation($callback: Int!, $command: String!, $payload_type: String!, $parameter_name: String!){

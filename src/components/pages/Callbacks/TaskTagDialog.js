@@ -1,25 +1,25 @@
 import React, {useState} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {useQuery, gql, useReactiveVar, useMutation} from '@apollo/client';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import { meState } from '../../../cache';
-import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Paper from '@material-ui/core/Paper';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import Divider from '@material-ui/core/Divider';
-import NoteAddIcon from '@material-ui/icons/NoteAdd';
-import { IconButton } from '@material-ui/core';
+import makeStyles from '@mui/styles/makeStyles';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Paper from '@mui/material/Paper';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import Divider from '@mui/material/Divider';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import { IconButton } from '@mui/material';
 import {muiTheme} from '../../../themes/Themes.js';
 import {snackActions} from '../../utilities/Snackbar';
 
@@ -49,6 +49,7 @@ query getTaskTags ($operation_id: Int!) {
 const useStyles = makeStyles((theme) => ({
   root: {
     margin: 'auto',
+    paddingBottom: "10px"
   },
   paper: {
     width: 200,
@@ -226,7 +227,7 @@ export function TaskTagDialog(props) {
     <React.Fragment>
         <DialogTitle id="form-dialog-title">Edit Task Tags</DialogTitle>
         <DialogContent dividers={true}>
-        <Grid container spacing={2} justify="center" alignItems="center" className={classes.root}>
+        <Grid container spacing={2} justifyContent="center" alignItems="center" className={classes.root}>
           <Grid item xs={5}>{customList("Unused Tags In Operation", left)}</Grid>
           <Grid item>
             <Grid container direction="column" alignItems="center">
@@ -278,7 +279,11 @@ export function TaskTagDialog(props) {
           InputProps={{
                     endAdornment:
                     <React.Fragment>
-                    <IconButton style={{color: muiTheme.palette.success.main}} variant="contained" onClick={addNewTag}><NoteAddIcon/></IconButton>
+                    <IconButton
+                      color="success"
+                      variant="contained"
+                      onClick={addNewTag}
+                      size="large"><NoteAddIcon/></IconButton>
                     </React.Fragment>
                 }}/>
         </DialogContent>
@@ -286,7 +291,7 @@ export function TaskTagDialog(props) {
           <Button onClick={props.onClose} variant="contained" color="primary">
             Close
           </Button>
-          <Button onClick={setFinalTags} variant="contained" color="secondary">
+          <Button onClick={setFinalTags} variant="contained" color="success">
             Submit
           </Button>
         </DialogActions>

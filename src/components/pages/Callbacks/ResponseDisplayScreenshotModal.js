@@ -1,11 +1,11 @@
 import React from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import { MobileStepper } from '@material-ui/core';
-import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
-import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
-import {useTheme} from '@material-ui/core/styles';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import { MobileStepper } from '@mui/material';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import {useTheme} from '@mui/material/styles';
 
 export function ResponseDisplayScreenshotModal({onClose, images, startIndex}) {
     const [zoom, setZoom] = React.useState(false);
@@ -25,7 +25,7 @@ export function ResponseDisplayScreenshotModal({onClose, images, startIndex}) {
   return (
     <React.Fragment>
         <DialogContent dividers={true} style={{padding: 0}}>
-          <div style={{height: "calc(80vh)", display: zoom ? "" : "flex", alignItems: zoom ? "" : "center" , background: theme.palette.type === "dark" ? "rgb(44, 52, 60)" : "grey"}}>
+          <div style={{height: "calc(80vh)", display: zoom ? "" : "flex", alignItems: zoom ? "" : "center" , background: theme.palette.mode === "dark" ? "rgb(44, 52, 60)" : "grey"}}>
             <img onClick={toggleZoom} src={"/api/v1.4/files/screencaptures/" + images[activeStep]} style={{width: zoom ? "" : "100%", cursor: zoom ? "zoom-out" : "zoom-in", overflow: "auto"}} />
           </div>
         </DialogContent>

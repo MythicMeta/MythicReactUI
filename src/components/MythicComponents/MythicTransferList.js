@@ -1,23 +1,24 @@
 import React, {useEffect} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Paper from '@material-ui/core/Paper';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import Divider from '@material-ui/core/Divider';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import makeStyles from '@mui/styles/makeStyles';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Paper from '@mui/material/Paper';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import Divider from '@mui/material/Divider';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     margin: 'auto',
+    paddingBottom: "10px"
   },
   paper: {
     width: 200,
@@ -156,7 +157,7 @@ export function MythicTransferListDialog(props) {
     <React.Fragment>
         <DialogTitle id="form-dialog-title">{props.dialogTitle}</DialogTitle>
         <DialogContent dividers={true}>
-        <Grid container spacing={2} justify="center" alignItems="center" className={classes.root}>
+        <Grid container spacing={2} justifyContent="center" alignItems="center" className={classes.root}>
           <Grid item xs={5} style={{paddingLeft: 0, marginLeft: 0}}>{customList(leftTitle, left)}</Grid>
           <Grid item>
             <Grid container direction="column" alignItems="center">
@@ -209,7 +210,7 @@ export function MythicTransferListDialog(props) {
           <Button onClick={props.onClose} variant="contained" color="primary">
             Close
           </Button>
-          <Button onClick={setFinalTags} variant="contained" color="secondary">
+          <Button onClick={setFinalTags} variant="contained" color="success">
             Submit
           </Button>
         </DialogActions>

@@ -1,20 +1,20 @@
 import React, {useEffect, useRef} from 'react';
-import {Button} from '@material-ui/core';
+import {Button} from '@mui/material';
 import { MythicViewJSONAsTableDialog, MythicDialog } from '../../MythicComponents/MythicDialog';
 import { MythicDisplayTextDialog } from '../../MythicComponents/MythicDisplayTextDialog';
 import { ResponseDisplayTableDialogTable } from './ResponseDisplayTableDialogTable';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import {useTheme} from '@material-ui/core/styles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
 import 'react-virtualized/styles.css';
 import {TaskFromUIButton} from './TaskFromUIButton';
-import Grow from '@material-ui/core/Grow';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import { copyStringToClipboard } from '../../utilities/Clipboard';
-import IconButton from '@material-ui/core/IconButton';
+import IconButton from '@mui/material/IconButton';
 import {snackActions} from '../../utilities/Snackbar';
 import {MythicStyledTooltip} from '../../MythicComponents/MythicStyledTooltip';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -87,7 +87,7 @@ const doubleClickRow = () => {
 const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
 
   return (
-    <div style={{...cellData?.cellStyle || null}}>
+    <div style={{...(cellData?.cellStyle || null)}}>
       {cellData?.copyIcon? 
         <MythicStyledTooltip title={"Copy to clipboard"}>
             <IconButton onClick={() => onCopyToClipboard(cellData["plaintext"])} size="small">
@@ -118,12 +118,11 @@ const ResponseDisplayTableStringCell = ({cellData, rowData}) => {
         </MythicStyledTooltip>: null
       }
     </div>
-          
-  )
+  );
 }
 const ResponseDisplayTableNumberCell = ({cellData, rowData}) => {
   return (
-    <div style={{...cellData?.cellStyle || null}}>
+    <div style={{...(cellData?.cellStyle || null)}}>
       {cellData?.copyIcon? 
         <MythicStyledTooltip title={"Copy to clipboard"}>
             <IconButton onClick={() => onCopyToClipboard(cellData["plaintext"])} size="small">
@@ -154,8 +153,7 @@ const ResponseDisplayTableNumberCell = ({cellData, rowData}) => {
         </MythicStyledTooltip>: null
       }
     </div>
-          
-  )
+  );
 }
 const getStringSize = ({cellData}) => {
   try{
@@ -182,7 +180,7 @@ const getStringSize = ({cellData}) => {
 }
 const ResponseDisplayTableSizeCell = ({cellData, rowData}) => {
   return (
-    <div style={{...cellData?.cellStyle || null}}>
+    <div style={{...(cellData?.cellStyle || null)}}>
         {cellData?.plaintextHoverText? (
         <MythicStyledTooltip title={cellData.plaintextHoverText} >
           <pre style={{display: "inline-block"}}>
@@ -196,8 +194,7 @@ const ResponseDisplayTableSizeCell = ({cellData, rowData}) => {
           </pre>
       )}
      </div>
-          
-  )
+  );
 }
 const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
   const theme = useTheme();
@@ -364,7 +361,7 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
                         transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
                       }}
                     >
-                      <Paper variant="outlined" style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                      <Paper variant="outlined" style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
                         <ClickAwayListener onClickAway={handleClose}>
                           <MenuList id="split-button-menu"  >
                             {cellData.button.value.map((option, index) => (
@@ -390,11 +387,11 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
     }
   }
   return (
-    <div style={{...rowData?.rowStyle || null, ...cellData?.cellStyle || null}}>
+    <div style={{...(rowData?.rowStyle || null), ...(cellData?.cellStyle || null)}}>
       {cellData?.plaintext ? cellData.plaintext : null}
       {cellData?.button ? (getButtonObject()) : (null)}
     </div>
-  )
+  );
 }
 
 export const ResponseDisplayTable = ({table, callback_id}) =>{

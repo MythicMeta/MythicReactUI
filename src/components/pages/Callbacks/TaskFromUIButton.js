@@ -47,7 +47,7 @@ query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: String!) {
 }
 `;
 
-export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked, tasking_location, getConfirmation, openDialog}) =>{
+export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked, tasking_location, getConfirmation, openDialog, acceptText}) =>{
     const [fileBrowserCommands, setFileBrowserCommands] = React.useState([]);
     const [openSelectCommandDialog, setOpenSelectCommandDialog] = React.useState(false);
     const [openParametersDialog, setOpenParametersDialog] = React.useState(false);
@@ -221,7 +221,7 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked,
                 />
             }
             {openConfirmDialog && 
-                <MythicConfirmDialog onClose={onCancelConfirm} onSubmit={onSubmitConfirm} open={openConfirmDialog}/>
+                <MythicConfirmDialog onClose={onCancelConfirm} onSubmit={onSubmitConfirm} open={openConfirmDialog} acceptText={acceptText}/>
             }
         </div>
     )

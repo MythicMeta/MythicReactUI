@@ -1,20 +1,18 @@
 import React, {useRef, useEffect} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
-import {useTheme} from '@material-ui/core/styles';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
 
 export function MythicSelectFromListDialog(props) {
     const [options, setOptions] = React.useState([]);
     const [selected, setSelected] = React.useState('');
     const inputRef = useRef(null); 
-    const theme = useTheme();
     const handleChange = (event) => {
         setSelected(event.target.value);
       };
@@ -63,7 +61,7 @@ export function MythicSelectFromListDialog(props) {
           <Button onClick={props.onClose} variant="contained" color="primary">
             Close
           </Button>
-          <Button onClick={handleSubmit} variant="contained" style={{backgroundColor: theme.palette.success.main}}>
+          <Button onClick={handleSubmit} variant="contained" color="success">
             {props.action}
           </Button>
         </DialogActions>

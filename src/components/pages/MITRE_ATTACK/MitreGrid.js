@@ -1,18 +1,18 @@
 import React from 'react';
-import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import {useTheme} from '@material-ui/core/styles';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import Grow from '@material-ui/core/Grow';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import {MitreGridColumn} from './MitreGridColumn';
-import { Backdrop } from '@material-ui/core';
-import {CircularProgress} from '@material-ui/core';
+import { Backdrop } from '@mui/material';
+import {CircularProgress} from '@mui/material';
 import { MythicDisplayTextDialog} from '../../MythicComponents/MythicDisplayTextDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { SelectPayloadTypeDialog } from './SelectPayloadTypeDialog';
@@ -238,7 +238,7 @@ export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFilt
                         transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
                     }}
                     >
-                    <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                    <Paper style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
                         <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
                         <MenuList id="split-button-menu">
                             {dropDownOptions.map((option, index) => (

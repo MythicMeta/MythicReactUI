@@ -1,19 +1,19 @@
 import React, {useEffect} from 'react';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import DeleteIcon from '@material-ui/icons/Delete';
-import {IconButton, Input, Button, MenuItem, Grid} from '@material-ui/core';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {IconButton, Input, Button, MenuItem, Grid} from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {
     MuiPickersUtilsProvider,
     KeyboardDatePicker,
   } from '@material-ui/pickers';
 import 'date-fns';
 import DateFnsUtils from '@date-io/date-fns';
-import {useTheme} from '@material-ui/core/styles';
+import {useTheme} from '@mui/material/styles';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 export function CreatePayloadParameter({onChange, parameter_type, default_value, name, required, verifier_regex, id, description, value: passedValue, returnAllDictValues}){
@@ -211,7 +211,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
             case "Date":
                 return (
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                        <Grid container justify="flex-start">
+                        <Grid container justifyContent="flex-start">
                             <KeyboardDatePicker
                             disableToolbar
                             variant="inline"
@@ -225,7 +225,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                             />
                         </Grid>
                     </MuiPickersUtilsProvider>
-                )
+                );
             case "ChooseOne":
                 return (
                     <FormControl>
@@ -247,7 +247,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                     <React.Fragment>
                         {dictValue.map( (opt, i) => (
                             <div key={"dictval" + i}>
-                                <IconButton onClick={(e) => {removeDictEntry(i)}}><DeleteIcon style={{color: theme.palette.error.main}} /> </IconButton>
+                                <IconButton onClick={(e) => {removeDictEntry(i)}} size="large"><DeleteIcon style={{color: theme.palette.error.main}} /> </IconButton>
                                 {opt.name === "*" ? 
                                     (
                                         <Input style={{width:"20%"}} startAdornment={<Button disabled>Key</Button>} size="small" value={opt.key} onChange={(e) => onChangeDictKey(e, i)}></Input>
@@ -261,7 +261,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                         )}
                         {dictSelectOptions.length > 0 ? (
                             <div>
-                                <IconButton onClick={addDictValEntry}> <AddCircleIcon style={{color: theme.palette.success.main}}  /> </IconButton>
+                                <IconButton onClick={addDictValEntry} size="large"> <AddCircleIcon style={{color: theme.palette.success.main}}  /> </IconButton>
                                 <Select size="small" value={dictSelectOptionsChoice} onChange={(e) => setDictSelectOptionsChoice(e.target.value)}>
                                     {dictSelectOptions.map( (selectOpt, i) => (
                                         <MenuItem key={"selectopt" + name + "i"} value={selectOpt}>{selectOpt.name === "*" ? "Custom Key": selectOpt.name}</MenuItem>
@@ -272,7 +272,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                         ) : (null) 
                         }
                     </React.Fragment>
-                )
+                );
             case "String":
                 return (
                     <MythicTextField required={required} value={value} multiline={true}

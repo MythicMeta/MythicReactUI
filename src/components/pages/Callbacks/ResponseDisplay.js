@@ -9,14 +9,14 @@ import {ResponseDisplayTable} from './ResponseDisplayTable';
 import {ResponseDisplayDownload} from './ResponseDisplayDownload';
 import {ResponseDisplaySearch} from './ResponseDisplaySearch';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import SearchIcon from '@material-ui/icons/Search';
-import {useTheme} from '@material-ui/core/styles';
-import { IconButton } from '@material-ui/core';
+import SearchIcon from '@mui/icons-material/Search';
+import {useTheme} from '@mui/material/styles';
+import { IconButton } from '@mui/material';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
-import Pagination from '@material-ui/lab/Pagination';
-import { Typography } from '@material-ui/core';
-import { Backdrop } from '@material-ui/core';
-import { CircularProgress } from '@material-ui/core';
+import Pagination from '@mui/material/Pagination';
+import { Typography } from '@mui/material';
+import { Backdrop } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 
 
 const subResponsesQuery = gql`
@@ -317,15 +317,14 @@ const SearchBar = ({onSubmitSearch}) => {
           endAdornment: 
           <React.Fragment>
               <MythicStyledTooltip title="Search">
-                  <IconButton onClick={onSubmitLocalSearch}><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
+                  <IconButton onClick={onSubmitLocalSearch} size="large"><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
               </MythicStyledTooltip>
           </React.Fragment>,
           style: {padding: 0}
       }}
       ></MythicTextField>
     </div>
-    
-  )
+  );
 }
 
 const ResponseDisplayComponent = ({rawResponses, viewBrowserScript, output, command_id, task, search}) => {

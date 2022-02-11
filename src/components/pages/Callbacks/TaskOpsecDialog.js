@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {useQuery, gql, useMutation} from '@apollo/client';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import { useSnackbar } from 'notistack';
 
 const updateOpsecRequestMutation = gql`
@@ -100,7 +100,7 @@ export function TaskOpsecDialog(props) {
           </Button>
           {(opsecData.opsec_pre_blocked === true && !opsecData.opsec_pre_bypassed) || (opsecData.opsec_post_blocked === true && !opsecData.opsec_post_bypassed) ?
           (
-            <Button onClick={onRequestSubmit} variant="contained" color="secondary">Submit Bypass Request</Button>
+            <Button onClick={onRequestSubmit} variant="contained" color="warning">Submit Bypass Request</Button>
           ) : (null) }
           
         </DialogActions>

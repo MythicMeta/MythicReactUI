@@ -1,9 +1,9 @@
 import React from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 
 
@@ -45,14 +45,14 @@ export function SettingsOperatorDialog(props) {
             margin="dense"
             id="passwordOld"
             onChange={onPasswordOldChange}
-            name="old password"
+            name={props.title === "New Operator" ? "password" : "old password"}
             type="password"
           />
           <MythicTextField
             margin="dense"
             id="passwordNew"
             onChange={onPasswordNewChange}
-            name="new password"
+            name={props.title === "New Operator" ? "password again" : "new password"}
             type="password"
           />
         </DialogContent>
@@ -60,8 +60,8 @@ export function SettingsOperatorDialog(props) {
           <Button onClick={props.handleClose} variant="contained" color="primary">
             Cancel
           </Button>
-          <Button onClick={onAccept} variant="contained" color="primary">
-            Update
+          <Button onClick={onAccept} variant="contained" color="success">
+            {props.title === "New Operator" ? "Create" : "Update"}
           </Button>
         </DialogActions>
   </React.Fragment>

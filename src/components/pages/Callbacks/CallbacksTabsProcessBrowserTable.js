@@ -1,19 +1,19 @@
 import React, {useEffect} from 'react';
 import {useLazyQuery, gql } from '@apollo/client';
 import { MythicDialog, MythicViewObjectPropertiesAsTableDialog } from '../../MythicComponents/MythicDialog';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
-import {Button} from '@material-ui/core';
-import Grow from '@material-ui/core/Grow';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import Divider from '@material-ui/core/Divider';
-import ListIcon from '@material-ui/icons/List';
-import DeleteIcon from '@material-ui/icons/Delete';
-import GetAppIcon from '@material-ui/icons/GetApp';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
+import {Button} from '@mui/material';
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import Divider from '@mui/material/Divider';
+import ListIcon from '@mui/icons-material/List';
+import DeleteIcon from '@mui/icons-material/Delete';
+import GetAppIcon from '@mui/icons-material/GetApp';
 import { snackActions } from '../../utilities/Snackbar';
 import 'react-virtualized/styles.css';
 import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
@@ -434,7 +434,7 @@ const FileBrowserTableRowActionCell = ({rowData, onTaskRowAction, os}) => {
                     transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
                 }}
                 >
-                <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                <Paper style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
                     <ClickAwayListener onClickAway={handleClose}>
                     <MenuList id="split-button-menu">
                         {optionsA.map((option, index) => (

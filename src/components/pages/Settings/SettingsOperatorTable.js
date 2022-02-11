@@ -1,19 +1,19 @@
 import React from 'react';
-import {Button} from '@material-ui/core';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+import {Button} from '@mui/material';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 import { SettingsOperator } from './SettingsOperator';
-import Typography from '@material-ui/core/Typography';
-import AddCircleOutlineOutlinedIcon from '@material-ui/icons/AddCircleOutlineOutlined';
+import Typography from '@mui/material/Typography';
+import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import { SettingsOperatorDialog } from './SettingsOperatorDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {snackActions} from '../../utilities/Snackbar';
-import {useTheme} from '@material-ui/core/styles';
+import {useTheme} from '@mui/material/styles';
 
 
 export function SettingsOperatorTable(props){
@@ -39,7 +39,7 @@ export function SettingsOperatorTable(props){
             </Typography>
         </Paper>
         <TableContainer component={Paper} className="mythicElement">   
-        <Button size="small" onClick={()=>{setOpenNewDialog(true);}} style={{float: "right"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="primary" variant="contained">New Operator</Button>
+        <Button size="small" onClick={()=>{setOpenNewDialog(true);}} style={{float: "right"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="success" variant="contained">New Operator</Button>
         <MythicDialog open={openNew} 
             onClose={()=>{setOpenNewDialog(false);}} 
             innerDialog={<SettingsOperatorDialog title="New Operator" onAccept={onSubmitNewOperator} handleClose={()=>{setOpenNewDialog(false);}}  {...props}/>}

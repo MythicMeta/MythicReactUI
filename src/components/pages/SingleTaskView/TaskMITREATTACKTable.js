@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 
 export function TaskMITREATTACKTable(props){
    const [attacks, setAttacks] = React.useState([]);
@@ -51,7 +51,7 @@ export function TaskMITREATTACKTable(props){
                 </TableHead>
                 <TableBody>
                   {attacks.map( (attack) => (
-                    <TableRow key={'attack' + attack.attack.id}>
+                    <TableRow key={'attack' + attack.attack.id} hover>
                       <TableCell>{attack.attack.t_num}</TableCell>
                       <TableCell>{attack.attack.name}</TableCell>
                     </TableRow>

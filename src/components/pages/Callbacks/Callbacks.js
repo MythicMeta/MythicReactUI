@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { CallbacksTabs } from './CallbacksTabs';
-import SpeedDial from '@material-ui/lab/SpeedDial';
-import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
-import { makeStyles } from '@material-ui/core/styles';
-import AspectRatioIcon from '@material-ui/icons/AspectRatio';
-import TocIcon from '@material-ui/icons/Toc';
-import AssessmentIcon from '@material-ui/icons/Assessment';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import makeStyles from '@mui/styles/makeStyles';
+import AspectRatioIcon from '@mui/icons-material/AspectRatio';
+import TocIcon from '@mui/icons-material/Toc';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 import { HeightsDialog } from './HeightsDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { CallbacksTop } from './CallbacksTop';
@@ -200,7 +200,7 @@ function SpeedDialWrapperPreMemo({ setTopDisplay, onSubmitHeights, heights }) {
                 onOpen={() => {
                     setOpen(true);
                 }}
-                FabProps={{ color: 'secondary' }}
+                FabProps={{ color: 'info' }}
                 open={open}
                 style={{ marginTop: '35px' }}
                 direction='down'>

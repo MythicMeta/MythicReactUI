@@ -2,22 +2,21 @@ import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicCo
 import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {TaskDisplay} from '../Callbacks/TaskDisplay';
-import AssignmentIcon from '@material-ui/icons/Assignment';
-import FormLabel from '@material-ui/core/FormLabel';
-import Grid from '@material-ui/core/Grid';
-import SearchIcon from '@material-ui/icons/Search';
-import Tooltip from '@material-ui/core/Tooltip';
-import {useTheme} from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import Grid from '@mui/material/Grid';
+import SearchIcon from '@mui/icons-material/Search';
+import Tooltip from '@mui/material/Tooltip';
+import {useTheme} from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery } from '@apollo/client';
 import {taskingDataFragment} from '../Callbacks/CallbacksTabsTasking'
 import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import Pagination from '@material-ui/lab/Pagination';
-import { Typography } from '@material-ui/core';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
+import Pagination from '@mui/material/Pagination';
+import { Typography } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const fetchLimit = 20;
 const responseSearch = gql`
@@ -139,16 +138,15 @@ const SearchTabTasksSearchPanel = (props) => {
                         endAdornment: 
                         <React.Fragment>
                             <Tooltip title="Search">
-                                <IconButton onClick={submitSearch}><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton onClick={submitSearch} size="large"><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
                             </Tooltip>
                         </React.Fragment>,
                         style: {padding: 0}
                     }}/>
             </Grid>
-            <Grid item xs={3}>
-                <FormLabel component="legend">Search Task's</FormLabel>
+            <Grid item xs={2}>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    style={{marginBottom: "10px"}}
                     value={searchField}
                     onChange={handleSearchFieldChange}
                 >
@@ -159,12 +157,12 @@ const SearchTabTasksSearchPanel = (props) => {
                     }
                 </Select>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={4}>
                 <MythicTextField placeholder="Filter Task Status..." value={filterTaskStatus}
                         onChange={handleFilterTaskStatusValueChange} onEnter={submitSearch} name="Filter Task Status..."/>
             </Grid>
         </Grid>
-    )
+    );
 }
 export const SearchTabTasksPanel = (props) =>{
     const [taskingData, setTaskingData] = React.useState({task: []});
@@ -276,36 +274,19 @@ export const SearchTabTasksPanel = (props) =>{
         }})
     }
     const onChangePage = (event, value) => {
-        if(value === 1){
-            switch(searchField){
-                case "Output":
-                    onOutputSearch({search, offset: 0, taskStatus});
-                    break;
-                case "Parameters":
-                    onParameterSearch({search, offset: 0, taskStatus});
-                    break;
-                case "Comment":
-                    onCommentSearch({search, offset: 0, taskStatus});
-                    break;
-                default:
-                    break;
-            }
-            
-        }else{
-            switch(searchField){
-                case "Output":
-                    onOutputSearch({search, offset: (value - 1) * fetchLimit, taskStatus });
-                    break;
-                case "Parameters":
-                    onParameterSearch({search, offset: (value - 1) * fetchLimit, taskStatus });
-                    break;
-                case "Comment":
-                    onCommentSearch({search, offset: (value - 1) * fetchLimit, taskStatus });
-                    break;
-                default:
-                    break;
-            }
-            
+
+        switch(searchField){
+            case "Output":
+                onOutputSearch({search, offset: (value - 1) * fetchLimit, taskStatus });
+                break;
+            case "Parameters":
+                onParameterSearch({search, offset: (value - 1) * fetchLimit, taskStatus });
+                break;
+            case "Comment":
+                onCommentSearch({search, offset: (value - 1) * fetchLimit, taskStatus });
+                break;
+            default:
+                break;
         }
     }
     return (

@@ -4,11 +4,12 @@ import { gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import Pagination from '@material-ui/lab/Pagination';
-import { Typography } from '@material-ui/core';
+import Pagination from '@mui/material/Pagination';
+import { Typography } from '@mui/material';
 import {SocksSearchTable} from './SocksSearchTable';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSocks} from '@fortawesome/free-solid-svg-icons';
+import IconButton from '@mui/material/IconButton';
 
 const callbackFragment = gql`
 fragment callbackData on callback{
@@ -43,7 +44,8 @@ query userQuery($operation_id: Int!, $offset: Int!, $fetchLimit: Int!) {
 
 export function SearchTabSocksLabel(props){
     return (
-        <MythicSearchTabLabel label={"SOCKS"} iconComponent={<FontAwesomeIcon icon={faSocks} size="lg" />} {...props}/>
+        <MythicSearchTabLabel label={"SOCKS"} iconComponent={
+            <FontAwesomeIcon icon={faSocks} size="lg" style={{marginTop: "5px"}}/>} {...props}/>
     )
 }
 

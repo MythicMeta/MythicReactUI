@@ -4,8 +4,8 @@ import {useQuery, gql, useLazyQuery} from '@apollo/client';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { Backdrop } from '@material-ui/core';
-import {CircularProgress} from '@material-ui/core';
+import { Backdrop } from '@mui/material';
+import {CircularProgress} from '@mui/material';
 import { MythicSelectFromListDialog } from '../../MythicComponents/MythicSelectFromListDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 

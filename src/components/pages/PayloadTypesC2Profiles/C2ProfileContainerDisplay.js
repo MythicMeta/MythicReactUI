@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import {useTheme} from '@material-ui/core/styles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
 import {C2ProfilesCard} from './C2ProfilesCard';
 import {useSubscription, gql } from '@apollo/client';
 

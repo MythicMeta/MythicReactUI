@@ -1,19 +1,19 @@
 import React, {useEffect, useRef} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import AceEditor from 'react-ace';
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/theme-monokai";
-import {useTheme} from '@material-ui/core/styles';
+import {useTheme} from '@mui/material/styles';
 import { gql, useQuery } from '@apollo/client';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 
 
@@ -138,7 +138,7 @@ export function EditScriptDialog(props) {
           <MythicTextField value={author} onChange={onChangeAuthor} name="Author" fullWidth />
            <AceEditor
                 mode="javascript"
-                theme={theme.palette.type === 'dark' ? 'monokai' : 'github'}
+                theme={theme.palette.mode === 'dark' ? 'monokai' : 'github'}
                 width="100%"
                 height="100%"
                 value={script} 
@@ -150,20 +150,20 @@ export function EditScriptDialog(props) {
             />
         </DialogContent>
         <DialogActions>
-          <Button onClick={props.onClose} variant="contained" style={{backgroundColor: theme.palette.primary.main}}>
+          <Button onClick={props.onClose} variant="contained" color="primary">
             Close
           </Button>
           {props.new ? (
-            <Button onClick={onSubmit} variant="contained" style={{backgroundColor: theme.palette.warning.main}}>
+            <Button onClick={onSubmit} variant="contained" color="success">
               Create
           </Button>
           ) : (
             <React.Fragment>
-              <Button onClick={onRevert} variant="contained" style={{backgroundColor: theme.palette.success.main}}>
+              <Button onClick={onRevert} variant="contained" color="warning">
                 Revert
               </Button>
           
-              <Button onClick={onSubmit} variant="contained" style={{backgroundColor: theme.palette.warning.main}}>
+              <Button onClick={onSubmit} variant="contained" color="success">
                 Save
               </Button>
             </React.Fragment>

@@ -1,20 +1,20 @@
 import React, {useRef} from 'react';
-import {Button} from '@material-ui/core';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import IconButton from '@material-ui/core/IconButton';
-import DeleteIcon from '@material-ui/icons/Delete';
+import {Button} from '@mui/material';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { toLocalTime } from '../../utilities/Time';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import {DetailedPayloadTable} from './DetailedPayloadTable';
-import Grow from '@material-ui/core/Grow';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Paper from '@material-ui/core/Paper';
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Paper from '@mui/material/Paper';
 import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
 import {PayloadDescriptionDialog} from './PayloadDescriptionDialog';
 import {PayloadFilenameDialog} from './PayloadFilenameDialog';
@@ -23,11 +23,11 @@ import {PayloadsTableRowC2Status} from './PayloadsTableRowC2Status';
 import {PayloadsTableRowBuildStatus} from './PayloadsTableRowBuildStatus';
 import {PayloadConfigCheckDialog} from './PayloadConfigCheckDialog';
 import {PayloadRedirectRulesDialog} from './PayloadRedirectRulesDialog';
-import {useTheme} from '@material-ui/core/styles';
-import InfoIcon from '@material-ui/icons/Info';
+import {useTheme} from '@mui/material/styles';
+import InfoIcon from '@mui/icons-material/Info';
 import {useMutation, gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const rebuildPayloadMutation = gql`
@@ -168,13 +168,13 @@ export function PayloadsTableRow(props){
                 <TableCell>
                   {props.deleted ? (
                     <MythicStyledTooltip title={"Mark payload as not deleted so you can get callbacks, but does not recreate the payload on disk"}>
-                      <IconButton size="small" onClick={() => {props.onRestorePayload(props.id)}} style={{color: theme.palette.success.main}} variant="contained"><RestoreFromTrashIcon /></IconButton>
+                      <IconButton size="small" onClick={() => {props.onRestorePayload(props.id)}} color="success" variant="contained"><RestoreFromTrashIcon /></IconButton>
                     </MythicStyledTooltip>
                     
                   ) : (
                     <React.Fragment>
                       <MythicStyledTooltip title={"Delete the payload from disk and mark as deleted. No new callbacks can be generated from this payload"}>
-                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
+                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} color="error" variant="contained"><DeleteIcon/></IconButton>
                       </MythicStyledTooltip>
                       
                       {openDelete && 
@@ -194,7 +194,7 @@ export function PayloadsTableRow(props){
                         transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
                       }}
                     >
-                      <Paper variant="outlined" style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                      <Paper variant="outlined" style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
                         <ClickAwayListener onClickAway={handleClose}>
                           <MenuList id="split-button-menu"  >
                             {options.map((option, index) => (
@@ -224,7 +224,7 @@ export function PayloadsTableRow(props){
                     />
                 ): (null) }
                 {openBuildMessage ? (
-                    <MythicDialog fullWidth={true} maxWidth="md" open={openBuildMessage} 
+                    <MythicDialog fullWidth={true} maxWidth="lg" open={openBuildMessage} 
                         onClose={()=>{setOpenBuildMessageDialog(false);}} 
                         innerDialog={<PayloadBuildMessageDialog payload_id={props.id} viewError={viewError} onClose={()=>{setOpenBuildMessageDialog(false);}} />}
                     />
@@ -251,7 +251,7 @@ export function PayloadsTableRow(props){
                     <PayloadsTableRowC2Status payloadc2profiles={props.payloadc2profiles} uuid={props.uuid} />
                 </TableCell>
                 <TableCell>
-                    <IconButton size="small" color="primary" onClick={() => setOpenDetailedView(true)}>
+                    <IconButton size="small" color="info" onClick={() => setOpenDetailedView(true)}>
                         <InfoIcon />
                     </IconButton>
                 </TableCell>

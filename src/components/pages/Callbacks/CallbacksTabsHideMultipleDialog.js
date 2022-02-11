@@ -1,19 +1,19 @@
 import React, {useEffect} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Checkbox from '@material-ui/core/Checkbox';
-import Paper from '@material-ui/core/Paper';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import Divider from '@material-ui/core/Divider';
-import ListItemText from '@material-ui/core/ListItemText';
-import { makeStyles } from '@material-ui/core/styles';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Checkbox from '@mui/material/Checkbox';
+import Paper from '@mui/material/Paper';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import Divider from '@mui/material/Divider';
+import ListItemText from '@mui/material/ListItemText';
+import makeStyles from '@mui/styles/makeStyles';
 import {useQuery, gql } from '@apollo/client';
 import { meState } from '../../../cache';
 import {useReactiveVar, useMutation} from '@apollo/client';
@@ -177,7 +177,7 @@ export function CallbacksTabsHideMultipleDialog({onClose}) {
     <React.Fragment>
         <DialogTitle id="form-dialog-title">Hide Multiple Callbacks at Once</DialogTitle>
         <DialogContent dividers={true}>
-        <Grid container spacing={0} justify="center" alignItems="center" className={classes.root}>
+        <Grid container spacing={0} justifyContent="center" alignItems="center" className={classes.root}>
           <Grid item xs={5}>{customList("Visible Callbacks", left)}</Grid>
           <Grid item xs={1}>
             <Grid container direction="column" alignItems="center">
@@ -231,7 +231,7 @@ export function CallbacksTabsHideMultipleDialog({onClose}) {
           <Button onClick={onClose} variant="contained" color="primary">
             Close
           </Button>
-          <Button onClick={submitTasking} variant="contained" color="secondary">
+          <Button onClick={submitTasking} variant="contained" color="warning">
             Hide
           </Button>
         </DialogActions>

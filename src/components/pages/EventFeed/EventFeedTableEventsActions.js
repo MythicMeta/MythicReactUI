@@ -1,10 +1,10 @@
 import React from 'react';
-import IconButton from '@material-ui/core/IconButton';
-import DeleteIcon from '@material-ui/icons/Delete';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import MenuItem from '@mui/material/MenuItem';
+import Menu from '@mui/material/Menu';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 
 export function EventFeedTableEventsActions(props){
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -33,7 +33,11 @@ export function EventFeedTableEventsActions(props){
     }, []);
     return (
         <ListItemSecondaryAction>
-            <IconButton aria-controls={"eventmenu" + props.id} aria-haspopup="true" onClick={handleClick}><MoreVertIcon/></IconButton>
+            <IconButton
+                aria-controls={"eventmenu" + props.id}
+                aria-haspopup="true"
+                onClick={handleClick}
+                size="large"><MoreVertIcon/></IconButton>
                 <Menu elevation={5} id={"eventmenu" + props.id} anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} >
                     {
                         props.level === "warning" && props.resolved ? (
@@ -49,6 +53,6 @@ export function EventFeedTableEventsActions(props){
                     <MenuItem onClick={onUpdateDeleted}><DeleteIcon/>Delete</MenuItem>
                 </Menu>
             </ListItemSecondaryAction>
-        )
+    );
 }
 

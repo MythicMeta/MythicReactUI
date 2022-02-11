@@ -1,15 +1,15 @@
 import React, { } from 'react';
-import {Button} from '@material-ui/core';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import EditIcon from '@material-ui/icons/Edit';
+import {Button} from '@mui/material';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import EditIcon from '@mui/icons-material/Edit';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { OperationTableRowUpdateOperatorsDialog } from './OperationTableRowUpdateOperatorsDialog';
 import { meState } from '../../../cache';
 import {useReactiveVar, useMutation, gql} from '@apollo/client';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import AssessmentIcon from '@material-ui/icons/Assessment';
-import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import {OperationTableRowNotificationsDialog} from './OperationTableRowNotificationsDialog';
 import { snackActions } from '../../utilities/Snackbar';
 
@@ -47,7 +47,7 @@ export function OperationTableRow(props){
     return (
         <React.Fragment>
             <TableRow key={props.id} hover>
-                <TableCell><Button size="small" onClick={()=>{setOpenUpdateNotifications(true);}} startIcon={<EditIcon/>} color={props.complete ? "secondary" : "primary"} variant="contained">Edit</Button>
+                <TableCell><Button size="small" onClick={()=>{setOpenUpdateNotifications(true);}} startIcon={<EditIcon/>} color={props.complete ? "success" : "primary"} variant="contained">Edit</Button>
                 {openUpdateNotifications && 
                     <MythicDialog open={openUpdateNotifications} fullWidth maxWidth={"lg"}
                         onClose={()=>{setOpenUpdateNotifications(false);}} 
@@ -55,7 +55,7 @@ export function OperationTableRow(props){
                      />
                 }
                 </TableCell>
-                <TableCell><Button size="small" onClick={()=>{setOpenUpdateOperators(true);}} startIcon={<AssignmentIndIcon/>} color={props.complete ? "secondary" : "primary"} variant="contained">Edit</Button>
+                <TableCell><Button size="small" onClick={()=>{setOpenUpdateOperators(true);}} startIcon={<AssignmentIndIcon/>} color={props.complete ? "success" : "primary"} variant="contained">Edit</Button>
                 {openUpdateOperators && 
                     <MythicDialog open={openUpdateOperators} maxHeight={"calc(80vh)"} fullWidth maxWidth={"md"}
                         onClose={()=>{setOpenUpdateOperators(false);}} 
@@ -70,7 +70,7 @@ export function OperationTableRow(props){
                 </TableCell>
                 <TableCell>{props.id === me.user.current_operation_id ? ("Current Operation") : (
                   <React.Fragment>
-                    <Button size="small"startIcon={<PlayArrowIcon/>} onClick={makeCurrentOperation} color="primary" variant="contained">Make Current</Button>
+                    <Button size="small"startIcon={<PlayArrowIcon/>} onClick={makeCurrentOperation} color="info" variant="contained">Make Current</Button>
                    
                   </React.Fragment>
                 )}</TableCell>

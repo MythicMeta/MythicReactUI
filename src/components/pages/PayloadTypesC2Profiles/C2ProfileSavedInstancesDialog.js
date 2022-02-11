@@ -1,18 +1,18 @@
 import React, {useState} from 'react';
-import {Button, Typography} from '@material-ui/core';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import {Button, Typography} from '@mui/material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {useQuery, gql, useLazyQuery, useMutation} from '@apollo/client';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import {CreatePayloadC2ProfileParametersTable} from '../CreatePayload/CreatePayloadC2ProfileParametersTable';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import Grid from '@material-ui/core/Grid';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import {useTheme} from '@material-ui/core/styles';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import Grid from '@mui/material/Grid';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import {useTheme} from '@mui/material/styles';
 import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
@@ -267,7 +267,7 @@ export function C2ProfileSavedInstancesDialog(props) {
           <Button variant="contained" onClick={props.onClose} color="primary">
             Close
           </Button>
-          <Button variant="contained" onClick={onConfigSubmit} color="secondary">
+          <Button variant="contained" onClick={onConfigSubmit} color="success">
             {selectedInstance.length > 0 ? ("Update") : ("Create")}
           </Button>
         </DialogActions>

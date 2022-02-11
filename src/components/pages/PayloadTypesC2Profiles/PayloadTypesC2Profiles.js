@@ -2,7 +2,7 @@ import React from 'react';
 import {PayloadTypeContainerDisplay} from './PayloadTypeContainerDisplay';
 import {C2ProfileContainerDisplay} from './C2ProfileContainerDisplay';
 import {TranslationContainerDisplay} from './TranslationContainerDisplay';
-import Grid from '@material-ui/core/Grid';
+import Grid from '@mui/material/Grid';
 
 export function PayloadTypesC2Profiles(props){
 

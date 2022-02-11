@@ -18,9 +18,9 @@ import { useReactiveVar } from '@apollo/client';
 import { useDarkMode } from './utilities/useDarkMode';
 import { SnackbarProvider } from 'notistack';
 import { SingleTaskView } from './pages/SingleTaskView/SingleTaskView';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { GlobalStyles } from '../themes/GlobalStyles';
-import CssBaseline from '@material-ui/core/CssBaseline';
+import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarUtilsConfigurator } from './utilities/Snackbar';
 import { meState } from '../cache';
 import { Reporting } from './pages/Reporting/Reporting';
@@ -33,35 +33,16 @@ export function App(props) {
     const [themeMode, themeToggler] = useDarkMode();
     const theme = React.useMemo(
         () =>
-            createMuiTheme({
+            createTheme({
                 palette: {
                     primary: {
                         main: '#7f93c0',
                     },
-                    secondary: {
-                        main: '#a791c3',
-                    },
-                    error: {
-                        main: '#f44336',
-                    },
-                    warning: {
-                        main: '#ff9800',
-                    },
-                    info: {
-                        main: '#2196f3',
-                    },
-                    disabled: {
-                        main: 'rgba(0, 0, 0, 0.38)',
-                    },
-                    type: themeMode,
+                    mode: themeMode,
                     background: {
-                        default: themeMode === 'dark' ? 'rgb(37, 41, 51)' : '#ffffff',
-                        paper: themeMode === 'dark' ? 'rgb(50, 60, 69)' : '#ffffff',
                         contrast: themeMode === 'dark' ? '#ffffff' : 'rgb(37, 41, 51)',
                     },
                     text: {
-                        primary: themeMode === 'dark' ? '#fff' : '#000',
-                        secondary: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.54)',
                         contrast: themeMode === 'dark' ? '#000' : '#fff',
                     },
                     textBackgroundColor: themeMode === 'dark' ? '#74828b' : '#d9dbdc',
@@ -84,47 +65,49 @@ export function App(props) {
         [themeMode]
     );
     return (
-        <ThemeProvider theme={theme}>
-            <GlobalStyles theme={theme} />
-            <CssBaseline />
-            <SnackbarProvider
-                maxSnack={5}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'center',
-                }}>
-                <SnackbarUtilsConfigurator />
-                <div style={{ maxHeight: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ minHeight: '54px', flexGrow: 0 }}>
-                        {me.loggedIn && me.user !== undefined && me.user !== null ? (
-                            <TopAppBar theme={themeMode} toggleTheme={themeToggler} />
-                        ) : null}
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={theme}>
+                <GlobalStyles theme={theme} />
+                <CssBaseline />
+                <SnackbarProvider
+                    maxSnack={5}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                    }}>
+                    <SnackbarUtilsConfigurator />
+                    <div style={{ maxHeight: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ minHeight: '56px', flexGrow: 0 }}>
+                            {me.loggedIn && me.user !== undefined && me.user !== null ? (
+                                <TopAppBar theme={themeMode} toggleTheme={themeToggler} />
+                            ) : null}
+                        </div>
+                        <div style={{ margin: '0px 16px 0px 16px', flexGrow: 1, display: 'flex', flexDirection: 'column', height: "calc(100% - 56px)", maxHeight: "calc(100% - 56px)", }}>
+                            <Switch>
+                                <LoggedInRoute exact path='/new' component={Home} />
+                                <Route exact path='/new/login' component={LoginForm} />
+                                <LoggedInRoute exact path='/new/settings' component={Settings} />
+                                <LoggedInRoute exact path='/new/payloadtypes' component={PayloadTypesC2Profiles} />
+                                <LoggedInRoute exact path='/new/eventfeed' component={EventFeed} />
+                                <LoggedInRoute exact path='/new/createpayload' component={CreatePayload} />
+                                <LoggedInRoute exact path='/new/createwrapper' component={CreatePayloadWrapper} />
+                                <LoggedInRoute exact path='/new/payloads' component={Payloads} />
+                                <LoggedInRoute exact path='/new/c2profiles' component={PayloadTypesC2Profiles} />
+                                <LoggedInRoute exact path='/new/services/' component={PayloadTypesC2Profiles} />
+                                <LoggedInRoute exact path='/new/callbacks' component={Callbacks} />
+                                <LoggedInRoute path='/new/search' component={Search} />
+                                <LoggedInRoute exact path='/new/browserscripts' component={BrowserScripts} />
+                                <LoggedInRoute exact path='/new/task/:taskId' component={SingleTaskView} />
+                                <LoggedInRoute exact path='/new/tasks/by_range' component={SingleTaskView} />
+                                <LoggedInRoute exact path='/new/operations' component={Operations} />
+                                <LoggedInRoute exact path='/new/callbacks/:callbackId' component={ExpandedCallback} />
+                                <LoggedInRoute exact path='/new/reporting' component={Reporting} />
+                                <LoggedInRoute exact path='/new/mitre' component={MitreAttack} />
+                            </Switch>
+                        </div>
                     </div>
-                    <div style={{ margin: '0px 16px 0px 16px', flexGrow: 1, display: 'flex', flexDirection: 'column', height: "calc(100% - 54px)", maxHeight: "calc(100% - 54px)", }}>
-                        <Switch>
-                            <LoggedInRoute exact path='/new' component={Home} />
-                            <Route exact path='/new/login' component={LoginForm} />
-                            <LoggedInRoute exact path='/new/settings' component={Settings} />
-                            <LoggedInRoute exact path='/new/payloadtypes' component={PayloadTypesC2Profiles} />
-                            <LoggedInRoute exact path='/new/eventfeed' component={EventFeed} />
-                            <LoggedInRoute exact path='/new/createpayload' component={CreatePayload} />
-                            <LoggedInRoute exact path='/new/createwrapper' component={CreatePayloadWrapper} />
-                            <LoggedInRoute exact path='/new/payloads' component={Payloads} />
-                            <LoggedInRoute exact path='/new/c2profiles' component={PayloadTypesC2Profiles} />
-                            <LoggedInRoute exact path='/new/services/' component={PayloadTypesC2Profiles} />
-                            <LoggedInRoute exact path='/new/callbacks' component={Callbacks} />
-                            <LoggedInRoute path='/new/search' component={Search} />
-                            <LoggedInRoute exact path='/new/browserscripts' component={BrowserScripts} />
-                            <LoggedInRoute exact path='/new/task/:taskId' component={SingleTaskView} />
-                            <LoggedInRoute exact path='/new/tasks/by_range' component={SingleTaskView} />
-                            <LoggedInRoute exact path='/new/operations' component={Operations} />
-                            <LoggedInRoute exact path='/new/callbacks/:callbackId' component={ExpandedCallback} />
-                            <LoggedInRoute exact path='/new/reporting' component={Reporting} />
-                            <LoggedInRoute exact path='/new/mitre' component={MitreAttack} />
-                        </Switch>
-                    </div>
-                </div>
-            </SnackbarProvider>
-        </ThemeProvider>
+                </SnackbarProvider>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 }

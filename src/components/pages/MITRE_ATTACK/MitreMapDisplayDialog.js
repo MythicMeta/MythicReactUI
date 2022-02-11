@@ -1,18 +1,18 @@
 import React from 'react';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableHead from '@material-ui/core/TableHead';
-import Typography from '@material-ui/core/Typography';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableHead from '@mui/material/TableHead';
+import Typography from '@mui/material/Typography';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import { Button, Link} from '@material-ui/core/';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { Button, Link} from '@mui/material/';
 
 export function MitreMapDisplayDialog({entry, showCountGrouping, onClose}){
     const [commands, setCommands] = React.useState([]);
@@ -69,7 +69,7 @@ export function MitreMapDisplayDialog({entry, showCountGrouping, onClose}){
            
           </DialogContent>
           <DialogActions>
-            <Button onClick={onClose} variant="contained" color="secondary">
+            <Button onClick={onClose} variant="contained" color="primary">
               Close
             </Button>
         </DialogActions>
@@ -138,8 +138,12 @@ function DetailedTaskMappingTables({tasks}){
               <TableBody>
                 {c[1].map( entry => (
                   <TableRow hover>
-                      <TableCell><a href={"/new/callbacks/" + entry.callback_id} target="_blank">{entry.callback_id}</a></TableCell>
-                      <TableCell><a href={"/new/task/" + entry.id} target="_blank">{entry.id}</a></TableCell>
+                      <TableCell>
+                        <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/callbacks/" + entry.callback_id} >{entry.callback_id}</Link>
+                      </TableCell>
+                      <TableCell>
+                      <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + entry.id} >{entry.id}</Link>
+                        </TableCell>
                       <TableCell>{entry.command}</TableCell>
                       <TableCell>{entry.comment}</TableCell>
                   </TableRow>

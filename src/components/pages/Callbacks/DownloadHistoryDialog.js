@@ -1,18 +1,18 @@
 import React, { useEffect } from 'react';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import GetAppIcon from '@material-ui/icons/GetApp';
-import IconButton from '@material-ui/core/IconButton';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import GetAppIcon from '@mui/icons-material/GetApp';
+import IconButton from '@mui/material/IconButton';
 
 export function DownloadHistoryDialog(props){
    const [history, setHistory] = React.useState([]);
@@ -40,7 +40,10 @@ export function DownloadHistoryDialog(props){
                     {history.map( (hist) => (
                       <TableRow key={'hist' + hist.id}>
                         <TableCell >{hist.complete ? (
-                          <IconButton href={"/api/v1.4/files/download/" + hist.agent_file_id} style={{color: theme.palette.success.main}}><GetAppIcon /></IconButton>
+                          <IconButton
+                            href={"/api/v1.4/files/download/" + hist.agent_file_id}
+                            style={{color: theme.palette.success.main}}
+                            size="large"><GetAppIcon /></IconButton>
                         ) : (hist.chunks_received + "/" + hist.total_chunks)}</TableCell>
                         <TableCell>{hist.timestamp}</TableCell>
                         <TableCell>{hist.task.id}</TableCell>

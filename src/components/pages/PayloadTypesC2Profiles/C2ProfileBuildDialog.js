@@ -1,16 +1,16 @@
 import React, {useState} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import {useQuery, gql} from '@apollo/client';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableHead from '@material-ui/core/TableHead';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableHead from '@mui/material/TableHead';
+import LinearProgress from '@mui/material/LinearProgress';
 
 const GET_C2_Details = gql`
 query GetPC2Details($payload_name: String!) {
@@ -68,14 +68,14 @@ export function C2ProfileBuildDialog(props) {
             <Table size="small" aria-label="details" style={{"tableLayout": "fixed", "overflowWrap": "break-word"}}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Parameter</TableCell>
+                    <TableCell style={{width: "20%"}}>Parameter</TableCell>
                     <TableCell>Value</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {
                     buildParams.map( (param) => (
-                        <TableRow key={"buildprop" + param.id}>
+                        <TableRow key={"buildprop" + param.id} hover>
                             <TableCell>{param.description}</TableCell>
                             <TableCell>
                               <b>Scripting/Building Name: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.name}</pre><br/>

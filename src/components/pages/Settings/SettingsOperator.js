@@ -1,19 +1,19 @@
 import React from 'react';
-import {Button} from '@material-ui/core';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import Switch from '@material-ui/core/Switch';
-import Box from '@material-ui/core/Box';
-import Collapse from '@material-ui/core/Collapse';
-import IconButton from '@material-ui/core/IconButton';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableHead from '@material-ui/core/TableHead';
-import Typography from '@material-ui/core/Typography';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddCircleOutlineOutlinedIcon from '@material-ui/icons/AddCircleOutlineOutlined';
+import {Button} from '@mui/material';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import Switch from '@mui/material/Switch';
+import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableHead from '@mui/material/TableHead';
+import Typography from '@mui/material/Typography';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import { APITokenRow } from './SettingsOperatorAPIToken';
 import { SettingsOperatorDialog } from './SettingsOperatorDialog';
 import { SettingsOperatorDeleteDialog } from './SettingsOperatorDeleteDialog';
@@ -55,14 +55,14 @@ export function SettingsOperator(props){
     return (
         <React.Fragment>
             <TableRow key={props.id}>
-                <TableCell><Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} startIcon={<DeleteIcon/>} color="secondary" variant="contained">Delete</Button>
+                <TableCell><Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} startIcon={<DeleteIcon/>} color="error" variant="contained">Delete</Button>
                     <MythicDialog open={openDelete} 
                         onClose={()=>{setOpenDeleteDialog(false);}} 
                         innerDialog={<SettingsOperatorDeleteDialog onClose={()=>{setOpenDeleteDialog(false);}}  onAccept={onAcceptDelete} {...props} />}
                      />
                 </TableCell>
                 <TableCell>{props.username}</TableCell>
-                <TableCell><Button size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="primary" variant="contained">Update</Button>
+                <TableCell><Button size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="info" variant="contained">Update</Button>
                     <MythicDialog open={openUpdate} 
                         onClose={()=>{setOpenUpdateDialog(false);}} 
                         innerDialog={<SettingsOperatorDialog onAccept={onAccept} handleClose={()=>{setOpenUpdateDialog(false);}} title="Update Operator"  {...props}/>}
@@ -112,7 +112,7 @@ export function SettingsOperator(props){
                       <Typography variant="h6" gutterBottom component="div" style={{display: "inline-block"}}>
                         API Tokens
                       </Typography>
-                      <Button size="small" onClick={props.onCreateAPIToken} style={{float: "right"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="primary" variant="contained">New</Button>
+                      <Button size="small" onClick={props.onCreateAPIToken} style={{float: "right"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="success" variant="contained">New</Button>
                       <Table size="small" aria-label="tokens" style={{"tableLayout": "fixed", "overflowWrap": "break-word"}}>
                         <TableHead>
                           <TableRow>

@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardMedia from '@material-ui/core/CardMedia';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import Badge from '@material-ui/core/Badge';
+import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
+import Card from '@mui/material/Card';
+import CardMedia from '@mui/material/CardMedia';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Badge from '@mui/material/Badge';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {PayloadTypeBuildDialog} from './PayloadTypeBuildDialog';
 
@@ -34,43 +35,41 @@ const useStyles = makeStyles((theme) => ({
     color: 'red',
   },
 }));
-const StyledAvatar = withStyles((theme) => ({
-    badge: {
-        boxShadow: "0 0 0 2px white",
-        '&::after': {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          borderRadius: '50%',
-          animation: '$ripple 1.2s infinite ease-in-out',
-          border: '1px solid currentColor',
-          content:'""'
-        },
+const StyledAvatar = styled(Badge)(({theme}) => ({
+  '& .MuiBadge-badge': {
+      boxShadow: "0 0 0 2px white",
+      width: 15,
+      height: 15,
+      zIndex: 0,
+      '&::after': {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        animation: 'ripple 1.2s infinite ease-in-out',
+        border: '1px solid currentColor',
+        content:'""'
       },
-  '@keyframes ripple': {
-    '0%': {
-      transform: 'scale(.8)',
-      opacity: 1,
     },
-    '100%': {
-      transform: 'scale(2.4)',
-      opacity: 0,
-    },
+'@keyframes ripple': {
+  '0%': {
+    transform: 'scale(.8)',
+    opacity: 1,
   },
-}))(Badge);
+  '100%': {
+    transform: 'scale(2.4)',
+    opacity: 0,
+  },
+},
+}));
 
 export function PayloadTypeCard(props) {
   const classes = useStyles();
   const [wrappedPayloads, setWrappedPayloads] = React.useState("");
   const [openBuildingDialog, setOpenBuildingDialog] = React.useState(false);
   const [supportedOS, setSupportedOS] = React.useState("");
-  let date = new Date();
-  let now = date.getTime() + date.getTimezoneOffset() * 60000;
-  let heartbeat = new Date(props.last_heartbeat);
-  let difference = (now - heartbeat.getTime()) / 1000;
-  const running = difference < 30 ? 'running' : 'notrunning';
   useEffect( () => {
     if( props.wrap_these_payload_types.length > 0){
       const wrapped = props.wrap_these_payload_types.map( (cur) => {
@@ -85,7 +84,7 @@ export function PayloadTypeCard(props) {
   }, [props.wrap_these_payload_types, props.supported_os]);
   return (
     <Card className={classes.root} elevation={5}>
-        <StyledAvatar overlap="circle" classes={{badge: classes[running]}} invisible={false} anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
+        <StyledAvatar overlap="circular" color={props.container_running ? "success" : "error"} variant="dot" anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
             <CardMedia
             className={classes.media}
             component="img"
@@ -118,10 +117,10 @@ export function PayloadTypeCard(props) {
               Docs
             </Button>
             <Button size="small" onClick={()=>{setOpenBuildingDialog(true);}} color="primary" variant="contained">Building Info</Button>
-                <MythicDialog fullWidth={true} maxWidth="lg" open={openBuildingDialog} 
-                    onClose={()=>{setOpenBuildingDialog(false);}} 
-                    innerDialog={<PayloadTypeBuildDialog {...props} payload_name={props.ptype} />}
-                 />
+              <MythicDialog fullWidth={true} maxWidth="lg" open={openBuildingDialog} 
+                  onClose={()=>{setOpenBuildingDialog(false);}} 
+                  innerDialog={<PayloadTypeBuildDialog {...props} onClose={()=>{setOpenBuildingDialog(false);}} payload_name={props.ptype} />}
+                />
           </div>
     </Card>
   );

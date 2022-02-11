@@ -1,12 +1,12 @@
-import { fade } from "@material-ui/core";
+import { alpha } from "@mui/material";
 import { useCallback, useMemo } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList as List } from "react-window";
-import { useTheme } from '@material-ui/core/styles';
-import { Typography } from '@material-ui/core';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
-import DescriptionIcon from '@material-ui/icons/Description';
+import { useTheme } from '@mui/material/styles';
+import { Typography } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 const VirtualTreeRow = ({
   onSelectNode,
@@ -36,7 +36,7 @@ const VirtualTreeRow = ({
             <div
                 key={'folder' + item.data.id + 'lines' + i}
                 style={{
-                    borderLeft: `2px dashed ${fade(theme.palette.text.primary, 0.4)}`,
+                    borderLeft: `2px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
                     marginLeft: 15,
                     paddingRight: 15,
                     display: 'inline-block',
@@ -66,7 +66,7 @@ const VirtualTreeRow = ({
         </Typography>
     </div>
     </div>
-);
+  );
 };
 
 const ProcessBrowserVirtualTree = ({

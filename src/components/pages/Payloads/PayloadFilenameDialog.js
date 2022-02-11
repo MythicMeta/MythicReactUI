@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {useQuery, gql, useMutation} from '@apollo/client';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import { snackActions } from '../../utilities/Snackbar';
 
 const updateDescriptionMutation = gql`
@@ -69,7 +69,7 @@ export function PayloadFilenameDialog(props) {
           <Button variant="contained" onClick={props.onClose} color="primary">
             Close
           </Button>
-          <Button variant="contained" onClick={onCommitSubmit} color="secondary">
+          <Button variant="contained" onClick={onCommitSubmit} color="success">
             Submit
           </Button>
         </DialogActions>

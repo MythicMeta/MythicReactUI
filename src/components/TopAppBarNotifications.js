@@ -1,15 +1,15 @@
 import React from 'react';
 import {useSubscription, gql } from '@apollo/client';
-import Badge from '@material-ui/core/Badge';
-import MailIcon from '@material-ui/icons/Mail';
+import Badge from '@mui/material/Badge';
+import MailIcon from '@mui/icons-material/Mail';
 import { Link } from 'react-router-dom';
-import { IconButton, Tooltip } from '@material-ui/core';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import ErrorIcon from '@material-ui/icons/Error';
+import { IconButton, Tooltip } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import ErrorIcon from '@mui/icons-material/Error';
 import {snackActions} from './utilities/Snackbar';
 import { meState } from '../cache';
 import { useReactiveVar } from '@apollo/client';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 
 const SUB_Event_Logs = gql`
 subscription MySubscription($operation_id: Int!) {
@@ -43,8 +43,13 @@ export function TopAppBarNotifications(props) {
     }
   });
 
-    return (    
-        <IconButton color="inherit" component={Link} to='/new/EventFeed' style={{float: "right"}}>
+    return (
+        <IconButton
+            color="inherit"
+            component={Link}
+            to='/new/EventFeed'
+            style={{float: "right"}}
+            size="large">
             <Tooltip title="Event Feed" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
             { 
                 loading ? (

@@ -1,17 +1,17 @@
 import React, { useEffect } from 'react';
-import {Button} from '@material-ui/core';
-import Switch from '@material-ui/core/Switch';
-import Select from '@material-ui/core/Select';
+import {Button} from '@mui/material';
+import Switch from '@mui/material/Switch';
+import Select from '@mui/material/Select';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import MenuItem from '@material-ui/core/MenuItem';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
+import MenuItem from '@mui/material/MenuItem';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
 import {snackActions} from '../../utilities/Snackbar';
 import {useMutation, gql, useSubscription} from '@apollo/client';
 import { meState } from '../../../cache';
@@ -120,7 +120,6 @@ export function ReportingTable(props){
                               autoFocus
                               style={{width: "100%", marginBottom: "10px"}}
                               value={selectedOutputFormat}
-                              label="Select an Output Format"
                               onChange={setOutputFormat}
                             >
                             {

@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
-import {Button} from '@material-ui/core';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
+import {Button} from '@mui/material';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import AceEditor from 'react-ace';
 import "ace-builds/src-noconflict/mode-javascript";

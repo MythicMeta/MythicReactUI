@@ -3,17 +3,17 @@ import {TaskDisplay} from '../Callbacks/TaskDisplay';
 import {gql, useLazyQuery } from '@apollo/client';
 import  {useParams} from "react-router-dom";
 import {TaskMetadataTable} from './MetadataTable';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import {Button, Grid} from '@material-ui/core';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import {Button, Grid} from '@mui/material';
 import {IncludeMoreTasksDialog} from './IncludeMoreTasksDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { useReactiveVar } from '@apollo/client';
 import { meState } from '../../../cache';
 import {snackActions} from '../../utilities/Snackbar';
 import {copyStringToClipboard} from '../../utilities/Clipboard';
-import Switch from '@material-ui/core/Switch';
-import {useTheme} from '@material-ui/core/styles';
+import Switch from '@mui/material/Switch';
+import {useTheme} from '@mui/material/styles';
 const taskInfoFragment = gql`
 fragment TaskData on task {
     comment

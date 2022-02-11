@@ -1,19 +1,19 @@
 import React, {useEffect, useState} from 'react';
 import {gql, useSubscription} from '@apollo/client';
 import { useSnackbar, SnackbarContent } from 'notistack';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
-import Collapse from '@material-ui/core/Collapse';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import {useTheme} from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import Collapse from '@mui/material/Collapse';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import {useTheme} from '@mui/material/styles';
 import {snackActions} from '../../utilities/Snackbar';
 
 //fromNow must be in ISO format for hasura/postgres stuff
@@ -100,10 +100,10 @@ const SnackMessage = React.forwardRef((props, ref) => {
                             aria-label="Show more"
                             className={clsx(classes.expand, { [classes.expandOpen]: expanded })}
                             onClick={handleExpandClick}
-                        >
+                            size="large">
                             <ExpandMoreIcon />
                         </IconButton>
-                        <IconButton className={classes.expand} onClick={handleDismiss}>
+                        <IconButton className={classes.expand} onClick={handleDismiss} size="large">
                             <CloseIcon />
                         </IconButton>
                     </div>
@@ -149,10 +149,10 @@ const SnackMessageError = React.forwardRef((props, ref) => {
                             aria-label="Show more"
                             className={clsx(classes.expand, { [classes.expandOpen]: expanded })}
                             onClick={handleExpandClick}
-                        >
+                            size="large">
                             <ExpandMoreIcon />
                         </IconButton>
-                        <IconButton className={classes.expand} onClick={handleDismiss}>
+                        <IconButton className={classes.expand} onClick={handleDismiss} size="large">
                             <CloseIcon />
                         </IconButton>
                     </div>

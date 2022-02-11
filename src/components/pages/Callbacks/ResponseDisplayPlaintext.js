@@ -3,7 +3,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/theme-xcode';
-import {useTheme} from '@material-ui/core/styles';
+import {useTheme} from '@mui/material/styles';
 
 export const ResponseDisplayPlaintext = (props) =>{
   const theme = useTheme();
@@ -20,7 +20,7 @@ export const ResponseDisplayPlaintext = (props) =>{
   return (
     <AceEditor 
         mode="json"
-        theme={theme.palette.type === "dark" ? "monokai" : "xcode"}
+        theme={theme.palette.mode === "dark" ? "monokai" : "xcode"}
         fontSize={14}
         showGutter={true}
         height={"100px"}

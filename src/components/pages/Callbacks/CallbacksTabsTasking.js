@@ -6,9 +6,9 @@ import {snackActions} from '../../utilities/Snackbar';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {TaskParametersDialog} from './TaskParametersDialog';
 import {CallbacksTabsTaskingInput} from './CallbacksTabsTaskingInput';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import { IconButton} from '@material-ui/core';
-import AutorenewIcon from '@material-ui/icons/Autorenew';
+import LinearProgress from '@mui/material/LinearProgress';
+import { IconButton} from '@mui/material';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 import {MythicModifyStringDialog} from '../../MythicComponents/MythicDialog';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
@@ -376,7 +376,12 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
         <MythicTabPanel index={index} value={value} >
             {!fetchedAllTasks && 
                 <MythicStyledTooltip title="Fetch Older Tasks"> 
-                    <IconButton onClick={loadMoreTasks} variant="contained" color="primary" style={{marginLeft: "50%"}} ><AutorenewIcon /></IconButton>
+                    <IconButton
+                        onClick={loadMoreTasks}
+                        variant="contained"
+                        color="primary"
+                        style={{marginLeft: "50%"}}
+                        size="large"><AutorenewIcon /></IconButton>
                 </MythicStyledTooltip>}
             {!fetched && <LinearProgress color="primary" thickness={2} style={{paddingTop: "5px"}}/>}
             {loadingMore && <LinearProgress color="primary" thickness={2} style={{paddingTop: "5px"}}/>}
@@ -402,5 +407,5 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
         }
             
     </MythicTabPanel>
-    )
+    );
 }

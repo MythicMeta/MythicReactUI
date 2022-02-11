@@ -1,17 +1,18 @@
-import { makeStyles, fade } from "@material-ui/core";
+import { alpha } from "@mui/material";
+import makeStyles from '@mui/styles/makeStyles';
 import { useCallback, useMemo } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList as List } from "react-window";
 import { snackActions } from '../utilities/Snackbar';
-import FolderIcon from '@material-ui/icons/Folder';
-import FolderOpenIcon from '@material-ui/icons/FolderOpen';
-import ComputerIcon from '@material-ui/icons/Computer';
-import DescriptionIcon from '@material-ui/icons/Description';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ErrorIcon from '@material-ui/icons/Error';
-import { useTheme } from '@material-ui/core/styles';
-import Badge from '@material-ui/core/Badge';
-import { Typography } from '@material-ui/core';
+import FolderIcon from '@mui/icons-material/Folder';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import ComputerIcon from '@mui/icons-material/Computer';
+import DescriptionIcon from '@mui/icons-material/Description';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+import { useTheme } from '@mui/material/styles';
+import Badge from '@mui/material/Badge';
+import { Typography } from '@mui/material';
 import { MythicStyledTooltip } from "./MythicStyledTooltip";
 
 const useStyles = makeStyles((theme) => ({
@@ -131,7 +132,7 @@ const VirtualTreeRow = ({
             <div
                 key={'folder' + item.data.id + 'lines' + i}
                 style={{
-                    borderLeft: `2px dashed ${fade(theme.palette.text.primary, 0.4)}`,
+                    borderLeft: `2px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
                     marginLeft: 15,
                     paddingRight: 15,
                     display: 'inline-block',
@@ -191,7 +192,7 @@ const VirtualTreeRow = ({
       </div>
     </div>
     </div>
-);
+  );
 };
 
 const FileBrowserVirtualTree = ({

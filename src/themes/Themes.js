@@ -1,4 +1,4 @@
-import { createMuiTheme } from '@material-ui/core/styles';
+import { createTheme, adaptV4Theme } from '@mui/material/styles';
 export const lightTheme = {
     body: '#FFF',
     text: '#363537',
@@ -49,7 +49,7 @@ export const darkTheme = {
     tableLineColor: "grey",
     eventMessageBackgroundColor: "#303030",
 }
-export const muiTheme = createMuiTheme({
+export const muiTheme = createTheme(adaptV4Theme({
   palette: {
     primary: {
             main: "#1976d2"
@@ -71,6 +71,6 @@ export const muiTheme = createMuiTheme({
         },
     },
     
-});
+}));
 
 

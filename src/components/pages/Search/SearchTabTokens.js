@@ -1,22 +1,22 @@
 import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicComponents/MythicTabPanel';
 import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import ConfirmationNumberIcon from '@material-ui/icons/ConfirmationNumber';
-import FormLabel from '@material-ui/core/FormLabel';
-import Grid from '@material-ui/core/Grid';
-import SearchIcon from '@material-ui/icons/Search';
-import Tooltip from '@material-ui/core/Tooltip';
-import {useTheme} from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import FormLabel from '@mui/material/FormLabel';
+import Grid from '@mui/material/Grid';
+import SearchIcon from '@mui/icons-material/Search';
+import Tooltip from '@mui/material/Tooltip';
+import {useTheme} from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import Pagination from '@material-ui/lab/Pagination';
-import { Typography } from '@material-ui/core';
+import Pagination from '@mui/material/Pagination';
+import { Typography } from '@mui/material';
 import {TokenTable} from './TokenTable';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const tokenFragment = gql`
 fragment tokenData on token{
@@ -170,16 +170,15 @@ const SearchTabTokensSearchPanel = (props) => {
                         endAdornment: 
                         <React.Fragment>
                             <Tooltip title="Search">
-                                <IconButton onClick={submitSearch}><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton onClick={submitSearch} size="large"><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
                             </Tooltip>
                         </React.Fragment>,
                         style: {padding: 0}
                     }}/>
             </Grid>
             <Grid item xs={2}>
-                <FormLabel component="legend">Search Tokens by</FormLabel>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    style={{marginBottom: "10px", width: "15rem"}}
                     value={searchField}
                     onChange={handleSearchFieldChange}
                 >
@@ -191,7 +190,7 @@ const SearchTabTokensSearchPanel = (props) => {
                 </Select>
             </Grid>
         </Grid>
-    )
+    );
 }
 export const SearchTabTokensPanel = (props) =>{
     const [tokenData, setTokenData] = React.useState([]);
@@ -307,42 +306,21 @@ export const SearchTabTokensPanel = (props) =>{
         }})
     }
     const onChangePage = (event, value) => {
-        if(value === 1){
-            switch(searchField){
-                case "User/Group":
-                    onUserGroupSearch({search, offset: 0});
-                    break;
-                case "SID":
-                    onSIDSearch({search, offset: 0});
-                    break;
-                case "LogonType":
-                    onLogonTypeSearch({search, offset: 0});
-                    break;
-                case "Host":
-                    onHostSearch({search, offset: 0});
-                    break;
-                default:
-                    break;
-            }
-            
-        }else{
-            switch(searchField){
-                case "User/Group":
-                    onUserGroupSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                case "SID":
-                    onSIDSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                case "LogonType":
-                    onLogonTypeSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                case "Host":
-                    onHostSearch({search, offset: (value - 1) * fetchLimit});
-                    break;
-                default:
-                    break;
-            }
-            
+        switch(searchField){
+            case "User/Group":
+                onUserGroupSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            case "SID":
+                onSIDSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            case "LogonType":
+                onLogonTypeSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            case "Host":
+                onHostSearch({search, offset: (value - 1) * fetchLimit});
+                break;
+            default:
+                break;
         }
     }
     return (

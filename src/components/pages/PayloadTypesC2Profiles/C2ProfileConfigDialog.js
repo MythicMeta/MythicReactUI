@@ -1,15 +1,15 @@
 import React, {useState} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import {useQuery, gql} from '@apollo/client';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/theme-xcode';
-import {useTheme} from '@material-ui/core/styles';
+import {useTheme} from '@mui/material/styles';
 
 const getProfileConfigQuery = gql`
 query getProfileConfigOutput($id: Int!, $filename: String!) {
@@ -59,7 +59,7 @@ export function C2ProfileConfigDialog(props) {
         <DialogContent dividers={true}>
             <AceEditor 
               mode="json"
-              theme={theme.palette.type === "dark" ? "monokai" : "xcode"}
+              theme={theme.palette.mode === "dark" ? "monokai" : "xcode"}
               onChange={onChange}
               fontSize={14}
               showGutter={true}

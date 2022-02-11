@@ -1,18 +1,18 @@
 import React from 'react';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableHead from '@material-ui/core/TableHead';
-import Typography from '@material-ui/core/Typography';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableHead from '@mui/material/TableHead';
+import Typography from '@mui/material/Typography';
 import {useQuery, gql} from '@apollo/client';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Paper from '@material-ui/core/Paper';
-import {useTheme} from '@material-ui/core/styles';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
+import LinearProgress from '@mui/material/LinearProgress';
+import Paper from '@mui/material/Paper';
+import {useTheme} from '@mui/material/styles';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
 import {ExpandedCallbackSideDetailsTable} from '../ExpandedCallback/ExpandedCallbackSideDetails';
 
 const GET_Payload_Details = gql`
@@ -215,7 +215,7 @@ export function DetailedCallbackTable(props){
                 <TableBody>
                   {
                     buildParameters.map( (cmd, i) => (
-                        <TableRow key={"buildprop" + i + "for" + data.callback_by_pk.payload.id}>
+                        <TableRow key={"buildprop" + i + "for" + data.callback_by_pk.payload.id} hover>
                             <TableCell>{cmd.description}</TableCell>
                             <TableCell>{cmd.value}</TableCell>
                         </TableRow>
@@ -266,7 +266,7 @@ export function DetailedCallbackTable(props){
                 <TableCell>Command Name</TableCell>
                 <TableCell>Mythic Version</TableCell>
                 <TableCell>Loaded Version</TableCell>
-                <TableCell>Documentation</TableCell>
+                <TableCell style={{width: "5rem"}}>Documentation</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

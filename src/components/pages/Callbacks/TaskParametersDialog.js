@@ -1,27 +1,27 @@
 import React, {useState, useEffect} from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Typography from '@material-ui/core/Typography';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Typography from '@mui/material/Typography';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 import {TaskParametersDialogRow} from './TaskParametersDialogRow';
 import {useQuery, gql, useLazyQuery, useMutation } from '@apollo/client';
-import FormControl from '@material-ui/core/FormControl';
-import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
-import Input from '@material-ui/core/Input';
+import FormControl from '@mui/material/FormControl';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Input from '@mui/material/Input';
 import {UploadTaskFile} from '../../MythicComponents/MythicFileUpload';
-import { Backdrop } from '@material-ui/core';
-import {CircularProgress} from '@material-ui/core';
-import Divider from '@material-ui/core/Divider';
-import {useTheme} from '@material-ui/core/styles';
+import { Backdrop } from '@mui/material';
+import {CircularProgress} from '@mui/material';
+import Divider from '@mui/material/Divider';
+import {useTheme} from '@mui/material/styles';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 //if we need to get all the loaded commands for the callback and filter, use this
@@ -864,8 +864,8 @@ export function TaskParametersDialog(props) {
           <Button onClick={props.onClose} variant="contained" color="primary">
             Close
           </Button>
-          <Button onClick={onSubmit} variant="contained" color="secondary">
-            Submit
+          <Button onClick={onSubmit} variant="contained" color="warning">
+            Task
           </Button>
         </DialogActions>
   </React.Fragment>

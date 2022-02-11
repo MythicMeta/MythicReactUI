@@ -1,24 +1,23 @@
 import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicComponents/MythicTabPanel';
 import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
-import VpnKeyIcon from '@material-ui/icons/VpnKey';
-import FormLabel from '@material-ui/core/FormLabel';
-import Grid from '@material-ui/core/Grid';
-import SearchIcon from '@material-ui/icons/Search';
-import Tooltip from '@material-ui/core/Tooltip';
-import {useTheme} from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import Grid from '@mui/material/Grid';
+import SearchIcon from '@mui/icons-material/Search';
+import Tooltip from '@mui/material/Tooltip';
+import {useTheme} from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery, useMutation} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import Pagination from '@material-ui/lab/Pagination';
-import { Button, Typography } from '@material-ui/core';
+import Pagination from '@mui/material/Pagination';
+import { Button, Typography } from '@mui/material';
 import {CredentialTable} from './CredentialTable';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {CredentialTableNewCredentialDialog} from './CredentialTableNewCredentialDialog';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const credentialFragment = gql`
 fragment credentialData on credential{
@@ -185,16 +184,15 @@ const SearchTabCredentialsSearchPanel = (props) => {
                         endAdornment: 
                         <React.Fragment>
                             <Tooltip title="Search">
-                                <IconButton onClick={submitSearch}><SearchIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton onClick={submitSearch} size="large"><SearchIcon color="info"/></IconButton>
                             </Tooltip>
                         </React.Fragment>,
                         style: {padding: 0}
                     }}/>
             </Grid>
             <Grid item xs={2}>
-                <FormLabel component="legend">Search Credential's</FormLabel>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem", marginTop: "5px"}}
+                    style={{marginBottom: "10px", width: "15rem"}}
                     value={searchField}
                     onChange={handleSearchFieldChange}
                 >
@@ -206,14 +204,17 @@ const SearchTabCredentialsSearchPanel = (props) => {
                 </Select>
             </Grid>
             <Grid item xs={2}>
-                <MythicDialog fullWidth={true} maxWidth="md" open={createCredentialDialogOpen} 
-                    onClose={()=>{setCreateCredentialDialogOpen(false);}} 
-                    innerDialog={<CredentialTableNewCredentialDialog onSubmit={onCreateCredential} onClose={()=>{setCreateCredentialDialogOpen(false);}} />}
-                />
-                <Button size="small" color="primary" onClick={ () => {setCreateCredentialDialogOpen(true);}} variant="contained">New Credential</Button>
+                {createCredentialDialogOpen &&
+                    <MythicDialog fullWidth={true} maxWidth="md" open={createCredentialDialogOpen} 
+                        onClose={()=>{setCreateCredentialDialogOpen(false);}} 
+                        innerDialog={<CredentialTableNewCredentialDialog onSubmit={onCreateCredential} onClose={()=>{setCreateCredentialDialogOpen(false);}} />}
+                    />
+                }
+                
+                <Button size="small" color="success" onClick={ () => {setCreateCredentialDialogOpen(true);}} variant="contained">New Credential</Button>
             </Grid>
         </Grid>
-    )
+    );
 }
 export const SearchTabCredentialsPanel = (props) =>{
     const [credentialaData, setCredentialData] = React.useState([]);

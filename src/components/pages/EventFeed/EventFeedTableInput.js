@@ -1,7 +1,7 @@
 import React from 'react';
-import SendIcon from '@material-ui/icons/Send';
-import IconButton from '@material-ui/core/IconButton';
-import {TextField} from '@material-ui/core';
+import SendIcon from '@mui/icons-material/Send';
+import IconButton from '@mui/material/IconButton';
+import {TextField} from '@mui/material';
 
 export function EventFeedTableInput(props){
     const [message, setMessage] = React.useState("");
@@ -17,11 +17,15 @@ export function EventFeedTableInput(props){
         }
     } 
 
-    return (          
+    return (
         <div style={{padding: "0", margin: "0", position: "absolute", bottom: 0, width: "100%"}}>
             <form onSubmit={onSubmitMessage}>
                 <TextField InputProps={{endAdornment:
-                    <IconButton color="primary" variant="contained" onClick={onSubmitMessage}>
+                    <IconButton
+                        color="primary"
+                        variant="contained"
+                        onClick={onSubmitMessage}
+                        size="large">
                         <SendIcon/>
                     </IconButton>
                     }} 
@@ -33,7 +37,7 @@ export function EventFeedTableInput(props){
                     label="Type Message..." 
                 />
             </form>
-        </div>  
-    )
+        </div>
+    );
 }
 

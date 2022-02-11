@@ -1,38 +1,38 @@
 import React, {useCallback, useEffect} from 'react';
-import {Button} from '@material-ui/core';
+import {Button} from '@mui/material';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { MythicDisplayTextDialog} from '../../MythicComponents/MythicDisplayTextDialog';
 import {MythicModifyStringDialog} from '../../MythicComponents/MythicDialog';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import KeyboardIcon from '@material-ui/icons/Keyboard';
-import LockIcon from '@material-ui/icons/Lock';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import KeyboardIcon from '@mui/icons-material/Keyboard';
+import LockIcon from '@mui/icons-material/Lock';
 import {getTimeDifference, useInterval } from '../../utilities/Time';
-import WifiIcon from '@material-ui/icons/Wifi';
-import InsertLinkTwoToneIcon from '@material-ui/icons/InsertLinkTwoTone';
+import WifiIcon from '@mui/icons-material/Wifi';
+import InsertLinkTwoToneIcon from '@mui/icons-material/InsertLinkTwoTone';
 import {C2PathDialog} from './C2PathDialog';
 import {snackActions} from '../../utilities/Snackbar';
-import Paper from '@material-ui/core/Paper';
-import Grow from '@material-ui/core/Grow';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
+import Paper from '@mui/material/Paper';
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {hideCallbackMutation} from './CallbackMutations';
 import {useMutation } from '@apollo/client';
-import SnoozeIcon from '@material-ui/icons/Snooze';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import {useTheme} from '@material-ui/core/styles';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
-import EditIcon from '@material-ui/icons/Edit';
-import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import SnoozeIcon from '@mui/icons-material/Snooze';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import {useTheme} from '@mui/material/styles';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import EditIcon from '@mui/icons-material/Edit';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faQuestion, faSkullCrossbones, faFolderOpen, faList} from '@fortawesome/free-solid-svg-icons';
 import {faLinux, faApple, faWindows, faChrome} from '@fortawesome/free-brands-svg-icons';
 import {useSubscription, gql } from '@apollo/client';
 import {DetailedCallbackTable} from './DetailedCallbackTable';
-import InfoIcon from '@material-ui/icons/Info';
+import InfoIcon from '@mui/icons-material/Info';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import {TaskFromUIButton} from './TaskFromUIButton';
 import {CallbacksTabsTaskMultipleDialog} from './CallbacksTabsTaskMultipleDialog';
@@ -111,7 +111,7 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
         },
         {
             name: "Exit Callback", icon: <FontAwesomeIcon icon={faSkullCrossbones} style={{cursor: "pointer", marginRight: "10px"}} />, click: (evt) => {
-                taskingData.current = {"parameters": "", "ui_feature": "callback_table:exit", "getConfirmation": true};
+                taskingData.current = {"parameters": "", "ui_feature": "callback_table:exit", "getConfirmation": true, acceptText: "exit"};
                 setOpenTaskingButton(true);
             }
         },
@@ -147,20 +147,23 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
     ];
     return (
         <div>
-            <ButtonGroup variant="contained" 
-                color={rowData.integrity_level > 2 ? "secondary" : "primary"} 
+            <ButtonGroup  
+                color={rowData.integrity_level > 2 ? "error" : "primary"} 
                 ref={dropdownAnchorRef} 
                 aria-label="split button"
+                color="info"
             >
-                <Button style={{padding: "0 10px 0 10px"}}
+                <Button style={{padding: "0 10px 0 10px"}} color={rowData.integrity_level > 2 ? "error" : "primary"}  variant="contained"
                     onClick={(evt) => {evt.stopPropagation();localOnOpenTab("interact")}}>
                     { rowData.locked ? (<LockIcon fontSize="large" style={{marginRight: "10px"}} />):(<KeyboardIcon fontSize="large" style={{marginRight: "10px"}}/>) } 
                     {rowData.id}
                 </Button>
                 <Button
                     style={{margin: 0, padding: 0}}
+                    variant="contained"
                     aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
                     aria-expanded={dropdownOpen ? 'true' : undefined}
+                    color={rowData.integrity_level > 2 ? "error" : "primary"} 
                     aria-haspopup="menu"
                     onClick={handleDropdownToggle}
                 >
@@ -173,10 +176,9 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
                     {...TransitionProps}
                     style={{
                     transformOrigin: placement === 'bottom' ? 'top left' : 'top center',
-                    anchorOrigin: placement === 'bottom' ? 'bottom right' : 'bottom right'
                     }}
                 >
-                    <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}} elevation={5}>
+                    <Paper style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}} elevation={5}>
                     <ClickAwayListener onClickAway={handleClose}>
                         <MenuList id="split-button-menu">
                         {options.map((option, index) => (
@@ -199,6 +201,7 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
                     parameters={taskingData.current?.parameters || ""}
                     openDialog={taskingData.current?.openDialog || false}
                     getConfirmation={taskingData.current?.getConfirmation || false}
+                    acceptText={taskingData.current?.acceptText || "YES"}
                     onTasked={() => setOpenTaskingButton(false)}/>
             }  
             {openMetaDialog && 

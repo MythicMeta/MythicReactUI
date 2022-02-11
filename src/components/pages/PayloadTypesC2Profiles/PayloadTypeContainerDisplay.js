@@ -1,9 +1,9 @@
 import React, { useEffect }  from 'react';
 import { PayloadTypeCard } from './PayloadTypeCard';
 import {useSubscription, gql } from '@apollo/client';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import {useTheme} from '@material-ui/core/styles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
 
  const SUB_Payload_Types = gql`
  subscription getPayloadTypesSubscription {

@@ -1,13 +1,13 @@
 import React from 'react';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {useQuery, gql} from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
-import Switch from '@material-ui/core/Switch';
+import Switch from '@mui/material/Switch';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-monokai';
@@ -175,7 +175,7 @@ export function OperationTableRowNotificationsDialog(props) {
           <Button onClick={props.onClose} variant="contained" color="primary">
             Cancel
           </Button>
-          <Button onClick={onAccept} variant="contained" color="secondary">
+          <Button onClick={onAccept} variant="contained" color="success">
             Update
           </Button>
         </DialogActions>

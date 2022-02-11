@@ -6,18 +6,18 @@ import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import { useReactiveVar } from '@apollo/client';
 import { meState } from '../../../cache';
-import {useTheme} from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import RefreshIcon from '@material-ui/icons/Refresh';
-import IconButton from '@material-ui/core/IconButton';
-import RotateLeftIcon from '@material-ui/icons/RotateLeft';
+import {useTheme} from '@mui/material/styles';
+import Grid from '@mui/material/Grid';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import IconButton from '@mui/material/IconButton';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import {CallbacksTabsProcessBrowserTree} from './CallbacksTabsProcessBrowserTree';
 import {CallbacksTabsProcessBrowserTable} from './CallbacksTabsProcessBrowserTable';
-import SkipNextIcon from '@material-ui/icons/SkipNext';
-import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
-import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import {MythicModifyStringDialog} from '../../MythicComponents/MythicDialog';
-import LockIcon from '@material-ui/icons/Lock';
+import LockIcon from '@mui/icons-material/Lock';
 import {TaskFromUIButton} from './TaskFromUIButton';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
@@ -352,16 +352,16 @@ const ProcessBrowserTableTop = ({onListFilesButton, onNextButton, onPreviousButt
                         endAdornment: 
                         <React.Fragment>
                             <MythicStyledTooltip title="Fetch Previous Saved Process Listing">
-                                <IconButton style={{padding: "3px"}} onClick={onLocalPreviousButton}><SkipPreviousIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton style={{padding: "3px"}} onClick={onLocalPreviousButton} size="large"><SkipPreviousIcon style={{color: theme.palette.info.main}}/></IconButton>
                             </MythicStyledTooltip>
                             <MythicStyledTooltip title="Task Callback to List Processes">
-                                <IconButton style={{padding: "3px"}} onClick={onLocalListFilesButton}><RefreshIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton style={{padding: "3px"}} onClick={onLocalListFilesButton} size="large"><RefreshIcon style={{color: theme.palette.info.main}}/></IconButton>
                             </MythicStyledTooltip>
                             <MythicStyledTooltip title="Fetch Next Saved Process Listing">
-                                <IconButton style={{padding: "3px"}} onClick={onLocalNextButton}><SkipNextIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton style={{padding: "3px"}} onClick={onLocalNextButton} size="large"><SkipNextIcon style={{color: theme.palette.info.main}}/></IconButton>
                             </MythicStyledTooltip>
                             <MythicStyledTooltip title="Compare Previous Listing">
-                                <IconButton style={{padding: "3px"}} onClick={onLocalDiffButton}><CompareArrowsIcon style={{color: theme.palette.info.main}}/></IconButton>
+                                <IconButton style={{padding: "3px"}} onClick={onLocalDiffButton} size="large"><CompareArrowsIcon style={{color: theme.palette.info.main}}/></IconButton>
                             </MythicStyledTooltip>
                         </React.Fragment>
                     }} />
@@ -371,12 +371,12 @@ const ProcessBrowserTableTop = ({onListFilesButton, onNextButton, onPreviousButt
                     onChange={onChangeID} value={callbackID} InputProps={{
                         endAdornment: manuallySetCallbackID ? (
                             <MythicStyledTooltip title="Change Callback Based on Data Origin">
-                                <IconButton style={{padding: "3px"}} onClick={revertCallbackID}>
+                                <IconButton style={{padding: "3px"}} onClick={revertCallbackID} size="large">
                                     <LockIcon style={{color: theme.palette.info.main}}/>
                                 </IconButton>
                             </MythicStyledTooltip>
                         ) : (<MythicStyledTooltip title="Manually Update Callback Number to Prevent Data Origin Tracking">
-                                <IconButton  style={{padding: "3px"}}>
+                                <IconButton style={{padding: "3px"}} size="large">
                                     <RotateLeftIcon disabled style={{color: theme.palette.warning.main}}/> 
                                 </IconButton>
                             </MythicStyledTooltip>),
@@ -388,5 +388,5 @@ const ProcessBrowserTableTop = ({onListFilesButton, onNextButton, onPreviousButt
                     disabled value={taskID} onChange={() => {}}/>
             </Grid>
         </Grid>
-    )
+    );
 }

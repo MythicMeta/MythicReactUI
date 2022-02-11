@@ -1,23 +1,26 @@
 import React, {useEffect, useLayoutEffect, useRef} from 'react';
-import {IconButton} from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import {IconButton} from '@mui/material';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { toLocalTime } from '../../utilities/Time';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import { makeStyles, fade, withStyles } from '@material-ui/core/styles';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChatOutlinedIcon from '@material-ui/icons/ChatOutlined';
-import Badge from '@material-ui/core/Badge';
-import {useTheme} from '@material-ui/core/styles';
-import TreeView from '@material-ui/lab/TreeView';
-import TreeItem from '@material-ui/lab/TreeItem';
-import SvgIcon from '@material-ui/core/SvgIcon';
+import { alpha } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+import Badge from '@mui/material/Badge';
+import {useTheme} from '@mui/material/styles';
+import TreeView from '@mui/lab/TreeView';
+import TreeItem, {useTreeItem} from '@mui/lab/TreeItem';
+import SvgIcon from '@mui/material/SvgIcon';
 import {gql, useLazyQuery } from '@apollo/client';
 import {TaskDisplayContainer} from './TaskDisplayContainer';
+import { styled } from '@mui/material/styles';
+import clsx from "clsx";
 
 const taskDataFragment = gql`
     fragment taskData on task {
@@ -145,6 +148,26 @@ const accordionUseStyles = makeStyles((theme) => ({
     marginRight: 0
   }
 }));
+const treeItemUseStyles = makeStyles((theme) => ({
+  root: {
+    marginRight: 0,
+    paddingRight: 0,
+    '&:hover': {
+      backgroundColor: "none"
+    },
+    width: "100%"
+  },
+  iconContainer: {
+    '& .close': {
+      opacity: 0.3,
+    },
+  },
+  group: {
+    marginLeft: 7,
+    paddingLeft: 18,
+    borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
+  },
+}));
 function MinusSquare(props) {
   return (
     <SvgIcon fontSize="inherit" style={{ width: 14, height: 14 }} {...props}>
@@ -162,26 +185,42 @@ function PlusSquare(props) {
   );
 }
 
-const StyledTreeItem = withStyles((theme) => ({
-  root: {
-    marginRight: 0,
-    paddingRight: 0,
-    width: "100%",
-    '&:hover': {
-      backgroundColor: "none"
+const CustomTreeItemContent = React.forwardRef(function CustomContent(props, ref) {
+  const {
+    classes,
+    label,
+    nodeId,
+    icon: iconProp,
+    expansionIcon,
+    displayIcon,
+    onClick
+  } = props;
+
+  const {
+    handleExpansion,
+    preventSelection
+  } = useTreeItem(nodeId);
+
+  const icon = iconProp || expansionIcon || displayIcon;
+  const customExpansion = (event) => {
+    handleExpansion(event);
+    if(onClick){
+      onClick(event);
     }
-  },
-  iconContainer: {
-    '& .close': {
-      opacity: 0.3,
-    },
-  },
-  group: {
-    marginLeft: 7,
-    paddingLeft: 18,
-    borderLeft: `1px dashed ${fade(theme.palette.text.primary, 0.4)}`,
-  },
-}))((props) => <TreeItem {...props}  />); 
+  }
+  return (
+    <div
+      style={{display: "inline-flex", alignItems: "center", width: "100%"}}
+      onMouseDown={preventSelection}
+      ref={ref}
+    >
+      <div onClick={customExpansion} className={classes.iconContainer}>
+        {icon}
+      </div>
+      {label}
+    </div>
+  );
+});
 
 function TaskDisplayPreMemo({task, filterOptions}){
     
@@ -213,7 +252,7 @@ function TaskDisplayPreMemo({task, filterOptions}){
       <TaskRow task={task} filterOptions={filterOptions} nodesSelected={nodesSelected} toggleSelection={toggleTaskTree} />
     </TreeView>
   );
-};
+}
 export const TaskDisplay = React.memo(TaskDisplayPreMemo);
 
 const TaskStatusDisplay = ({task, theme}) => {
@@ -268,6 +307,7 @@ const TaskRow = ({task, filterOptions, nodesSelected, toggleSelection}) => {
     const [isFetchingSubtasks, setIsFetchingSubtasks] = React.useState(false);
     const [shouldDisplay, setShouldDisplay] = React.useState(true);
     const me = useReactiveVar(meState);
+    const treeClasses = treeItemUseStyles();
     const [getSubTasking, { startPolling, stopPolling }] = useLazyQuery(getSubTaskingQuery, {
         onError: data => {
             console.error(data)
@@ -370,20 +410,21 @@ const TaskRow = ({task, filterOptions, nodesSelected, toggleSelection}) => {
     }, [task.tasks])
     return (
       shouldDisplay ? (
-        <StyledTreeItem nodeId={"treenode:" + task.id}
-          onIconClick={getSubTasks}
-          icon={
-            nodesSelected.includes("treenode:" + task.id) ? (<MinusSquare />) : (task.tasks.length > 0 ? (<PlusSquare />) : (null) )
-          }
-          label={
-            <TaskLabel task={task} dropdownOpen={dropdownOpen} toggleTaskDropdown={toggleTaskDropdown}/>
-          }>
+        <TreeItem nodeId={"treenode:" + task.id}
+          classes={treeClasses}
+          ContentComponent={CustomTreeItemContent}
+          ContentProps={{
+            onClick: getSubTasks,
+            icon: nodesSelected.includes("treenode:" + task.id) ? <MinusSquare /> : task.tasks.length > 0 ? <PlusSquare /> : null,
+            label: <TaskLabel task={task} dropdownOpen={dropdownOpen} toggleTaskDropdown={toggleTaskDropdown}/>,
+            
+          }}>
           {
             taskingData.task.map( (tsk) => (
               <TaskRow key={"taskrow: " + tsk.id} task={tsk} nodesSelected={nodesSelected} filterOptions={filterOptions} toggleSelection={toggleSelection}/>
             ))
           }
-      </StyledTreeItem>
+      </TreeItem>
       ) : (null)
     )
 }

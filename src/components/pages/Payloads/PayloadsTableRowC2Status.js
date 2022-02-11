@@ -1,13 +1,11 @@
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
-import CancelIcon from '@material-ui/icons/Cancel';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import {useTheme} from '@material-ui/core/styles';
+import Typography from '@mui/material/Typography';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {MythicStyledTooltip} from '../../MythicComponents/MythicStyledTooltip';
-import PermScanWifiIcon from '@material-ui/icons/PermScanWifi';
+import PermScanWifiIcon from '@mui/icons-material/PermScanWifi';
 
 export function PayloadsTableRowC2Status(props){
-    const theme = useTheme();
     return (
         <React.Fragment>
             {
@@ -16,23 +14,23 @@ export function PayloadsTableRowC2Status(props){
                         {c2.c2profile.is_p2p ?
                             ( c2.c2profile.container_running ? 
                                 <MythicStyledTooltip title="C2 Container online">
-                                    <CheckCircleIcon style={{color: theme.palette.success.main}}/>
+                                    <CheckCircleIcon color="success"/>
                                 </MythicStyledTooltip>: 
                                 <MythicStyledTooltip title="C2 Container offline">
-                                    <CancelIcon style={{color: theme.palette.error.main}}/>
+                                    <CancelIcon color="error"/>
                                 </MythicStyledTooltip> )
                             :
                         ( c2.c2profile.running ? 
                             <MythicStyledTooltip title="C2 Internal Server Running">
-                                <CheckCircleIcon style={{color: theme.palette.success.main}}/>
+                                <CheckCircleIcon color="success"/>
                             </MythicStyledTooltip> : 
                             (c2.c2profile.container_running ? (
                                 <MythicStyledTooltip title="C2 Internal Server Not Running, but Container Online">
-                                    <PermScanWifiIcon style={{color: theme.palette.warning.main}}/> 
+                                    <PermScanWifiIcon color="warning"/> 
                                 </MythicStyledTooltip>
                             ) : (
                                 <MythicStyledTooltip title="C2 Container offline">
-                                    <CancelIcon style={{color: theme.palette.error.main}}/> 
+                                    <CancelIcon color="error"/> 
                                 </MythicStyledTooltip>
                             ))
                             )

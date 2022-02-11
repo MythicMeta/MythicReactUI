@@ -1,6 +1,6 @@
-import { IconButton } from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
-import Tab from '@material-ui/core/Tab';
+import { IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import Tab from '@mui/material/Tab';
 import React from 'react';
 
 export function MythicTabPanel(props) {

@@ -1,8 +1,8 @@
-import { IconButton, Typography } from '@material-ui/core';
-import SendIcon from '@material-ui/icons/Send';
+import { IconButton, Typography } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 import React from 'react';
-import {TextField} from '@material-ui/core';
-import TuneIcon from '@material-ui/icons/Tune';
+import {TextField} from '@mui/material';
+import TuneIcon from '@mui/icons-material/Tune';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {CallbacksTabsTaskingFilterDialog} from './CallbacksTabsTaskingFilterDialog';
 import {CallbacksTabsTaskingInputTokenSelect} from './CallbacksTabsTaskingInputTokenSelect';
@@ -616,7 +616,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         const groupParameters = cmd.commandparameters.filter(c => c.parameter_group_name === usedGroupName);
         groupParameters.sort((a,b) => a.ui_position < b.ui_position ? -1 : 1);
         // now we have all of the parameters and they're sorted by `ui_position`
-        
+        console.log(groupParameters);
         let unSatisfiedArguments = [];
         for(let i = 0; i < groupParameters.length; i++){
             if( !(groupParameters[i]["cli_name"] in parsedCopy)){
@@ -629,7 +629,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             // we cut this short by one so that the last unSatisifedArgument can do a greedy matching for the rest of what was supplied
             // this parameter hasn't been supplied yet, check if we have any positional parameters in parsedCopy["_"]
             if(parsedCopy["_"].length > 0){
-                parsedCopy[groupParameters[i]["cli_name"]] = parsedCopy["_"].shift();
+                parsedCopy[unSatisfiedArguments[i]["cli_name"]] = parsedCopy["_"].shift();
             }
         }
         
@@ -806,8 +806,16 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 InputProps={{ type: 'search',
                     endAdornment:
                     <React.Fragment>
-                    <IconButton color="primary" variant="contained" onClick={onSubmitCommandLine}><SendIcon/></IconButton>
-                    <IconButton color="secondary" variant="contained" onClick={onClickFilter}><TuneIcon/></IconButton>
+                    <IconButton
+                        color="primary"
+                        variant="contained"
+                        onClick={onSubmitCommandLine}
+                        size="large"><SendIcon/></IconButton>
+                    <IconButton
+                        color="secondary"
+                        variant="contained"
+                        onClick={onClickFilter}
+                        size="large"><TuneIcon/></IconButton>
                     </React.Fragment>,
                     startAdornment: <React.Fragment>
                         {tokenOptions.length > 0 ? (
@@ -825,6 +833,6 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 />
               }
         </React.Fragment>
-    )
+    );
 }
 export const CallbacksTabsTaskingInput = React.memo(CallbacksTabsTaskingInputPreMemo);

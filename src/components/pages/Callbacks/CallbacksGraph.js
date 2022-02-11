@@ -1,14 +1,14 @@
 import React, {useRef, useEffect, useState, useMemo} from 'react';
 import {drawC2PathElements, getNodeEdges} from './C2PathDialog';
-import {Button} from '@material-ui/core';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import Paper from '@material-ui/core/Paper';
-import Grow from '@material-ui/core/Grow';
-import Popper from '@material-ui/core/Popper';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import {Button} from '@mui/material';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import Paper from '@mui/material/Paper';
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import {useMutation } from '@apollo/client';
 import {saveSvgAsPng} from 'save-svg-as-png';
 import {hideCallbackMutation, removeEdgeMutation, addEdgeMutation} from './CallbackMutations';
@@ -19,7 +19,7 @@ import {gql, useLazyQuery } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
 import {TaskParametersDialog} from './TaskParametersDialog';
 import {createTaskingMutation} from './CallbacksTabsTasking';
-import {useTheme} from '@material-ui/core/styles';
+import {useTheme} from '@mui/material/styles';
 
 export const loadedLinkCommandsQuery = gql`
 query loadedLinkCommandsQuery ($callback_id: Int!){
@@ -263,7 +263,7 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
                     transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
                   }}
                 >
-                  <Paper style={{backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                  <Paper style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
                     <ClickAwayListener onClickAway={handleClose}>
                       <MenuList id="split-button-menu">
                         {options.map((option, index) => (
