@@ -130,12 +130,12 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
     const [currentOS, setCurrentOS] = React.useState("");
     const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
     const taskingData = React.useRef({"parameters": "", "ui_feature": "process_browser:list"});
-    const buildProcessTree = (processes) => {
+    const buildProcessTree = (originalProcesses) => {
         // Build a map of each PID to its list index
+        let processes = originalProcesses.map(p => { return {...p, children: []}})
         let processIdx = {};
         for (let i = 0; i < processes.length; i += 1) {
             processIdx[processes[i].process_id] = i;
-            processes[i].children = [];
         }
 
         // Check for any parent_process_id values that do not exist
