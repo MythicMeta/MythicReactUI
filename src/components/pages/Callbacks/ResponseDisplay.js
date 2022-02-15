@@ -158,9 +158,8 @@ export const ResponseDisplay = (props) =>{
         }
       }
     }, [props.selectAllOutput, oldSelectAllOutput]);
-    
     const subscriptionDataCallback = React.useCallback( ({subscriptionData}) => {
-      console.log("fetchLimit", fetchLimit, "totalCount", totalCount);
+      //console.log("fetchLimit", fetchLimit, "totalCount", totalCount);
       if(!mountedRef.current){
         return null; // we're unmounted, so just exit
       }
@@ -351,7 +350,7 @@ const ResponseDisplayComponent = ({rawResponses, viewBrowserScript, output, comm
       }
       
     }
-  }, [rawResponses]);
+  }, [rawResponses, task.status, task.completed]);
   const filterOutput = (scriptData) => {
     let copied = {...scriptData};
     if(search === ""){

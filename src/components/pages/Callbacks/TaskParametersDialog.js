@@ -817,7 +817,7 @@ export function TaskParametersDialog(props) {
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Typography component="div" >
-                <b>Description</b> <pre style={{margin:0, wordBreak: "break-all", overflow: "word-wrap", whiteSpace: "pre-wrap"}}>{commandInfo.description}</pre><br/>
+                <b>Description</b> <pre style={{margin:0, wordBreak: "break-word", overflow: "word-wrap", whiteSpace: "pre-wrap"}}>{commandInfo.description}</pre><br/>
                 <Divider />
                 <b>Requires Admin?</b><pre style={{margin:0}}>{commandInfo.needs_admin ? "True": "False"}</pre><br/>
                 <Divider />
