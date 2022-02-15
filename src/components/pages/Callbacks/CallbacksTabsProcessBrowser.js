@@ -130,19 +130,33 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
     const [currentOS, setCurrentOS] = React.useState("");
     const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
     const taskingData = React.useRef({"parameters": "", "ui_feature": "process_browser:list"});
-    const makeTree = (root, element) => {
-        if(root.process_id === element.parent_process_id){
-            root.children.push({...element, children: []});
-            return true;
-        }else{
-            // root isn't what we're looking for, but maybe a child of root is
-            for(let i = 0; i < root.children.length; i++){
-                if(makeTree(root.children[i], element)){
-                    return true;
-                }
+    const buildProcessTree = (originalProcesses) => {
+        // Build a map of each PID to its list index
+        let processes = originalProcesses.map(p => { return {...p, children: []}})
+        let processIdx = {};
+        for (let i = 0; i < processes.length; i += 1) {
+            processIdx[processes[i].process_id] = i;
+        }
+
+        // Check for any parent_process_id values that do not exist
+        for (let i = 0; i < processes.length; i += 1) {
+            if (!processIdx.hasOwnProperty(processes[i].parent_process_id)) {
+                processes[i].parent_process_id = null;
             }
         }
-        return false;
+
+        // Push each process into the correct list
+        let dataTree = [];
+        for (let i = 0; i < processes.length; i += 1) {
+            const cur = processes[i];
+            if(cur.parent_process_id === null || cur.parent_process_id <= 0){
+                dataTree.push(cur);
+            }else{
+                processes[processIdx[cur.parent_process_id]].children.push(cur);
+            }
+        }
+
+        return dataTree;
     }
     const [getNextProcessDataByHostAndTask] = useLazyQuery(getNextProcessQuery, {
         onError: data => {
@@ -151,19 +165,7 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
         fetchPolicy: "network-only",
         onCompleted: (data) => {
             if(data.process.length > 0){
-                const dataTree = data.process[0].task.processes.reduce( (prev, cur) => {
-                    if(cur.parent_process_id === null || cur.parent_process_id <= 0){
-                        return [...prev, {...cur, children: []}]
-                    }else{
-                        // this means there is a parent id
-                        // go through the current high level parent processes 
-                        const updated = [...prev].map( (root) => {
-                            makeTree(root, cur);
-                            return {...root};
-                        });
-                        return [...updated];
-                    }
-                }, []);
+                let dataTree = buildProcessTree(data.process[0].task.processes);
                 setFileBrowserRootsState(dataTree);
                 setSelectedFolder(data.process[0].task.processes);
                 setCurrentOS(data.process[0].task.callback.payload.os);
@@ -185,19 +187,7 @@ export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
         fetchPolicy: "network-only",
         onCompleted: (data) => {
             if(data.process.length > 0){
-                const dataTree = data.process[0].task.processes.reduce( (prev, cur) => {
-                    if(cur.parent_process_id === null || cur.parent_process_id <= 0){
-                        return [...prev, {...cur, children: []}]
-                    }else{
-                        // this means there is a parent id
-                        // go through the current high level parent processes 
-                        const updated = [...prev].map( (root) => {
-                            makeTree(root, cur);
-                            return {...root};
-                        });
-                        return [...updated];
-                    }
-                }, []);
+                let dataTree = buildProcessTree(data.process[0].task.processes);
                 setFileBrowserRootsState(dataTree);
                 setSelectedFolder(data.process[0].task.processes);
                 setCurrentOS(data.process[0].task.callback.payload.os);
