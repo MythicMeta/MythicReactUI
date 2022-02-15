@@ -163,7 +163,7 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
                     variant="contained"
                     aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
                     aria-expanded={dropdownOpen ? 'true' : undefined}
-                    color={rowData.integrity_level > 2 ? "error" : "primary"} 
+                    color={rowData.integrity_level > 2 ? "secondary" : "primary"} 
                     aria-haspopup="menu"
                     onClick={handleDropdownToggle}
                 >

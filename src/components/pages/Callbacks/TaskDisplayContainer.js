@@ -125,7 +125,14 @@ export const TaskDisplayContainer = ({task}) => {
 }
 
 
-
+// the base64 decode function to handle unicode was pulled from the following stack overflow post
+// https://stackoverflow.com/a/30106551
+function b64DecodeUnicode(str) {
+  // Going backwards: from bytestream, to percent-encoding, to original string.
+  return decodeURIComponent(atob(str).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+}
 const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggleOpenSearch, taskData, viewAllOutput}) => {
   const tooltipPlacement = "top";
   const theme = useTheme();
@@ -142,8 +149,8 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
     fetchPolicy: "network-only",
     onCompleted: (data) => {
         const output = data.response.reduce( (prev, cur) => {
-          return prev + Buffer.from(cur.response, "base64");
-        }, "");
+          return prev + b64DecodeUnicode(cur.response);
+        }, b64DecodeUnicode(""));
         const dataBlob = new Blob([output], {type: 'application/octet-stream'});
         const ele = document.getElementById("download_config");
         if(ele !== null){

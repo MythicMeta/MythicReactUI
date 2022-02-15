@@ -14,12 +14,12 @@ export const ResponseDisplayPlaintext = (props) =>{
       setPlaintextView(newPlaintext);
     }catch(error){
       //console.log("trying to JSONify plaintext error", error);
-      setPlaintextView(String(props.plaintext));
+      setPlaintextView(props.plaintext);
     }
   }, [props.plaintext])
   return (
     <AceEditor 
-        mode="json"
+        mode="text"
         theme={theme.palette.mode === "dark" ? "monokai" : "xcode"}
         fontSize={14}
         showGutter={true}

@@ -246,7 +246,7 @@ function CallbacksTablePreMemo(props){
                           case "PID":
                             return <CallbacksTableStringCell rowData={row} cellData={row.pid} />;
                           case "Last Checkin":
-                            return <CallbacksTableLastCheckinCell rowData={row} cellData={row.id} parentMountedRef={props.parentMountedRef}/>;
+                            return <CallbacksTableLastCheckinCell rowData={row} cellData={row.last_checkin} parentMountedRef={props.parentMountedRef}/>;
                           case "Description":
                             return <CallbacksTableStringCell rowData={row} cellData={row.description} />;
                           case "Sleep":
