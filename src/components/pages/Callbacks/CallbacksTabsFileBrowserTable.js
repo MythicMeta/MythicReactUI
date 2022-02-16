@@ -302,8 +302,22 @@ const FileBrowserTableRowDateCell = ({ cellData }) => {
     if(cellData === "" || cellData <= 0){
         return cellData;
     }
-    const dateData = new Date(parseInt(cellData)).toISOString();
-    return dateData.slice(0, 10) + " " + dateData.slice(11,-1);
+    try{
+        // handle Unix epoch timestamps
+        const dateData = new Date(parseInt(cellData)).toISOString();
+        return dateData.slice(0, 10) + " " + dateData.slice(11,-1);
+    }catch(error){
+        try{
+            // handle windows FILETIME values
+            const dateData = new Date( ((parseInt(cellData) / 10000000) - 11644473600) * 1000).toISOString();
+            return dateData.slice(0, 10) + " " + dateData.slice(11,-1);
+        }catch(error2){
+            console.log("error with timestamp: ", cellData);
+            return String(cellData);
+        }
+        
+    }
+    
 };
 const FileBrowserTableRowSizeCell = ({ cellData }) => {
     const getStringSize = () => {
