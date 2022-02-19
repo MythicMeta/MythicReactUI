@@ -508,7 +508,7 @@ export function TaskParametersDialogRow(props){
                                 {openAdditionalPayloadOnHostMenu ? (
                                 <React.Fragment>
                                     <TableRow>
-                                        <TableCell style={{width: "6em"}}>Hostname</TableCell>
+                                        <TableCell style={{width: "15em"}}>Hostname</TableCell>
                                         <TableCell>
                                             <MythicTextField required={true} placeholder={"hostname"} value={agentConnectNewHost} multiline={false} autoFocus={props.autoFocus}
                                                 onChange={onChangeAgentConnectNewHost} display="inline-block"/>
@@ -535,87 +535,88 @@ export function TaskParametersDialogRow(props){
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
-                                            <Button component="span"  style={{color: theme.palette.success.main, padding: 0}} onClick={onAgentConnectAddNewPayloadOnHost}><AddCircleIcon />Add</Button>
+                                            <Button component="span"  style={{color: theme.palette.success.main, padding: 0}} onClick={onAgentConnectAddNewPayloadOnHost}><AddCircleIcon />Confirm</Button>
                                         </TableCell>
                                         <TableCell>
                                             <Button component="span" style={{color: theme.palette.warning.main, padding: 0}} onClick={() =>{setOpenAdditionalPayloadOnHostmenu(false)}}><CancelIcon />Cancel</Button>
                                         </TableCell>
                                     </TableRow>
                                 </React.Fragment>
-                                ) : (null) }
-                                <TableRow>
-                                    <TableCell style={{width: "6em"}}>
-                                        Host 
-                                    </TableCell>
-                                    <TableCell>
-                                        <FormControl>
-                                            <Select
-                                              native
-                                              value={agentConnectHost}
-                                              onChange={onChangeAgentConnectHost}
-                                              input={<Input />}
-                                            >
-                                            {
-                                                agentConnectHostOptions.map((opt, i) => (
-                                                    <option key={props.name + "connecthost" + i} value={i}>{opt.host}</option>
-                                                ))
-                                            }
-                                            </Select>
-                                        </FormControl>
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Payload</TableCell>
-                                    <TableCell>
-                                        <FormControl>
-                                            <Select
-                                              native
-                                              value={agentConnectPayload}
-                                              onChange={onChangeAgentConnectPayload}
-                                              input={<Input />}
-                                            >
-                                            {
-                                                agentConnectPayloadOptions.map((opt, i) => (
-                                                    <option key={props.name + "connectagent" + i} value={i}>{opt.display}</option>
-                                                ))
-                                            }
-                                            </Select>
-                                        </FormControl>
-                                        
-                                    </TableCell>
-                                </TableRow>
-                                {!openAdditionalPayloadOnHostMenu &&
-                                            <TableRow>
-                                                <TableCell>
-                                                <Button component="span" style={{color: theme.palette.success.main, padding: 0}} onClick={() =>{setOpenAdditionalPayloadOnHostmenu(true)}}><AddCircleIcon />Add</Button>
-                                                </TableCell>
-                                                <TableCell>
-                                                <Button component="span" style={{color: theme.palette.error.main, padding: 0}} onClick={onAgentConnectRemovePayloadOnHost}><DeleteIcon />Remove</Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        }
-                                <TableRow>
-                                    <TableCell>C2 Profile</TableCell>
-                                    <TableCell>
-                                        <FormControl>
+                                ) : (<React.Fragment>
+                                    <TableRow>
+                                        <TableCell style={{width: "14em"}}>
+                                            Host 
+                                        </TableCell>
+                                        <TableCell>
+                                            <FormControl>
                                                 <Select
-                                                  native
-                                                  value={agentConnectC2Profile}
-                                                  onChange={onChangeAgentConnectC2Profile}
-                                                  input={<Input />}
+                                                native
+                                                value={agentConnectHost}
+                                                onChange={onChangeAgentConnectHost}
+                                                input={<Input />}
                                                 >
                                                 {
-                                                    agentConnectC2ProfileOptions.map((opt, i) => (
-                                                        <option key={props.name + "connectprofile" + i} value={i}>{opt.name}</option>
+                                                    agentConnectHostOptions.map((opt, i) => (
+                                                        <option key={props.name + "connecthost" + i} value={i}>{opt.host}</option>
                                                     ))
                                                 }
                                                 </Select>
                                             </FormControl>
-                                    </TableCell>
-                                </TableRow>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Payload</TableCell>
+                                        <TableCell>
+                                            <FormControl>
+                                                <Select
+                                                native
+                                                value={agentConnectPayload}
+                                                onChange={onChangeAgentConnectPayload}
+                                                input={<Input />}
+                                                >
+                                                {
+                                                    agentConnectPayloadOptions.map((opt, i) => (
+                                                        <option key={props.name + "connectagent" + i} value={i}>{opt.display}</option>
+                                                    ))
+                                                }
+                                                </Select>
+                                            </FormControl>
+                                            
+                                        </TableCell>
+                                    </TableRow>
+                                                <TableRow>
+                                                    <TableCell>
+                                                    <Button component="span" style={{color: theme.palette.success.main, padding: 0}} onClick={() =>{setOpenAdditionalPayloadOnHostmenu(true)}}><AddCircleIcon />Register New</Button>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                    <Button component="span" style={{color: theme.palette.error.main, padding: 0}} onClick={onAgentConnectRemovePayloadOnHost}><DeleteIcon />Remove Listed</Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                    <TableRow>
+                                        <TableCell>C2 Profile</TableCell>
+                                        <TableCell>
+                                            <FormControl>
+                                                    <Select
+                                                    native
+                                                    value={agentConnectC2Profile}
+                                                    onChange={onChangeAgentConnectC2Profile}
+                                                    input={<Input />}
+                                                    >
+                                                    {
+                                                        agentConnectC2ProfileOptions.map((opt, i) => (
+                                                            <option key={props.name + "connectprofile" + i} value={i}>{opt.name}</option>
+                                                        ))
+                                                    }
+                                                    </Select>
+                                                </FormControl>
+                                        </TableCell>
+                                    </TableRow>
+                                </React.Fragment>) }
+
+                                    
                             </TableBody>
                         </Table>
-                        {agentConnectC2ProfileOptions.length > 0 ? (
+                        {agentConnectC2ProfileOptions.length > 0 && !openAdditionalPayloadOnHostMenu ? (
                             <Table size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
                                 <TableHead>
                                         <TableRow>
