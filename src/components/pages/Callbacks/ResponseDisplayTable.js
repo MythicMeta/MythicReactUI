@@ -307,7 +307,7 @@ const ResponseDisplayTableActionCell = ({cellData, callback_id, rowData}) => {
         return (
           <React.Fragment>
             <MythicStyledTooltip title={cellData?.button?.hoverText || "Issues Task to Agent"}>
-              <Button size="small" onClick={() => setOpenTaskingButton(true)} disabled={cellData?.button?.disabled || false} variant="contained" color="secondary" 
+              <Button size="small" onClick={() => setOpenTaskingButton(true)} disabled={cellData?.button?.disabled || false} variant="contained" color="warning" 
                 startIcon={cellData?.button?.startIcon ? <FontAwesomeIcon icon={getIconName(cellData?.button?.startIcon)} style={{color: cellData?.button?.startIconColor  || ""}}/> : null}
               >{cellData?.button?.name || " "}</Button>
             </MythicStyledTooltip>

@@ -53,8 +53,8 @@ export function CreatePayloadWrapper(props){
       }, [props.location.key])
 
     return (
-        <div style={{height: "calc(95vh)"}}>
-            <Stepper activeStep={activeStep} alternativeLabel>
+        <div >
+            <Stepper activeStep={activeStep} alternativeLabel style={{marginTop: "10px"}}>
                 {steps.map((label, index) => (
                   <Step key={label}>
                     <StepLabel>{label}</StepLabel>

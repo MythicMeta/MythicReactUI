@@ -516,6 +516,17 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         let booleanArgs = [];
         let arrayArgs = [];
         let numberArgs = [];
+        if(command_line.length > 0 && command_line[0] === "{"){
+            try{
+                let json_arguments = JSON.parse(command_line);
+                json_arguments["_"] = [];
+                return json_arguments;
+            }catch(error){
+                //looks like JSON, but doesn't parse like JSON
+                snackActions.warning("Failed to parse custom JSON command line: " + error, snackMessageStyles);
+                return undefined;
+            }
+        }
         for(let i = 0; i < cmd.commandparameters.length; i++){
             switch(cmd.commandparameters[i].parameter_type){
                 case "Choice":
@@ -646,7 +657,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         evt.preventDefault();
         evt.stopPropagation();
         //console.log("onSubmitCommandLine", evt, message);
-        let splitMessage = message.split(" ");
+        let splitMessage = message.trim().split(" ");
         let cmd = loadedOptions.find( l => l.cmd === splitMessage[0]);
         if(cmd === undefined){
             snackActions.warning("Unknown command", snackMessageStyles);
@@ -654,10 +665,10 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         }
         let cmdGroupName = ["Default"];
         let parsedWithPositionalParameters = {};
+        let params = splitMessage.slice(1).join(" ");
         if(unmodifiedHistoryValue.includes("modal") || unmodifiedHistoryValue.includes("browserscript")){
             // these are the two kinds that'll introduce dictionary values as original_params
             try{
-                let params = splitMessage.slice(1).join(" ");
                 parsedWithPositionalParameters = JSON.parse(params);
                 cmdGroupName = determineCommandGroupName(cmd, parsedWithPositionalParameters);
                 cmdGroupName.sort()
@@ -666,10 +677,11 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 return;
             }   
         }else{
-            let parsed = parseCommandLine(message, cmd);
+            let parsed = parseCommandLine(params, cmd);
             if(!parsed){
                 return;
             }
+            parsed["_"].unshift(cmd);
             //console.log(message, parsed);
             cmdGroupName = determineCommandGroupName(cmd, parsed);
             cmdGroupName.sort();

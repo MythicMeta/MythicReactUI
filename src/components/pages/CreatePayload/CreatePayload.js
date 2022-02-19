@@ -55,8 +55,8 @@ export function CreatePayload(props){
       }
 
     return (
-        <div style={{height: "calc(95vh)"}}>
-            <Stepper activeStep={activeStep} alternativeLabel>
+        <div >
+            <Stepper activeStep={activeStep} alternativeLabel style={{marginTop: "10px"}}>
                 {steps.map((label, index) => (
                   <Step key={label}>
                     <StepLabel>{label}</StepLabel>
