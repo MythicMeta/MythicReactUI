@@ -19,8 +19,6 @@ import TreeItem, {useTreeItem} from '@mui/lab/TreeItem';
 import SvgIcon from '@mui/material/SvgIcon';
 import {gql, useLazyQuery } from '@apollo/client';
 import {TaskDisplayContainer} from './TaskDisplayContainer';
-import { styled } from '@mui/material/styles';
-import clsx from "clsx";
 
 const taskDataFragment = gql`
     fragment taskData on task {
@@ -100,7 +98,8 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: "100%", 
     width: "100%",
     whiteSpace: "nowrap",
-    display: "inline-block"
+    display: "inline-block",
+    cursor: "default",
   },
   secondaryHeadingExpanded: {
     fontSize: theme.typography.pxToRem(15),
@@ -135,6 +134,7 @@ const accordionUseStyles = makeStyles((theme) => ({
     width: "100%",
     whiteSpace: "break-all",
     wordBreak: "break-all",
+    userSelect: "text",
   },
   content: {
     margin: 0,
@@ -400,6 +400,9 @@ const TaskRow = ({task, filterOptions, nodesSelected, toggleSelection}) => {
       }
     }, [filterOptions, task.comment, task.command, task.display_params, task.operator.username]);
     const toggleTaskDropdown = React.useCallback( (event, expanded) => {
+      if(window.getSelection().toString()){
+        return;
+      }
       setDropdownOpen(!dropdownOpen);
     }, [dropdownOpen]);
     
@@ -468,6 +471,10 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
         inline: "start"
       })
   }
+  const preventPropagation = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  }
 
   return(
     <Paper className={classes.root} elevation={5} style={{marginRight: 0}} id={`taskHeader-${task.id}`}>
@@ -482,11 +489,11 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
               <div id={'scrolltotask' + task.id} style={{width: "100%"}}>
                 {displayComment ? (
                     <React.Fragment>
-                        <Typography className={classes.secondaryHeading}>{task.commentOperator.username}</Typography>
-                        <Typography className={classes.heading}>{task.comment}</Typography>
+                        <Typography className={classes.secondaryHeading} onClick={preventPropagation}>{task.commentOperator.username}</Typography>
+                        <Typography className={classes.heading} onClick={preventPropagation}>{task.comment}</Typography>
                     </React.Fragment>
                   ) : (null)}
-                    <Typography className={classes.taskAndTimeDisplay}>[{toLocalTime(task.timestamp, me.user.view_utc_time)}] / {task.id} / {task.operator.username}
+                    <Typography className={classes.taskAndTimeDisplay} onClick={preventPropagation}>[{toLocalTime(task.timestamp, me.user.view_utc_time)}] / {task.id} / {task.operator.username}
                       <TaskStatusDisplay task={task} theme={theme}/>
                     </Typography>
                   <div>
@@ -495,9 +502,9 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
                             <IconButton size="small" style={{padding: "0"}} color="primary" onClick={toggleDisplayComment}><ChatOutlinedIcon/></IconButton>
                           </div>
                       ) : (null)}
-                    <div className={classes.column}>
+                    <div className={classes.column} onClick={preventPropagation}>
                         <Badge badgeContent={alertBadges} color="secondary" anchorOrigin={{vertical: 'top', horizontal: 'left'}}>
-                          <Typography className={classes.heading} onClick={(e) => {e.stopPropagation();}} >
+                          <Typography className={classes.heading} >
                             {task.command_name + " " + task.display_params}
                           </Typography>
                         </Badge>

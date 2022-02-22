@@ -20,7 +20,6 @@ import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import { IconButton } from '@mui/material';
-import {muiTheme} from '../../../themes/Themes.js';
 import {snackActions} from '../../utilities/Snackbar';
 
 const addTaskTagMutation = gql`

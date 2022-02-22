@@ -6,7 +6,6 @@ import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import AceEditor from 'react-ace';
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
-import {muiTheme} from '../../../themes/Themes';
 
 export function BrowserScriptsOperationsTableRow(props){
     const [openViewScript, setOpenViewScript] = React.useState(false);
@@ -22,7 +21,7 @@ export function BrowserScriptsOperationsTableRow(props){
                 <TableCell>{displayName}</TableCell>
                 <TableCell>{props.browserscript.user_modified ? "User Modified" : "" } </TableCell>
                 <TableCell>{props.operation.admin.username}</TableCell>
-                <TableCell><Button size="small" variant="contained" style={{color: muiTheme.palette.info.main}} onClick={() => {setOpenViewScript(true);}}> View </Button></TableCell>    
+                <TableCell><Button size="small" variant="contained" color="info" onClick={() => {setOpenViewScript(true);}}> View </Button></TableCell>    
                 <MythicDialog fullWidth={true} maxWidth="md" open={openViewScript} 
                     onClose={()=>{setOpenViewScript(false);}} 
                     innerDialog={

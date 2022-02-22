@@ -15,6 +15,10 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {useTheme} from '@mui/material/styles';
 import {snackActions} from '../../utilities/Snackbar';
+import AceEditor from 'react-ace';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-xcode';
 
 //fromNow must be in ISO format for hasura/postgres stuff
 //new Date().toISOString() will do it
@@ -92,13 +96,12 @@ const SnackMessage = React.forwardRef((props, ref) => {
 
     return (
         <SnackbarContent ref={ref} className={classes.root}>
-            <Card style={{backgroundColor: theme.palette.success.main}} >
+            <Card style={{backgroundColor: theme.palette.success.main, color: "white"}} raised>
                 <CardActions classes={{ root: classes.actionRoot }}>
                     <Typography variant="subtitle2" className={classes.typography}>Payload successfuly built!</Typography>
                     <div className={classes.icons}>
                         <IconButton
                             aria-label="Show more"
-                            className={clsx(classes.expand, { [classes.expandOpen]: expanded })}
                             onClick={handleExpandClick}
                             size="large">
                             <ExpandMoreIcon />
@@ -115,9 +118,6 @@ const SnackMessage = React.forwardRef((props, ref) => {
                             <CheckCircleIcon className={classes.checkIcon} />
                             Download now
                         </Button>
-                    </Paper>
-                    <Paper className={classes.collapse}>
-                        <Button variant="outlined" color="primary" href="/new/payloads">View on Payloads Page</Button>
                     </Paper>
                 </Collapse>
             </Card>
@@ -141,13 +141,12 @@ const SnackMessageError = React.forwardRef((props, ref) => {
 
     return (
         <SnackbarContent ref={ref} className={classes.root}>
-            <Card style={{backgroundColor: theme.palette.error.main}} >
+            <Card style={{backgroundColor: theme.palette.error.main, width: "calc(80vw)", color: "white"}} raised >
                 <CardActions classes={{ root: classes.actionRoot }}>
                     <Typography variant="subtitle2" className={classes.typography} style={{color: "white"}}>Payload Failed to build!</Typography>
                     <div className={classes.icons}>
                         <IconButton
                             aria-label="Show more"
-                            className={clsx(classes.expand, { [classes.expandOpen]: expanded })}
                             onClick={handleExpandClick}
                             size="large">
                             <ExpandMoreIcon />
@@ -158,9 +157,19 @@ const SnackMessageError = React.forwardRef((props, ref) => {
                     </div>
                 </CardActions>
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
-                    <Paper className={classes.collapse}>
-                        {props.display}
-                    </Paper>
+                <AceEditor 
+                    mode="json"
+                    theme={theme.palette.mode === "dark" ? "monokai" : "xcode"}
+                    fontSize={14}
+                    showGutter={true}
+                    highlightActiveLine={true}
+                    value={props.display}
+                    focus={true}
+                    width={"100%"}
+                    setOptions={{
+                        showLineNumbers: true,
+                        tabSize: 4
+                    }}/>
                 </Collapse>
             </Card>
         </SnackbarContent>
@@ -179,6 +188,7 @@ export function PayloadSubscriptionNotification(props) {
             }else if(data.payload[0].build_phase === "building"){
                 
             }else{
+                snackActions.dismiss();
                 if(data.payload[0].build_stderr !== ""){
                     snackActions.error(data.payload[0].build_stderr, {persist: true, content: key => <SnackMessageError id={key} display={data.payload[0].build_stderr} />});
                 }else{

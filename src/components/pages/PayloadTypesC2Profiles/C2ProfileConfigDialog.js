@@ -76,7 +76,7 @@ export function C2ProfileConfigDialog(props) {
           <Button variant="contained" onClick={props.onClose} color="primary">
             Close
           </Button>
-          <Button variant="contained" onClick={onConfigSubmit} color="secondary">
+          <Button variant="contained" onClick={onConfigSubmit} color="warning">
             Submit
           </Button>
         </DialogActions>

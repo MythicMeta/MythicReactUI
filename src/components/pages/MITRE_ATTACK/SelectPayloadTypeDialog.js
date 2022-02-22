@@ -6,7 +6,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import {muiTheme} from '../../../themes/Themes.js';
 import {useQuery, gql } from '@apollo/client';
 import LinearProgress from '@mui/material/LinearProgress';
 import makeStyles from '@mui/styles/makeStyles';
@@ -85,7 +84,7 @@ export function SelectPayloadTypeDialog(props) {
           <Button onClick={props.onClose} variant="contained" color="primary">
             Close
           </Button>
-          <Button onClick={handleSubmit} variant="contained" style={{backgroundColor: muiTheme.palette.success.main}}>
+          <Button onClick={handleSubmit} variant="contained" color="success">
             Select
           </Button>
         </DialogActions>
