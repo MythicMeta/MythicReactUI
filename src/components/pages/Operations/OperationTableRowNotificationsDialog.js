@@ -12,6 +12,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/theme-xcode';
+import {useTheme} from '@mui/material/styles';
 
 const GET_OperationData = gql`
 query GetOperations($operation_id: Int!) {
@@ -31,6 +32,7 @@ query GetOperations($operation_id: Int!) {
 
 export function OperationTableRowNotificationsDialog(props) {
     const [name, setName] = React.useState("");
+    const theme = useTheme();
     const [channel, setChannel] = React.useState("");
     const [displayName, setDisplayName] = React.useState("");
     const [iconEmoji, setIconEmoji] = React.useState("");
@@ -124,7 +126,7 @@ export function OperationTableRowNotificationsDialog(props) {
             margin="dense"
             name="name"
           />
-          Complete Operation? <Switch checked={complete} onChange={onBoolChange} color="secondary" />
+          Complete Operation? <Switch checked={complete} onChange={onBoolChange} color="warning" />
           <MythicTextField
             margin="dense"
             value={channel}
@@ -157,7 +159,7 @@ export function OperationTableRowNotificationsDialog(props) {
           />
           <AceEditor 
               mode="json"
-              theme={"monokai"}
+              theme={theme.palette.type === "dark" ? "monokai" : "xcode"}
               onChange={onEditorChange}
               fontSize={14}
               showGutter={true}

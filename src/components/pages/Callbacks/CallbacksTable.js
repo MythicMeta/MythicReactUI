@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {MythicTransferListDialog} from '../../MythicComponents/MythicTransferList';
 import {MythicDialog} from '../../MythicComponents/MythicDialog';
 import {
@@ -214,6 +214,7 @@ function CallbacksTablePreMemo(props){
       }
       return tempData;
     }, [allData, sortData]);
+    useWhyDidYouUpdate("callback table", props);
     const gridData = React.useMemo(
       () =>
           sortedData.reduce((prev, row) => { 
@@ -230,33 +231,33 @@ function CallbacksTablePreMemo(props){
                                 updateDescription={updateDescriptionSubmit}
                                 />;
                           case "IP":
-                              return <CallbacksTableStringCell rowData={row} cellData={row.ip} />;
+                              return <CallbacksTableStringCell cellData={row.ip} />;
                           case "External IP":
-                            return <CallbacksTableStringCell rowData={row} cellData={row.external_ip} />;
+                            return <CallbacksTableStringCell cellData={row.external_ip} />;
                           case "Host":
-                              return <CallbacksTableStringCell rowData={row} cellData={row.host} />;
+                              return <CallbacksTableStringCell cellData={row.host} />;
                           case "User":
-                              return <CallbacksTableStringCell rowData={row} cellData={row.user} />;
+                              return <CallbacksTableStringCell cellData={row.user} />;
                           case "Domain":
-                              return <CallbacksTableStringCell rowData={row} cellData={row.domain} />;
+                              return <CallbacksTableStringCell cellData={row.domain} />;
                           case "OS":
                               return <CallbacksTableOSCell rowData={row} cellData={row.os} />;
                           case "Arch":
                               return <CallbacksTableStringCell rowData={row} cellData={row.architecture} />;
                           case "PID":
-                            return <CallbacksTableStringCell rowData={row} cellData={row.pid} />;
+                            return <CallbacksTableStringCell cellData={row.pid} />;
                           case "Last Checkin":
                             return <CallbacksTableLastCheckinCell rowData={row} cellData={row.last_checkin} parentMountedRef={props.parentMountedRef}/>;
                           case "Description":
-                            return <CallbacksTableStringCell rowData={row} cellData={row.description} />;
+                            return <CallbacksTableStringCell cellData={row.description} />;
                           case "Sleep":
                             return <CallbacksTableSleepCell rowData={row} cellData={row.sleep_info} updateSleepInfo={updateSleepInfo} />;
                           case "Agent":
                             return <CallbacksTablePayloadTypeCell rowData={row} cellData={row.payload.payloadtype.ptype}/>;
                           case "C2":
-                            return <CallbacksTableC2Cell rowData={row} initialCallbackGraphEdges={props.callbackgraphedges} />;
+                            return <CallbacksTableC2Cell cellData={row.id} initialCallbackGraphEdges={props.callbackgraphedges} />;
                           case "Process Name":
-                            return <CallbacksTableStringCell rowData={row} cellData={row.process_name} />;
+                            return <CallbacksTableStringCell cellData={row.process_name} />;
                       }
                   })];
               }
@@ -305,3 +306,34 @@ function CallbacksTablePreMemo(props){
     )
 }
 export const CallbacksTable = React.memo(CallbacksTablePreMemo);
+
+function useWhyDidYouUpdate(name, props) {
+  // Get a mutable ref object where we can store props ...
+  // ... for comparison next time this hook runs.
+  const previousProps = React.useRef();
+  useEffect(() => {
+    if (previousProps.current) {
+      // Get all keys from previous and current props
+      const allKeys = Object.keys({ ...previousProps.current, ...props });
+      // Use this object to keep track of changed props
+      const changesObj = {};
+      // Iterate through keys
+      allKeys.forEach((key) => {
+        // If previous is different from current
+        if (previousProps.current[key] !== props[key]) {
+          // Add to changesObj
+          changesObj[key] = {
+            from: previousProps.current[key],
+            to: props[key],
+          };
+        }
+      });
+      // If changesObj not empty then output to console
+      if (Object.keys(changesObj).length) {
+        console.log("[why-did-you-update]", name, changesObj);
+      }
+    }
+    // Finally update previousProps with current props for next hook call
+    previousProps.current = props;
+  });
+}

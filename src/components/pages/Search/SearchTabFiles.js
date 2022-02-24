@@ -366,7 +366,7 @@ const SearchTabFilesSearchPanel = (props) => {
             </Grid>
             <Grid item xs={2}>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem"}}
+                    style={{marginBottom: "10px", width: "100%"}}
                     value={searchField}
                     onChange={handleSearchFieldChange}
                 >
@@ -379,7 +379,7 @@ const SearchTabFilesSearchPanel = (props) => {
             </Grid>
             <Grid item xs={2}>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem"}}
+                    style={{marginBottom: "10px", width: "100%"}}
                     value={searchLocation}
                     onChange={handleSearchLocationChange}
                 >

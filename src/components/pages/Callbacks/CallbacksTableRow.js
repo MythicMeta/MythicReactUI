@@ -56,8 +56,30 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
     const taskingData = React.useRef({"parameters": "", "ui_feature": "callback_table:exit"});
     const [openTaskMultipleDialog, setOpenTaskMultipleDialog] = React.useState(false);
     const [openHideMultipleDialog, setOpenHideMultipleDialog] = React.useState(false);
+    const [rowDataStatic, setRowDataStatic] = React.useState(rowData);
+    React.useEffect( () => {
+        let update = false;
+        if(rowData.locked != rowDataStatic.locked){
+            update = true;
+        }
+        if(rowData.integrity_level != rowDataStatic.integrity_level){
+            update = true;
+        }
+        if(rowData.host != rowDataStatic.host){
+            update = true;
+        }
+        if(rowData.locked_operator != rowDataStatic.locked_operator){
+            update = true;
+        }
+        if(rowData.description != rowDataStatic.description){
+            update = true;
+        }
+        if(update){
+            setRowDataStatic(rowData);
+        }
+    }, [rowData]);
     const editDescriptionSubmit = (description) => {
-        updateDescription({description, id: rowData.id})
+        updateDescription({description, id: rowDataStatic.id})
     }
     const handleDropdownToggle = (evt) => {
             evt.stopPropagation();
@@ -65,11 +87,11 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
       };
     const localOnOpenTab = (tabType) => {
         if(tabType === "interact"){
-            onOpenTab({tabType, tabID: rowData.id + tabType, callbackID: rowData.id});
+            onOpenTab({tabType, tabID: rowDataStatic.id + tabType, callbackID: rowDataStatic.id});
         }else if(tabType === "processBrowser"){
-            onOpenTab({tabType, tabID: rowData.host, callbackID: rowData.id});
+            onOpenTab({tabType, tabID: rowDataStatic.host, callbackID: rowDataStatic.id});
         }else{
-            onOpenTab({tabType, tabID: rowData.id + tabType, callbackID: rowData.id});
+            onOpenTab({tabType, tabID: rowDataStatic.id + tabType, callbackID: rowDataStatic.id});
         }
     }
     const handleMenuItemClick = (event, index) => {
@@ -97,12 +119,12 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
         }
     });
     const localToggleLock = () => {
-        toggleLock({id: rowData.id, locked: rowData.locked})
+        toggleLock({id: rowDataStatic.id, locked: rowDataStatic.locked})
     }
     const options =  [
         {name: 'Hide Callback', icon: <VisibilityOffIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
             evt.stopPropagation();
-            hideCallback({variables: {callback_id: rowData.id}});
+            hideCallback({variables: {callback_id: rowDataStatic.id}});
         }},
         {
             name: "Hide Multiple", icon: <VisibilityOffIcon style={{paddingRight: "5px"}}/>, click: (evt) => {
@@ -128,7 +150,7 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
             evt.stopPropagation();
             localOnOpenTab("processBrowser");
         }},
-        {name: rowData.locked ? 'Unlock (Locked by ' + rowData.locked_operator.username + ')' : 'Lock Callback', icon: rowData.locked ? (<LockOpenIcon style={{paddingRight: "5px"}}/>) : (<LockIcon style={{paddingRight: "5px"}} />), click: (evt) => {
+        {name: rowDataStatic.locked ? 'Unlock (Locked by ' + rowDataStatic.locked_operator.username + ')' : 'Lock Callback', icon: rowDataStatic.locked ? (<LockOpenIcon style={{paddingRight: "5px"}}/>) : (<LockIcon style={{paddingRight: "5px"}} />), click: (evt) => {
             evt.stopPropagation();
             localToggleLock();
         }},
@@ -138,7 +160,7 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
         }},
         {name: "Expand Callback", icon: <OpenInNewIcon style={{paddingRight: "5px"}} />, click: (evt) => {
             evt.stopPropagation();
-            window.open("/new/callbacks/" + rowData.id, "_blank").focus();
+            window.open("/new/callbacks/" + rowDataStatic.id, "_blank").focus();
         }},
         {name: "View Metadata", icon: <InfoIcon style={{paddingRight: "5px"}} />, click: (evt) => {
             evt.stopPropagation();
@@ -148,22 +170,22 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
     return (
         <div>
             <ButtonGroup  
-                color={rowData.integrity_level > 2 ? "error" : "primary"} 
+                color={rowDataStatic.integrity_level > 2 ? "error" : "primary"} 
                 ref={dropdownAnchorRef} 
                 aria-label="split button"
                 color="info"
             >
-                <Button style={{padding: "0 10px 0 10px"}} color={rowData.integrity_level > 2 ? "error" : "primary"}  variant="contained"
+                <Button style={{padding: "0 10px 0 10px"}} color={rowDataStatic.integrity_level > 2 ? "error" : "primary"}  variant="contained"
                     onClick={(evt) => {evt.stopPropagation();localOnOpenTab("interact")}}>
-                    { rowData.locked ? (<LockIcon fontSize="large" style={{marginRight: "10px"}} />):(<KeyboardIcon fontSize="large" style={{marginRight: "10px"}}/>) } 
-                    {rowData.id}
+                    { rowDataStatic.locked ? (<LockIcon fontSize="large" style={{marginRight: "10px"}} />):(<KeyboardIcon fontSize="large" style={{marginRight: "10px"}}/>) } 
+                    {rowDataStatic.id}
                 </Button>
                 <Button
                     style={{margin: 0, padding: 0}}
                     variant="contained"
                     aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
                     aria-expanded={dropdownOpen ? 'true' : undefined}
-                    color={rowData.integrity_level > 2 ? "error" : "primary"} 
+                    color={rowDataStatic.integrity_level > 2 ? "error" : "primary"} 
                     aria-haspopup="menu"
                     onClick={handleDropdownToggle}
                 >
@@ -197,7 +219,7 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
             </Popper>     
             {openTaskingButton && 
                 <TaskFromUIButton ui_feature={taskingData.current?.ui_feature || " "} 
-                    callback_id={rowData.id} 
+                    callback_id={rowDataStatic.id} 
                     parameters={taskingData.current?.parameters || ""}
                     openDialog={taskingData.current?.openDialog || false}
                     getConfirmation={taskingData.current?.getConfirmation || false}
@@ -207,7 +229,7 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
             {openMetaDialog && 
                 <MythicDialog fullWidth={true} maxWidth="lg" open={openMetaDialog}
                     onClose={()=>{setOpenMetaDialog(false);}} 
-                    innerDialog={<DetailedCallbackTable onClose={()=>{setOpenMetaDialog(false);}} callback_id={rowData.id} />}
+                    innerDialog={<DetailedCallbackTable onClose={()=>{setOpenMetaDialog(false);}} callback_id={rowDataStatic.id} />}
                 />
             }
             {openEditDescriptionDialog &&
@@ -218,7 +240,7 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
                     innerDialog={
                         <MythicModifyStringDialog title={"Edit Callback's Description"} 
                             onClose={() => {setOpenEditDescriptionDialog(false);}} 
-                            value={rowData.description} 
+                            value={rowDataStatic.description} 
                             onSubmit={editDescriptionSubmit} 
                         />
                     }
@@ -291,16 +313,17 @@ export const CallbacksTableLastCheckinCell = React.memo( (props) => {
     )
 });
 export const CallbacksTablePayloadTypeCell = ({rowData}) => {
+    const payloadTypeName = React.useRef(rowData.payload.payloadtype.ptype)
     return (
-        <MythicStyledTooltip title={rowData.payload.payloadtype.ptype}>
+        <MythicStyledTooltip title={payloadTypeName.current}>
             <img
                 style={{width: "35px", height: "35px"}}
-                src={"/static/" + rowData.payload.payloadtype.ptype + ".svg"}
+                src={"/static/" + payloadTypeName.current + ".svg"}
             />
         </MythicStyledTooltip>
     )
 }
-export const CallbacksTableC2Cell = ({rowData, initialCallbackGraphEdges}) => {
+export const CallbacksTableC2Cell = (props) => {
     const theme = useTheme();
     const [activeEgress, setActiveEgress] = React.useState(theme.palette.success.main);
     const [activeEgressBool, setActiveEgressBool] = React.useState(true);
@@ -308,14 +331,17 @@ export const CallbacksTableC2Cell = ({rowData, initialCallbackGraphEdges}) => {
     const [openC2Dialog, setOpenC2Dialog] = React.useState(false);
     const [callbackgraphedges, setCallbackgraphedges] = React.useState([]);
     const [callbackgraphedgesAll, setCallbackgraphedgesAll] = React.useState([]);
-
+    useWhyDidYouUpdate("Counter", props);
+    React.useEffect( () => {
+        return () => {console.log("c2 cell destroyed")}
+    }, [])
     const onOpenC2Dialog = (event) => {
         event.stopPropagation();
         setOpenC2Dialog(true);
     }
     useEffect( () => {
         const routes = callbackgraphedgesAll.filter( (edge) => {
-            if(!edge.c2profile.is_p2p && edge.source.id === rowData.id && edge.destination.id === rowData.id){
+            if(!edge.c2profile.is_p2p && edge.source.id === props.cellData && edge.destination.id === props.cellData){
                 return true;
             }
             return false;
@@ -329,8 +355,8 @@ export const CallbacksTableC2Cell = ({rowData, initialCallbackGraphEdges}) => {
     useEffect( () => {
         const getEdges = (activeOnly) => {
             //update our aggregate of callbackgraphedges for both src and dst that involve us
-            let myEdges = initialCallbackGraphEdges?.filter( (edge) =>{
-                if(edge.source.id === rowData.id || edge.destination.id === rowData.id){
+            let myEdges = props.initialCallbackGraphEdges?.filter( (edge) =>{
+                if(edge.source.id === props.cellData || edge.destination.id === props.cellData){
                     if(activeOnly){
                         if(edge.end_timestamp === null){
                             return true;
@@ -344,7 +370,7 @@ export const CallbacksTableC2Cell = ({rowData, initialCallbackGraphEdges}) => {
             let foundMore = true;
             while(foundMore){
                 //look at all of the edges in myEdges and see if there are any edges that share a source/destination in props.callbackgraphedges that are _not_ in myEdges so far
-                const newEdges = initialCallbackGraphEdges?.reduce( (prev, edge) => {
+                const newEdges = props.initialCallbackGraphEdges?.reduce( (prev, edge) => {
                     //looking to see if we should add 'edge' to our list of relevant edges
                     if(prev.includes(edge)){return [...prev]}
                     //look through all of the previous edges we know about and see if there's a matching source/destination id with the new edge
@@ -377,7 +403,7 @@ export const CallbacksTableC2Cell = ({rowData, initialCallbackGraphEdges}) => {
         if(callbackgraphedgesAll.length !== myEdges.length){
             setCallbackgraphedgesAll(myEdges);
         }
-    }, [initialCallbackGraphEdges, rowData.id]);
+    }, [props.initialCallbackGraphEdges, props.cellData]);
     useEffect( () => {
         //determine if there are any active routes left at all
         const activeRoutes = callbackgraphedges.filter( (edge) => {
@@ -405,18 +431,21 @@ export const CallbacksTableC2Cell = ({rowData, initialCallbackGraphEdges}) => {
                 <WifiIcon onClick={onOpenC2Dialog} style={{color: activeEgress, cursor: "pointer"}}/> : 
                 <InsertLinkTwoToneIcon onClick={onOpenC2Dialog} style={{color: activeEgress, cursor: "pointer"}} />
             }
-            <MythicDialog 
-                fullWidth={true} 
-                maxWidth="lg" 
-                open={openC2Dialog}
-                onClose={()=>{setOpenC2Dialog(false);}} 
-                innerDialog={
-                    <C2PathDialog 
-                        onClose={()=>{setOpenC2Dialog(false);}} {...rowData} 
-                        callbackgraphedges={activeEgressBool ? callbackgraphedges : callbackgraphedgesAll} 
-                    />
-                }
-            />
+            {openC2Dialog &&
+                <MythicDialog 
+                    fullWidth={true} 
+                    maxWidth="lg" 
+                    open={openC2Dialog}
+                    onClose={()=>{setOpenC2Dialog(false);}} 
+                    innerDialog={
+                        <C2PathDialog 
+                            onClose={()=>{setOpenC2Dialog(false);}}  
+                            callbackgraphedges={activeEgressBool ? callbackgraphedges : callbackgraphedgesAll} 
+                        />
+                    }
+                />
+            }
+            
         </div>
         
     )
@@ -488,3 +517,34 @@ export const CallbacksTableSleepCell = ({rowData, cellData, updateSleepInfo}) =>
             
     )
 }
+
+function useWhyDidYouUpdate(name, props) {
+    // Get a mutable ref object where we can store props ...
+    // ... for comparison next time this hook runs.
+    const previousProps = React.useRef();
+    useEffect(() => {
+      if (previousProps.current) {
+        // Get all keys from previous and current props
+        const allKeys = Object.keys({ ...previousProps.current, ...props });
+        // Use this object to keep track of changed props
+        const changesObj = {};
+        // Iterate through keys
+        allKeys.forEach((key) => {
+          // If previous is different from current
+          if (previousProps.current[key] !== props[key]) {
+            // Add to changesObj
+            changesObj[key] = {
+              from: previousProps.current[key],
+              to: props[key],
+            };
+          }
+        });
+        // If changesObj not empty then output to console
+        if (Object.keys(changesObj).length) {
+          console.log("[why-did-you-update]", name, changesObj);
+        }
+      }
+      // Finally update previousProps with current props for next hook call
+      previousProps.current = props;
+    });
+  }

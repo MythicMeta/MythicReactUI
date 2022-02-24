@@ -48,7 +48,7 @@ export function OperationTableRowUpdateOperatorsDialogRow(props){
     return (
         <React.Fragment>
             <TableRow>
-                <TableCell><Switch checked={checked} onChange={onBoolChange} color="secondary" /></TableCell>
+                <TableCell><Switch checked={checked} onChange={onBoolChange} color="success" /></TableCell>
                 <TableCell>{props.operator.username}</TableCell>
                 <TableCell>
                   {checked ? (

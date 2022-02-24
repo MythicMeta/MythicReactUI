@@ -138,6 +138,7 @@ export function MitreAttack(props){
       "Exfiltration": {rows: [], tactic: "Exfiltration", commands: 0, tasks: 0},
       "Impact": {rows: [], tactic: "Impact", commands: 0, tasks: 0},
     });
+    const [showCountGrouping, setShowCountGrouping] = React.useState("");
     const [taskTagOptions, setTaskTagOptions] = React.useState([]);
     const [tagOptions, setTagOptions] = React.useState([]);
     const [openSelectTagDialog, setOpenSelectTagDialog] = React.useState(false);
@@ -193,6 +194,7 @@ export function MitreAttack(props){
           updatingMitre[key].commands = column_total;
         }
         setMitreAttack(updatingMitre);
+        setShowCountGrouping("command");
       }
     });
     const [getCommandsFiltered] = useLazyQuery(Get_CommandAttacksFiltered,{
@@ -223,6 +225,7 @@ export function MitreAttack(props){
           updatingMitre[key].commands = column_total;
         }
         setMitreAttack(updatingMitre);
+        setShowCountGrouping("command");
       }
     });
     const [getTasks] = useLazyQuery(Get_TaskAttacks,{
@@ -254,6 +257,7 @@ export function MitreAttack(props){
           updatingMitre[key].tasks = column_total;
         }
         setMitreAttack(updatingMitre);
+        setShowCountGrouping("task");
       }
     });
     const [getTasksFiltered] = useLazyQuery(Get_TaskAttacksFiltered,{
@@ -285,6 +289,7 @@ export function MitreAttack(props){
           updatingMitre[key].tasks = column_total;
         }
         setMitreAttack(updatingMitre);
+        setShowCountGrouping("task");
       }
     });
     const [getTasksFilteredByTag] = useLazyQuery(Get_TaskAttacksFilteredByTag, {
@@ -313,6 +318,7 @@ export function MitreAttack(props){
         }
         setMitreAttack(updatingMitre);
         setBackdropOpen(false);
+        setShowCountGrouping("task");
       }
     })
     useQuery(Get_MITREATTACK, {
@@ -363,12 +369,14 @@ export function MitreAttack(props){
         <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={false}>
             <CircularProgress color="inherit" disableShrink />
         </Backdrop>
-        <MitreGrid entries={mitreAttack} 
+        <MitreGrid 
+          entries={mitreAttack} 
           onGetCommands={getCommands} 
           onGetTasks={onGetTasks} 
           onGetTasksFiltered={onGetTasksFiltered}
           onGetCommandsFiltered={onGetCommandsFiltered}
           onFilterByTags={onFilterByTags}
+          showCountGrouping={showCountGrouping}
           />
           {openSelectTagDialog && 
               <MythicDialog fullWidth={true} maxWidth="sm" open={openSelectTagDialog}

@@ -99,7 +99,7 @@ export function CallbacksTop(props){
     const [callbacks, setCallbacks] = React.useState([]);
     const [callbackEdges, setCallbackEdges] = React.useState([]);
     const mountedRef = React.useRef(true);
-    useSubscription(SUB_Callbacks, {
+    const {data:callbackData, loading: callbackDataLoading} = useSubscription(SUB_Callbacks, {
         variables: {operation_id: me?.user?.current_operation_id || 0}, fetchPolicy: "network-only",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
@@ -143,7 +143,7 @@ export function CallbacksTop(props){
     return (
       <div style={{height: "100%", width: "100%"}}>
         {props.topDisplay === "graph" ? (
-          <CallbacksGraph maxHeight={"100%"} topHeight={props.heights.top} key={"callbacksgraph"} onOpenTab={onOpenTabLocal} callbacks={callbacks} callbackgraphedges={callbackEdges} />
+          <CallbacksGraph maxHeight={"100%"} topHeight={props.heights.top} key={"callbacksgraph"} onOpenTab={onOpenTabLocal} callbacks={callbacks } callbackgraphedges={callbackEdges} />
         ) : (
           <Paper style={{height: "100%", width: "100%", display: "flex", flexDirection: "column"}}>
             <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px", width: "100%"}} variant={"elevation"}>

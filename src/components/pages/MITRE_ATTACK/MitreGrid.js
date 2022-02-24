@@ -18,25 +18,49 @@ import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { SelectPayloadTypeDialog } from './SelectPayloadTypeDialog';
 
 
-export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFiltered, onGetTasksFiltered, onFilterByTags}){
+export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFiltered, onGetTasksFiltered, onFilterByTags, showCountGrouping}){
     const theme = useTheme();
+    const [backdropOpen, setBackdropOpen] = React.useState(false);
+    
+    return (
+        <div style={{display: "flex", flexDirection: "column", width: "100%", height: "100%"}}>
+            <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
+                <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
+                    {"MITRE ATT&CK Mappings"}
+                </Typography>
+                <PoperDropdown onGetCommands={onGetCommands} 
+                    onGetTasks={onGetTasks} 
+                    onGetCommandsFiltered={onGetCommandsFiltered} 
+                    onGetTasksFiltered={onGetTasksFiltered} 
+                    onFilterByTags={onFilterByTags} 
+                    setBackdropOpen={setBackdropOpen} 
+                    showCountGrouping={showCountGrouping}
+                    entries={entries}
+                />
+            </Paper> 
+            
+            <div style={{display: "flex", flexGrow: 1, overflow: "auto"}}>
+                <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={false}>
+                    <CircularProgress color="inherit" />
+                </Backdrop>
+                <MitreGridDisplay entries={entries} showCountGrouping={showCountGrouping} />
+            </div>
+        </div>
+    )
+}
+
+function PoperDropdown({onGetCommands, onGetTasks, onGetCommandsFiltered, onGetTasksFiltered, onFilterByTags, setBackdropOpen, entries, showCountGrouping}){
     const dropdownAnchorRef = React.useRef(null);
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
-    const [showCountGrouping, setShowCountGrouping] = React.useState("");
-    const [backdropOpen, setBackdropOpen] = React.useState(false);
     const [openLicense, setOpenLicense] = React.useState(false);
     const [openFilterTasks, setOpenFilterTasks] = React.useState(false);
     const [openFilterCommands, setOpenFilterCommands] = React.useState(false);
-    const tactics = [
-        "Reconnaissance", "Resource Development", "Initial Access", "Execution", "Persistence", "Privilege Escalation", "Defense Evasion",
-        "Credential Access", "Discovery", "Lateral Movement", "Collection", "Command And Control", "Exfiltration", "Impact"
-    ]
+    const theme = useTheme();
     const dropDownOptions = [
         {
             name: "Fetch All Commands Mapped to MITRE",
             click: () => {
                 setBackdropOpen(true);
-                setShowCountGrouping("command");
                 setDropdownOpen(false);
                 onGetCommands();
             }
@@ -44,7 +68,7 @@ export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFilt
         {
             name: "Fetch All Issued Tasks Mapped to MITRE",
             click: () => {
-                setShowCountGrouping("task");
+                setBackdropOpen(true);
                 setDropdownOpen(false);
                 onGetTasks();
             }
@@ -68,7 +92,6 @@ export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFilt
             name: "Fetch Task Mappings by Task Tag",
             click: () => {
                 setDropdownOpen(false);
-                setShowCountGrouping("task");
                 onFilterByTags();
             }
         },
@@ -208,85 +231,84 @@ export function MitreGrid({entries, onGetCommands, onGetTasks, onGetCommandsFilt
     }
     const onSubmitGetTasksFiltered = (payload_type) => {
         setBackdropOpen(true);
-        setShowCountGrouping("task");
+        
         onGetTasksFiltered(payload_type);
     }
     const onSubmitGetCommandsFiltered = (payload_type) => {
         setBackdropOpen(true);
-        setShowCountGrouping("command");
+        
         onGetCommandsFiltered(payload_type);
     }
     return (
-        <div style={{display: "flex", flexDirection: "column", width: "100%", height: "100%"}}>
-            <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
-                <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
-                    {"MITRE ATT&CK Mappings"}
-                </Typography>
-                <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" style={{marginRight: "10px", marginTop:"10px", float: "right"}} color="primary">
-                    <Button size="small" color="primary" aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
-                        aria-expanded={dropdownOpen ? 'true' : undefined}
-                        aria-haspopup="menu"
-                        onClick={() => setDropdownOpen(!dropdownOpen)}>
-                            Actions <ArrowDropDownIcon />
-                    </Button>
-                </ButtonGroup>
-                <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition style={{zIndex: 10}}>
-                {({ TransitionProps, placement }) => (
-                    <Grow
-                    {...TransitionProps}
-                    style={{
-                        transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
-                    }}
-                    >
-                    <Paper style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
-                        <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
-                        <MenuList id="split-button-menu">
-                            {dropDownOptions.map((option, index) => (
-                            <MenuItem
-                                key={option.name}
-                                onClick={(event) => handleMenuItemClick(event, index)}
-                            >
-                                {option.name}
-                            </MenuItem>
-                            ))}
-                        </MenuList>
-                        </ClickAwayListener>
-                    </Paper>
-                    </Grow>
-                )}
-                </Popper>
-            </Paper>  
-            <div style={{display: "flex", flexGrow: 1, overflow: "auto"}}>
-                <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={false}>
-                    <CircularProgress color="inherit" />
-                </Backdrop>
-                { openLicense &&
-                    <MythicDisplayTextDialog 
-                        onClose={()=>{setOpenLicense(false);}} 
-                        title={"MITRE ATT&CK Usage License"} 
-                        maxWidth={"md"} 
-                        fullWidth={true} 
-                        value={mitreLicense} 
-                        open={openLicense}
-                    />
-                }
-                {openFilterTasks &&
-                    <MythicDialog fullWidth={true} maxWidth="sm" open={openFilterTasks}
-                        onClose={()=>{setOpenFilterTasks(false);}} 
-                        innerDialog={<SelectPayloadTypeDialog onClose={()=>{setOpenFilterTasks(false);}} onSubmit={onSubmitGetTasksFiltered} />}
-                    />
-                }
-                {openFilterCommands &&
-                    <MythicDialog fullWidth={true} maxWidth="sm" open={openFilterCommands}
-                        onClose={()=>{setOpenFilterCommands(false);}} 
-                        innerDialog={<SelectPayloadTypeDialog onClose={()=>{setOpenFilterCommands(false);}} onSubmit={onSubmitGetCommandsFiltered} />}
-                    />
-                }
-                {tactics.map( t => (
-                    <MitreGridColumn key={t} column={entries[t]} showCountGrouping={showCountGrouping} />
-                ))}
-            </div>
-        </div>
+        <React.Fragment>
+            <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" style={{marginRight: "10px", marginTop:"10px", float: "right"}} color="primary">
+                <Button size="small" color="primary" aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
+                    aria-expanded={dropdownOpen ? 'true' : undefined}
+                    aria-haspopup="menu"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}>
+                        Actions <ArrowDropDownIcon />
+                </Button>
+            </ButtonGroup>
+            <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition style={{zIndex: 10}}>
+            {({ TransitionProps, placement }) => (
+                <Grow
+                {...TransitionProps}
+                style={{
+                    transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
+                }}
+                >
+                <Paper style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                    <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
+                    <MenuList id="split-button-menu">
+                        {dropDownOptions.map((option, index) => (
+                        <MenuItem
+                            key={option.name}
+                            onClick={(event) => handleMenuItemClick(event, index)}
+                        >
+                            {option.name}
+                        </MenuItem>
+                        ))}
+                    </MenuList>
+                    </ClickAwayListener>
+                </Paper>
+                </Grow>
+            )}
+            </Popper>
+            { openLicense &&
+                <MythicDisplayTextDialog 
+                    onClose={()=>{setOpenLicense(false);}} 
+                    title={"MITRE ATT&CK Usage License"} 
+                    maxWidth={"md"} 
+                    fullWidth={true} 
+                    value={mitreLicense} 
+                    open={openLicense}
+                />
+            }
+            {openFilterTasks &&
+                <MythicDialog fullWidth={true} maxWidth="sm" open={openFilterTasks}
+                    onClose={()=>{setOpenFilterTasks(false);}} 
+                    innerDialog={<SelectPayloadTypeDialog onClose={()=>{setOpenFilterTasks(false);}} onSubmit={onSubmitGetTasksFiltered} />}
+                />
+            }
+            {openFilterCommands &&
+                <MythicDialog fullWidth={true} maxWidth="sm" open={openFilterCommands}
+                    onClose={()=>{setOpenFilterCommands(false);}} 
+                    innerDialog={<SelectPayloadTypeDialog onClose={()=>{setOpenFilterCommands(false);}} onSubmit={onSubmitGetCommandsFiltered} />}
+                />
+            } 
+        </React.Fragment>
+        
     )
 }
 
+export function MitreGridDisplay({entries, showCountGrouping}){
+    const tactics = [
+        "Reconnaissance", "Resource Development", "Initial Access", "Execution", "Persistence", "Privilege Escalation", "Defense Evasion",
+        "Credential Access", "Discovery", "Lateral Movement", "Collection", "Command And Control", "Exfiltration", "Impact"
+    ]
+    return (
+        tactics.map( t => (
+            <MitreGridColumn key={t} column={entries[t]} showCountGrouping={showCountGrouping} />
+        ))
+    )
+}

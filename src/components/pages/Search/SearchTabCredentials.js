@@ -192,7 +192,7 @@ const SearchTabCredentialsSearchPanel = (props) => {
             </Grid>
             <Grid item xs={2}>
                 <Select
-                    style={{marginBottom: "10px", width: "15rem"}}
+                    style={{marginBottom: "10px", width: "100%"}}
                     value={searchField}
                     onChange={handleSearchFieldChange}
                 >
