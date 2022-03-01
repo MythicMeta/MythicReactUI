@@ -377,7 +377,14 @@ export function TaskParametersDialogRow(props){
     }
     const onChangeArrayText = (value, error, index) => {
         let values = [...arrayValue];
-        values[index] = value;
+        if(value.includes("\n")){
+            let new_values = value.split("\n");
+            values = [...values, ...new_values.slice(1)];
+            values[index] = values[index] + new_values[0];
+        }else{
+            values[index] = value;
+        }
+        
         setArrayValue(values);
         props.onChange(props.name, values, false);
     }
@@ -419,12 +426,12 @@ export function TaskParametersDialogRow(props){
                             <TableBody>
                                 {arrayValue.map( (a, i) => (
                                     <TableRow key={'array' + props.name + i} hover>
-                                        <TableCell style={{width: "5rem"}}>
+                                        <TableCell style={{width: "4rem"}}>
                                             <Button onClick={() => removeArrayValue(i)} style={{backgroundColor: theme.palette.error.main,}} size="small" variant="contained">x</Button>
                                         </TableCell>
                                         <TableCell>
-                                            <MythicTextField required={props.required} fullWidth={true} placeholder={""} value={a} multiline={false} autoFocus={props.autoFocus && i === 0}
-                                                onChange={(n,v,e) => onChangeArrayText(v, e, i)} display="inline-block" onEnter={addNewArrayValue}
+                                            <MythicTextField required={props.required} fullWidth={true} placeholder={""} value={a} multiline={true} autoFocus={props.autoFocus }
+                                                onChange={(n,v,e) => onChangeArrayText(v, e, i)} display="inline-block"
                                                 validate={testParameterValues} errorText={"Must match: " + props.verifier_regex}
                                             />
                                         </TableCell>
