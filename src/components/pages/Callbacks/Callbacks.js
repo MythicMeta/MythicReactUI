@@ -113,7 +113,7 @@ export function Callbacks() {
         <div style={{ maxWidth: '100%', height: '100%',  display: 'flex', flexDirection: 'column'}}>
             <React.Fragment>
                 <SpeedDialWrapper setTopDisplay={setTopDisplay} heights={heights} onSubmitHeights={onSubmitHeights} />
-                <div style={{ flexGrow: 1, flexBasis: heights.top, height: heights.top }}>
+                <div style={{flexGrow: 1, flexBasis: heights.top, height: `${heights.top}` }}>
                     <CallbacksTop topDisplay={topDisplay} onOpenTab={onOpenTab.current} heights={heights} />
                 </div>
                 <div style={{ flexGrow: 1, flexBasis: heights.bottom, height: heights.bottom }}>

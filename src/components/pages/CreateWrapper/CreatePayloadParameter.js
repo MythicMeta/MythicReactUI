@@ -7,13 +7,13 @@ import MythicTextField from '../../MythicComponents/MythicTextField';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {IconButton, Input, Button, MenuItem, Grid} from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import {
-    MuiPickersUtilsProvider,
-    KeyboardDatePicker,
-  } from '@material-ui/pickers';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import DesktopDatePicker from '@mui/lab/DesktopDatePicker';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import 'date-fns';
-import DateFnsUtils from '@date-io/date-fns';
 import {useTheme} from '@mui/material/styles';
+import Switch from '@mui/material/Switch';
+import TextField from '@mui/material/TextField';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 export function CreatePayloadParameter({onChange, parameter_type, default_value, name, required, verifier_regex, id, description, value: passedValue, returnAllDictValues}){
@@ -206,25 +206,28 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
         setDateValue(date)
         onChange(name, date.toISOString().slice(0,10), "");
     }
+    const toggleSwitchValue = (evt) => {
+        let newVal = !value;
+        setValue(newVal);
+        onChange(name, newVal, false);
+    }
     const getParameterObject = () => {
         switch(parameter_type){
             case "Date":
                 return (
-                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <Grid container justifyContent="flex-start">
-                            <KeyboardDatePicker
+                            <DesktopDatePicker
                             disableToolbar
                             variant="inline"
-                            format="MM/dd/yyyy"
+                            inputFormat="MM/dd/yyyy"
                             margin="normal"
                             value={dateValue}
                             onChange={onChangeDate}
-                            KeyboardButtonProps={{
-                                'aria-label': 'change date',
-                            }}
+                            renderInput={(params) => <TextField {...params} />}
                             />
                         </Grid>
-                    </MuiPickersUtilsProvider>
+                    </LocalizationProvider>
                 );
             case "ChooseOne":
                 return (
@@ -279,6 +282,14 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                         onChange={onChangeText} display="inline-block" name={name}
                         validate={testParameterValues} errorText={"Must match: " + verifier_regex}
                     />
+                )
+            case "Boolean":
+                return (
+                        <Switch
+                        checked={Boolean(value)}
+                        onChange={toggleSwitchValue}
+                        inputProps={{ 'aria-label': 'primary checkbox' }}
+                        />
                 )
            default:
             return null
