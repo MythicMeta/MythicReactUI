@@ -82,7 +82,7 @@ export function App(props) {
                                 <TopAppBar theme={themeMode} toggleTheme={themeToggler} />
                             ) : null}
                         </div>
-                        <div style={{ margin: '0px 16px 0px 16px', flexGrow: 1, display: 'flex', flexDirection: 'column', height: "calc(100% - 56px)", maxHeight: "calc(100% - 56px)", }}>
+                        <div style={{ margin: '0px 16px 0px 16px', flexGrow: 1,  flexDirection: 'column', height: "calc(100% - 56px)",  }}>
                             <Switch>
                                 <LoggedInRoute exact path='/new' component={Home} />
                                 <Route exact path='/new/login' component={LoginForm} />

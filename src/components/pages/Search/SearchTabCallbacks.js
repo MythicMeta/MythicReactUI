@@ -18,18 +18,19 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
 const callbackFragment = gql`
-fragment callbackData on callback{
+fragment callbackSearchData on callback{
     user
     host
     description
     domain
     id
-    integrity_level
     ip
-    process_name
     active
-    init_callback
-    last_checkin
+    payload {
+        payloadtype {
+            ptype
+        }
+    }
 }
 `;
 const fetchLimit = 50;
@@ -42,7 +43,7 @@ query userQuery($operation_id: Int!, $user: String!, $offset: Int!, $fetchLimit:
       }
     }
     callback(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {operation_id: {_eq: $operation_id}, user: {_ilike: $user}}) {
-      ...callbackData
+      ...callbackSearchData
     }
 }
 `;
@@ -55,7 +56,7 @@ query hostQuery($operation_id: Int!, $host: String!, $offset: Int!, $fetchLimit:
       }
     }
     callback(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, operation_id: {_eq: $operation_id}}) {
-      ...callbackData
+      ...callbackSearchData
     }
 }
 `;
@@ -68,7 +69,7 @@ query domainQuery($operation_id: Int!, $domain: String!, $offset: Int!, $fetchLi
       }
     }
     callback(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {domain: {_ilike: $domain}, operation_id: {_eq: $operation_id}}) {
-      ...callbackData
+      ...callbackSearchData
     }
 }
 `;
@@ -81,7 +82,7 @@ query domainQuery($operation_id: Int!, $description: String!, $offset: Int!, $fe
       }
     }
     callback(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {description: {_ilike: $description}, operation_id: {_eq: $operation_id}}) {
-      ...callbackData
+      ...callbackSearchData
     }
 }
 `;
@@ -94,7 +95,7 @@ query domainQuery($operation_id: Int!, $ip: String!, $offset: Int!, $fetchLimit:
       }
     }
     callback(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {_or: [{ip: {_ilike: $ip}}, {external_ip: {_ilike: $ip}}], operation_id: {_eq: $operation_id}}) {
-      ...callbackData
+      ...callbackSearchData
     }
 }
 `;

@@ -97,7 +97,20 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                 setDictValue(passedValue);
                 submitDictChange(passedValue);
             }
-            
+        }else if(parameter_type === "Boolean"){
+            console.log(default_value, passedValue)
+            if(default_value !== undefined){
+                setValue( default_value.toLowerCase() === "true" ? true : false);
+            }else{
+                setValue(true);
+            }
+            if(passedValue !== "" && passedValue !== undefined){
+                if(typeof(passedValue) === "string"){
+                    setValue(passedValue.toLowerCase() === "true" ? true : false)
+                }else{
+                    setValue(passedValue);
+                }
+            }
         }else{
             if(default_value !== undefined){
                 setValue(default_value);

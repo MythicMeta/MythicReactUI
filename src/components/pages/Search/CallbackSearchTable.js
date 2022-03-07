@@ -51,7 +51,7 @@ export function CallbackSearchTable(props){
                         <TableCell >Description</TableCell>
                         <TableCell >IP</TableCell>
                         <TableCell >ID</TableCell>
-                        <TableCell>Checkin Times</TableCell>
+                        <TableCell>Agent</TableCell>
                         <TableCell>Details</TableCell>
                     </TableRow>
                 </TableHead>
@@ -121,15 +121,15 @@ function CallbackSearchTableRow(props){
                     </Link>
                 </TableCell>
                 <TableCell>
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>
-                        Initial: {toLocalTime(props.init_callback, me.user.view_utc_time)}
-                    </Typography>
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>
-                        Latest: {toLocalTime(props.last_checkin, me.user.view_utc_time)}
-                    </Typography>
+                <MythicStyledTooltip title={props.payload.payloadtype.ptype}>
+                    <img
+                        style={{width: "35px", height: "35px"}}
+                        src={"/static/" + props.payload.payloadtype.ptype + ".svg"}
+                    />
+                </MythicStyledTooltip>
                 </TableCell>
                 <TableCell>
-                    <InfoIcon onClick={() => setOpenMetaDialog(true)} style={{color: theme.palette.info.main}}/>
+                    <InfoIcon onClick={() => setOpenMetaDialog(true)} style={{color: theme.palette.info.main, cursor: "pointer"}}/>
                     {openMetaDialog && 
                         <MythicDialog fullWidth={true} maxWidth="lg" open={openMetaDialog}
                             onClose={()=>{setOpenMetaDialog(false);}} 

@@ -4,8 +4,8 @@ import { useCallback, useMemo } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList as List } from "react-window";
 import { snackActions } from '../utilities/Snackbar';
-import FolderIcon from '@mui/icons-material/Folder';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import {faFolderOpen, faFolder} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ComputerIcon from '@mui/icons-material/Computer';
 import DescriptionIcon from '@mui/icons-material/Description';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -147,16 +147,18 @@ const VirtualTreeRow = ({
           ) : item.data.is_file ? (
               <DescriptionIcon style={{ marginLeft: '3px', marginRight: '5px' }} />
           ) : item.isOpen ? (
-              <FolderOpenIcon
-                  style={{
-                      marginLeft: '3px',
-                      marginRight: '5px',
-                      color: theme.folderColor
-                  }}
-                  onClick={handleOnClickButton}
-              />
+            <FontAwesomeIcon 
+              icon={faFolderOpen} 
+              style={{
+                marginLeft: '3px',
+                marginRight: '5px',
+                color: theme.folderColor
+              }} 
+              size={"1x"}
+              onClick={handleOnClickButton} />
           ) : (
-              <FolderIcon style={{ paddingTop: '5px', marginLeft: '3px', marginRight: '5px', color: theme.folderColor }} onClick={handleOnClickButton} />
+              <FontAwesomeIcon 
+                style={{ paddingTop: '5px', marginLeft: '3px', marginRight: '5px', color: theme.folderColor }} size={"lg"} icon={faFolder} onClick={handleOnClickButton} />
           )}
           {item.data.depth > 0 &&
           item.data.filebrowserobjs_aggregate.aggregate.count > 99 ? (

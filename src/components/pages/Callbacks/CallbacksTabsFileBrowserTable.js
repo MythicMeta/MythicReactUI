@@ -6,7 +6,8 @@ import {
     MythicModifyStringDialog,
     MythicViewJSONAsTableDialog,
 } from '../../MythicComponents/MythicDialog';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import {faFolder} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Paper from '@mui/material/Paper';
 import DescriptionIcon from '@mui/icons-material/Description';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -263,7 +264,9 @@ const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
             {rowData.is_file ? (
                 <DescriptionIcon style={{ marginRight: '5px' }} />
             ) : (
-                <FolderOpenIcon
+                <FontAwesomeIcon 
+                    icon={faFolder}
+                    size={"lg"}
                     style={{
                         marginRight: '5px',
                         color:

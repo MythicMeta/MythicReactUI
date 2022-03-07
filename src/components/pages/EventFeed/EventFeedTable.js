@@ -30,7 +30,7 @@ const EventList = ({onUpdateDeleted, onUpdateLevel, onUpdateResolution, getSurro
     const listRef = React.createRef();
     const getItemSize = (index) => {
         const op = operationeventlog[operationeventlog.length - index - 1];
-        return 75 + (20 * (op["message"].match(/\n/g) || []).length);
+        return 75 + (24 * (op["message"].match(/\n/g) || []).length);
     }
     const eventlogWithFunctions = operationeventlog.map( (oplog) => {
         return {onUpdateDeleted, onUpdateLevel, onUpdateResolution, getSurroundingEvents, ...oplog}
@@ -97,7 +97,7 @@ export function EventFeedTable(props){
         setDropdownOpen(false);
     };
     return (
-        <React.Fragment>
+        <div style={{display: "flex", flexDirection: "column", height: "100%", width: "100%"}}>
             <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main,  color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
                 <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
                     Operational Event Messages
@@ -137,7 +137,7 @@ export function EventFeedTable(props){
                 </Popper>
             </Paper>
             
-            <Paper elevation={5} style={{position: "relative", height: "calc(90vh)", backgroundColor: theme.body}} variant={"elevation"}>
+            <Paper elevation={5} style={{position: "relative", flexGrow: 1, backgroundColor: theme.body, marginBottom: "20px"}} variant={"elevation"}>
                 <EventList 
                     onUpdateResolution={props.onUpdateResolution}
                     onUpdateLevel={props.onUpdateLevel}
@@ -147,6 +147,6 @@ export function EventFeedTable(props){
                 <div ref={messagesEndRef} />
                 <EventFeedTableInput onSubmitMessage={onSubmitMessage} />
             </Paper>
-        </React.Fragment>
+        </div>
     )
 }

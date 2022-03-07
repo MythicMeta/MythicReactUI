@@ -41,7 +41,7 @@ export function FileBrowserTable(props){
         setFiles(updates);
     }
     return (
-        <TableContainer component={Paper} className="mythicElement" style={{height: "calc(78vh)"}}>
+        <TableContainer component={Paper} className="mythicElement" >
             <Table stickyHeader size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
@@ -66,7 +66,23 @@ export function FileBrowserTable(props){
         </TableContainer>
     )
 }
-
+const convertTime = (timestamp) => {
+    try{
+        // handle Unix epoch timestamps
+        const dateData = new Date(parseInt(timestamp)).toISOString();
+        return dateData.slice(0, 10) + " " + dateData.slice(11,-1);
+    }catch(error){
+        try{
+            // handle windows FILETIME values
+            const dateData = new Date( ((parseInt(timestamp) / 10000000) - 11644473600) * 1000).toISOString();
+            return dateData.slice(0, 10) + " " + dateData.slice(11,-1);
+        }catch(error2){
+            console.log("error with timestamp: ", timestamp);
+            return String(timestamp);
+        }
+        
+    }
+}
 function FileBrowserTableRow(props){
     const [viewPermissionsDialogOpen, setViewPermissionsDialogOpen] = React.useState(false);
     const [fileHistoryDialogOpen, setFileHistoryDialogOpen] = React.useState(false);
@@ -100,7 +116,7 @@ function FileBrowserTableRow(props){
                 <Typography variant="body2" style={{wordBreak: "break-all", textDecoration: props.deleted ? "strike-through" : ""}}>{props.full_path_text}</Typography>
                 </TableCell>
                 <TableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.modify_time}</Typography>
+                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{convertTime(props.modify_time)}</Typography>
                 </TableCell>
                 <TableCell><IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton><Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.comment}</Typography></TableCell>
                 <TableCell>

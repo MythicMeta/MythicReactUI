@@ -5,7 +5,6 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import Grid from '@mui/material/Grid';
 import SearchIcon from '@mui/icons-material/Search';
 import Tooltip from '@mui/material/Tooltip';
-import {useTheme} from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery, useMutation} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
@@ -92,7 +91,7 @@ const createCredentialMutation = gql`
 ${credentialFragment}
 mutation createCredential($comment: String!, $account: String!, $realm: String!, $type: String!, $credential: bytea!) {
     insert_credential_one(object: {account: $account, credential_raw: $credential, comment: $comment, realm: $realm, type: $type}) {
-      id
+      ...credentialData
     }
   }
 `;
@@ -104,7 +103,6 @@ export function SearchTabCredentialsLabel(props){
 }
 
 const SearchTabCredentialsSearchPanel = (props) => {
-    const theme = useTheme();
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Account");
     const searchFieldOptions = ["Account", "Realm", "Comment", "Credential"];
@@ -118,6 +116,7 @@ const SearchTabCredentialsSearchPanel = (props) => {
         fetchPolicy: "no-cache",
         onCompleted: (data) => {
             snackActions.success("Successfully created new credential");
+            props.onAddCredential(data.insert_credential_one);
         },
         onError: (data) => {
             snackActions.error("Failed to create credential");
@@ -222,7 +221,9 @@ export const SearchTabCredentialsPanel = (props) =>{
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Account");
     const me = useReactiveVar(meState);
-
+    const addCredential = (credential) => {
+        setCredentialData([credential, ...credentialaData]);
+    }
     const onChangeSearchField = (field) => {
         setSearchField(field);
         switch(field){
@@ -358,7 +359,8 @@ export const SearchTabCredentialsPanel = (props) =>{
     return (
         <MythicTabPanel {...props} >
             <SearchTabCredentialsSearchPanel onChangeSearchField={onChangeSearchField} onAccountSearch={onAccountSearch} value={props.value} index={props.index}
-                onRealmSearch={onRealmSearch} onCredentialSearch={onCredentialSearch} onCommentSearch={onCommentSearch} changeSearchParam={props.changeSearchParam}/>
+                onRealmSearch={onRealmSearch} onCredentialSearch={onCredentialSearch} onCommentSearch={onCommentSearch} changeSearchParam={props.changeSearchParam}
+                onAddCredential={addCredential}/>
             <div style={{overflowY: "auto", flexGrow: 1}}>
                 {credentialaData.length > 0 ? (
                     <CredentialTable credentials={credentialaData} />) : (
