@@ -22,7 +22,6 @@ import { Backdrop } from '@mui/material';
 import {CircularProgress} from '@mui/material';
 import Divider from '@mui/material/Divider';
 import {useTheme} from '@mui/material/styles';
-import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 //if we need to get all the loaded commands for the callback and filter, use this
 const GetLoadedCommandsQuery = gql`
@@ -358,7 +357,7 @@ export function TaskParametersDialog(props) {
             setRawParameters({...data});
         }
     });
-    const addedCredential = () => {
+    const addedCredential = (credential) => {
         getAllCredentials({variables: {operation_id: props.operation_id}});
     }
     const intersect = (a, b) => {
@@ -367,6 +366,7 @@ export function TaskParametersDialog(props) {
     }
     
     useEffect( () => {
+        //console.log("use effect triggered")
         const getLinkInfoFromAgentConnect = (choices) => {
             if(choices.length > 0){
                 const c2profileparameters = choices[0]["payloads"][0]["c2info"][0].parameters.reduce( (prev, opt) => {
@@ -525,31 +525,50 @@ export function TaskParametersDialog(props) {
                         return [...prev, {...cmd, value: {} }];                   
                     case "Credential-JSON":
                         if (loadedCredentialsLoading.credential.length > 0){
-                            return [...prev, {...cmd, value: loadedCredentialsLoading.credential[0], choices: loadedCredentialsLoading.credential}];
+                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0)){
+                                cmd.value = loadedCredentialsLoading.credential[0];
+                            }
+                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
                         }else{
                             return [...prev, {...cmd, value: {}, choices: []}];
                         }
                     case "Credential-Account":
                         if (loadedCredentialsLoading.credential.length > 0){
-                            return [...prev, {...cmd, value: loadedCredentialsLoading.credential[0]["account"], choices: loadedCredentialsLoading.credential}];
+                            //console.log("Current value, potentially updating in useEffect in taskparametersdialog: ", cmd.value)
+                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
+                                //console.log("updating credential-account to the first because cmd.value is ", cmd.value)
+                                cmd.value = loadedCredentialsLoading.credential[0]["account"];
+                            }
+                            //console.log("updated credential-account to in useEffect: ", cmd.value)
+                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
                         }else{
+                            //console.log("setting value to ''")
                             return [...prev, {...cmd, value: "", choices: []}];
                         }
                     case "Credential-Realm":
                         if (loadedCredentialsLoading.credential.length > 0){
-                            return [...prev, {...cmd, value: loadedCredentialsLoading.credential[0]["realm"], choices: loadedCredentialsLoading.credential}];
+                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
+                                cmd.value = loadedCredentialsLoading.credential[0]["realm"];
+                            }
+                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
                         }else{
                             return [...prev, {...cmd, value: "", choices: []}];
                         }
                     case "Credential-Type":
                         if (loadedCredentialsLoading.credential.length > 0){
-                            return [...prev, {...cmd, value: loadedCredentialsLoading.credential[0]["type"], choices: loadedCredentialsLoading.credential}];
+                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
+                                cmd.value = loadedCredentialsLoading.credential[0]["type"];
+                            }
+                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
                         }else{
                             return [...prev, {...cmd, value: "", choices: []}];
                         }
                     case "Credential-Credential":
                         if (loadedCredentialsLoading.credential.length > 0){
-                            return [...prev, {...cmd, value: loadedCredentialsLoading.credential[0]["credential_text"], choices: loadedCredentialsLoading.credential}];
+                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
+                                cmd.value = loadedCredentialsLoading.credential[0]["credential_text"];
+                            }
+                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
                         }else{
                             return [...prev, {...cmd, value: "", choices: []}];
                         }
@@ -738,6 +757,8 @@ export function TaskParametersDialog(props) {
             if(sorted.length > 0){
                 sorted[0]["autoFocus"] = true;
             }
+
+            //console.log("updated params in useEffect of taskparametersdialog", sorted)
             setParameters(sorted);
         }
     }, [selectedParameterGroup, rawParameters, loadedCommandsLoading, allCommandsLoading, loadedAllEdgesLoading, requiredPieces, loadedAllPayloadsLoading, loadedCredentialsLoading, loadedAllPayloadsOnHostsLoading, props.callback_id, props.choices]);
@@ -759,6 +780,7 @@ export function TaskParametersDialog(props) {
                 case "PayloadList":
                 case "Array":
                 case "LinkInfo":
+                    //console.log("sumbit param", param)
                     collapsedParameters[param.name] = param.value;
                     break;
                 case "File":
@@ -796,6 +818,7 @@ export function TaskParametersDialog(props) {
         RemovePayloadOnHost({variables: {payloadOnHostID: payloadOnHostID}})
     }
     const onChange = (name, value, error) => {
+        //console.log("called props.onChange to update a value for submission, have these parameters: ", [...parameters]);
         const params = parameters.map( (param) => {
             if(param.name === name){
                 return {...param, value: value};
@@ -804,6 +827,7 @@ export function TaskParametersDialog(props) {
             }
         });
         setParameters(params);
+        //console.log("just set new params from props.onChange with a new value: ", [...params])
     }
     const onChangeParameterGroup = (event) => {
         setSelectedParameterGroup(event.target.value);

@@ -72,7 +72,7 @@ export function LoginForm(props){
                     <img src={logo} height="400px" alt="Mythic logo"/>
                         <form onSubmit={submit}>
                             <MythicTextField name='username' value={username} onChange={onUsernameChange} width={30} />
-                            <MythicTextField name='password' type="password" value={password} onChange={onPasswordChange} width={30} />
+                            <MythicTextField name='password' type="password" onEnter={submit} value={password} onChange={onPasswordChange} width={30} />
                             <Button type="submit" color="primary" onClick={submit} variant="contained" style={{marginRight: "10px"}}>Login</Button>
                         </form>
                     </div>

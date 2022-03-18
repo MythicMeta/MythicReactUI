@@ -79,6 +79,7 @@ export function TaskParametersDialogRow(props){
     const [fileValue, setFileValue] = React.useState({name: ""});
     const [backdropOpen, setBackdropOpen] = React.useState(false);
     const usingDynamicParamChoices = React.useRef(false);
+    const updateToLatestCredential = React.useRef(false);
     const [getDynamicParams] = useMutation(getDynamicQueryParams, {
         onCompleted: (data) => {
             //console.log(data);
@@ -112,33 +113,8 @@ export function TaskParametersDialogRow(props){
         fetchPolicy: "no-cache",
         onCompleted: (data) => {
             snackActions.success("Successfully created new credential");
-            props.addedCredential();
-            let newLength = ChoiceOptions.length;
-            setChoiceOptions([...ChoiceOptions, {...data.insert_credential_one}]);
-            switch(props.type){
-                case "Credential-JSON":
-                    setValue(newLength);
-                    props.onChange(props.name, {...data.insert_credential_one}, false);
-                    break;
-                case "Credential-Account":
-                    setValue(data.insert_credential_one.account);
-                    props.onChange(props.name, data.insert_credential_one.account, false);
-                    break;
-                case "Credential-Realm":
-                    setValue(data.insert_credential_one.realm);
-                    props.onChange(props.name, data.insert_credential_one.realm, false);
-                    break;
-                case "Credential-Type":
-                    setValue(data.insert_credential_one.type);
-                    props.onChange(props.name, data.insert_credential_one.type, false);
-                    break;
-                case "Credential-Credential":
-                    setValue(data.insert_credential_one.credential_text);
-                    props.onChange(props.name, data.insert_credential_one.credential_text, false);
-                    break;
-                default:
-                    break;
-            }
+            updateToLatestCredential.current = true;
+            props.addedCredential(data.insert_credential_one);
         },
         onError: (data) => {
             snackActions.error("Failed to create credential");
@@ -215,6 +191,43 @@ export function TaskParametersDialogRow(props){
                    }
                }else{
                     setValue(props.value);
+               }
+           }
+           if(props.type.includes("Credential")){
+               //console.log("updating choiceOptions from useEffect in dialog row: ", [...props.choices])
+               setChoiceOptions([...props.choices]);
+               if(updateToLatestCredential.current){
+                switch(props.type){
+                    case "Credential-JSON":
+                        //console.log("set new value")
+                        setValue(props.choices.length);
+                        props.onChange(props.name, {...props.choices[props.choices.length-1]}, false);
+                        break;
+                    case "Credential-Account":
+                        //console.log("set new value in dialog row as part of useMutation")
+                        setValue(props.choices[props.choices.length-1].account);
+                        //console.log("calling props.onChange")
+                        props.onChange(props.name, props.choices[props.choices.length-1].account, false);
+                        break;
+                    case "Credential-Realm":
+                        //console.log("set new value")
+                        setValue(props.choices[props.choices.length-1].realm);
+                        props.onChange(props.name, props.choices[props.choices.length-1].realm, false);
+                        break;
+                    case "Credential-Type":
+                        //console.log("set new value")
+                        setValue(props.choices[props.choices.length-1].type);
+                        props.onChange(props.name, props.choices[props.choices.length-1].type, false);
+                        break;
+                    case "Credential-Credential":
+                        //console.log("set new value")
+                        setValue(props.choices[props.choices.length-1].credential_text);
+                        props.onChange(props.name, props.choices[props.choices.length-1].credential_text, false);
+                        break;
+                    default:
+                        break;
+                }
+                updateToLatestCredential.current = false;
                }
            }
            if(props.dynamic_query_function === null && value===""){

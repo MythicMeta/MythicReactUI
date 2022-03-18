@@ -330,6 +330,13 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                                     }
                                 }, []);
                             }
+                            paramOptions = paramOptions.reduce( (prev, cur) => {
+                                if(prev.includes(cur)){
+                                    return [...prev];
+                                }else{
+                                    return [...prev, cur];
+                                }
+                            }, [])
                             if(paramOptions.length > 0){
                                 if(paramOptions.length === 1){
                                     setTabOptions([]);

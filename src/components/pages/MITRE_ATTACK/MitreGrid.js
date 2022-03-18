@@ -184,7 +184,7 @@ function PoperDropdown({onGetCommands, onGetTasks, onGetCommandsFiltered, onGetT
                         baseNavigator.techniques.push(
                             {
                                 "techniqueID": entries[key].rows[i].t_num,
-                                "tactic": key.replace(" ", "-").toLowerCase(),
+                                "tactic": key.replaceAll(" ", "-").toLowerCase(),
                                 "color": "#bc3b24",
                                 "enabled": true,
                                 "comment": "",
@@ -200,7 +200,7 @@ function PoperDropdown({onGetCommands, onGetTasks, onGetCommandsFiltered, onGetT
                         baseNavigator.techniques.push(
                             {
                                 "techniqueID": entries[key].rows[i].t_num,
-                                "tactic": key.replace(" ", "-").toLowerCase(),
+                                "tactic": key.replaceAll(" ", "-").toLowerCase(),
                                 "color": "#bc3b24",
                                 "enabled": true,
                                 "comment": "",
