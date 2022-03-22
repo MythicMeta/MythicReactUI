@@ -31,6 +31,18 @@ export function getTimeDifference(checkin_time) {
     output += seconds + "s";
     return output;
 }
+export function milisecondsToString(millisec){
+    let seconds = Math.trunc(((millisec / 1000)) % 60);
+    let minutes = Math.trunc(((millisec / (1000 * 60))) % 60);
+    let hours = Math.trunc(((millisec / (1000 * 60 * 60))) % 24);
+    let days = Math.trunc(((millisec / (1000 * 60 * 60 * 24))) % 365);
+    let output = "";
+    if(days !== 0){ output += days + "d";}
+    if(hours !== 0){ output += hours + "h";}
+    if(minutes !== 0){ output += minutes + "m";}
+    output += seconds + "s";
+    return output;
+}
 //https://overreacted.io/making-setinterval-declarative-with-react-hooks/
 export function useInterval(callback, delay, mountedRef, parentMountedRef) {
   const savedCallback = useRef();
@@ -41,11 +53,13 @@ export function useInterval(callback, delay, mountedRef, parentMountedRef) {
   useEffect(() => {
     function tick() {
       if((mountedRef && !mountedRef.current) || (parentMountedRef && !parentMountedRef.current)){
+        //console.log("returning")
         return;
       }
       savedCallback.current();
     }
     if( (mountedRef && !mountedRef.current) || (parentMountedRef && !parentMountedRef.current)){
+      //console.log("returning2")
       return;
     }
     let id = setInterval(tick, delay);

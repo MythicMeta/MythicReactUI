@@ -17,7 +17,7 @@ import jwt_decode from 'jwt-decode';
 import {meState} from './cache';
 
 export const mythicVersion = "2.3.8";
-export const mythicUIVersion = "0.0.40";
+export const mythicUIVersion = "0.0.41";
 
 let fetchingNewToken = false;
 
@@ -71,6 +71,16 @@ export const isJWTValid = () => {
     }
   }else{
     return false;
+  }
+}
+export const JWTTimeLeft = () => {
+  let access_token = localStorage.getItem("access_token");
+  //console.log("in isJWTValid", "access_token", access_token);
+  if(access_token){
+    const decoded_token = jwt_decode(access_token);
+    return (decoded_token.exp * 1000) - Date.now();
+  }else{
+    return 0;
   }
 }
 const authLink = setContext( async (_, {headers}) => {
@@ -193,7 +203,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   }
 });
 
-const GetNewToken = async () =>{
+export const GetNewToken = async () =>{
   fetchingNewToken = true;
   const requestOptions = {
       method: "POST",
@@ -205,7 +215,7 @@ const GetNewToken = async () =>{
   };
   const response = await fetch('/refresh', requestOptions);
   const json = response.json().then(data => {
-          console.log(data)
+          //console.log(data)
           if("access_token" in data){
               successfulRefresh(data);
               console.log("successfully got new access_token");

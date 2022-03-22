@@ -453,6 +453,9 @@ export const CallbacksTableOSCell = React.memo( ({rowData, cellData}) => {
             case "windows":
                 return <FontAwesomeIcon icon={faWindows} size="2x" style={{cursor: "pointer"}} onClick={displayOSInfo} />
             case "linux":
+            case "centos":
+            case "redhat":
+            case "freebsd":
                 return <FontAwesomeIcon icon={faLinux} size="2x" style={{cursor: "pointer"}} onClick={displayOSInfo} />
             case "macos":
                 return <FontAwesomeIcon icon={faApple} size="2x" style={{cursor: "pointer"}} onClick={displayOSInfo}/>

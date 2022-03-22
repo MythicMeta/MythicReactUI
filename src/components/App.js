@@ -27,6 +27,13 @@ import { Reporting } from './pages/Reporting/Reporting';
 import { MitreAttack } from './pages/MITRE_ATTACK/MitreAttack';
 //background-color: #282c34;
 import { Route, Switch } from 'react-router-dom';
+import { IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { useInterval } from './utilities/Time';
+import { JWTTimeLeft, isJWTValid } from '..';
+import { RefreshTokenDialog } from './RefreshTokenDialog';
+import { MythicDialog } from './MythicComponents/MythicDialog';
+
 
 export function App(props) {
     const me = useReactiveVar(meState);
@@ -64,6 +71,23 @@ export function App(props) {
             }),
         [themeMode]
     );
+    const notistackRef = React.createRef();
+    const onClickDismissSnack = key => () => {
+        notistackRef.current.closeSnackbar(key);
+    }
+    const mountedRef = React.useRef(true);
+    const [openRefreshDialog, setOpenRefreshDialog] = React.useState(false);
+    useInterval( () => {
+        // interval should run every 10 minutes (600000 milliseconds) to check JWT status
+        let millisecondsLeft = JWTTimeLeft();
+        // if we have 30min left of our token, prompt the user to extend. 30 min is 1,800,000 milliseconds
+        //console.log("jwt time left: ", millisecondsLeft)
+        if(millisecondsLeft <= 1800000 && !openRefreshDialog){
+            if(isJWTValid()){
+                setOpenRefreshDialog(true);
+            }
+        }
+    }, 600000, mountedRef, mountedRef);
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
@@ -71,6 +95,10 @@ export function App(props) {
                 <CssBaseline />
                 <SnackbarProvider
                     maxSnack={5}
+                    ref={notistackRef}
+                    action={(key) => (
+                        <IconButton onClick={onClickDismissSnack(key)} ><CloseIcon /></IconButton>
+                    )}
                     anchorOrigin={{
                         vertical: 'top',
                         horizontal: 'center',
@@ -82,6 +110,13 @@ export function App(props) {
                                 <TopAppBar theme={themeMode} toggleTheme={themeToggler} />
                             ) : null}
                         </div>
+                        {openRefreshDialog && 
+                            <MythicDialog fullWidth={true} maxWidth="sm" open={openRefreshDialog} 
+                                onClose={()=>{setOpenRefreshDialog(false);}} 
+                                innerDialog={<RefreshTokenDialog 
+                                    onClose={()=>{setOpenRefreshDialog(false);}} />}
+                            />
+                        }
                         <div style={{ margin: '0px 16px 0px 16px', flexGrow: 1,  flexDirection: 'column', height: "calc(100% - 56px)",  }}>
                             <Switch>
                                 <LoggedInRoute exact path='/new' component={Home} />
