@@ -22,7 +22,7 @@ import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material/
 import { GlobalStyles } from '../themes/GlobalStyles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarUtilsConfigurator } from './utilities/Snackbar';
-import { meState } from '../cache';
+import { FailedRefresh, meState } from '../cache';
 import { Reporting } from './pages/Reporting/Reporting';
 import { MitreAttack } from './pages/MITRE_ATTACK/MitreAttack';
 //background-color: #282c34;
@@ -85,6 +85,8 @@ export function App(props) {
         if(millisecondsLeft <= 1800000 && !openRefreshDialog){
             if(isJWTValid()){
                 setOpenRefreshDialog(true);
+            }else{
+                FailedRefresh();
             }
         }
     }, 600000, mountedRef, mountedRef);
