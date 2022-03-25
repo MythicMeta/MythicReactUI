@@ -200,7 +200,7 @@ export function TaskParametersDialogRow(props){
                 switch(props.type){
                     case "Credential-JSON":
                         //console.log("set new value")
-                        setValue(props.choices.length);
+                        setValue(props.choices.length-1);
                         props.onChange(props.name, {...props.choices[props.choices.length-1]}, false);
                         break;
                     case "Credential-Account":

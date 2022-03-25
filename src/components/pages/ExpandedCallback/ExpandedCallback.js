@@ -74,6 +74,7 @@ export function ExpandedCallback(props){
           payloadtype: subscriptionData.data.callback_by_pk["payload"]["payloadtype"]["ptype"],
           payloadDescription: subscriptionData.data.callback_by_pk["payload"]["tag"],
           callbackDescription: subscriptionData.data.callback_by_pk["description"],
+          operation_id: subscriptionData.data.callback_by_pk["operation_id"],
           os: subscriptionData.data.callback_by_pk["payload"]["os"]});
         }
     });

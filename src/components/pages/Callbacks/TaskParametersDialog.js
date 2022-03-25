@@ -22,6 +22,7 @@ import { Backdrop } from '@mui/material';
 import {CircularProgress} from '@mui/material';
 import Divider from '@mui/material/Divider';
 import {useTheme} from '@mui/material/styles';
+import { faVolumeDown } from '@fortawesome/free-solid-svg-icons';
 
 //if we need to get all the loaded commands for the callback and filter, use this
 const GetLoadedCommandsQuery = gql`
@@ -525,7 +526,7 @@ export function TaskParametersDialog(props) {
                         return [...prev, {...cmd, value: {} }];                   
                     case "Credential-JSON":
                         if (loadedCredentialsLoading.credential.length > 0){
-                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0)){
+                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
                                 cmd.value = loadedCredentialsLoading.credential[0];
                             }
                             return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
