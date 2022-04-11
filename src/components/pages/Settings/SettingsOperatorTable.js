@@ -7,7 +7,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { SettingsOperator } from './SettingsOperator';
+import { SettingsOperatorRow } from './SettingsOperator';
 import Typography from '@mui/material/Typography';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import { SettingsOperatorDialog } from './SettingsOperatorDialog';
@@ -50,7 +50,8 @@ export function SettingsOperatorTable(props){
                     <TableCell style={{width: "9rem"}}>Delete Account</TableCell>
                     <TableCell>Username</TableCell>
                     <TableCell style={{width: "6rem"}}>Modify</TableCell>
-                    <TableCell style={{width: "10rem"}}>UTC Timestamps</TableCell>
+                    <TableCell style={{width: "10rem"}}>Use UTC</TableCell>
+                    <TableCell style={{width: "10rem"}}>Hide Usernames</TableCell>
                     <TableCell style={{width: "9rem"}}>Account Active</TableCell>
                     <TableCell>Last Login</TableCell>
                     <TableCell>Account Creation Date</TableCell>
@@ -61,7 +62,7 @@ export function SettingsOperatorTable(props){
             <TableBody>
             
             {props.operators.map( (op) => (
-                <SettingsOperator
+                <SettingsOperatorRow
                     onViewUTCChanged={props.onViewUTCChanged}
                     onAdminChanged={props.onAdminChanged}
                     onActiveChanged={props.onActiveChanged} 

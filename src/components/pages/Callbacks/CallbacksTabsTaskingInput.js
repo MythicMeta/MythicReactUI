@@ -8,7 +8,6 @@ import {CallbacksTabsTaskingFilterDialog} from './CallbacksTabsTaskingFilterDial
 import {CallbacksTabsTaskingInputTokenSelect} from './CallbacksTabsTaskingInputTokenSelect';
 import { gql, useSubscription } from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import parser from 'yargs-parser';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 
@@ -431,98 +430,232 @@ export function CallbacksTabsTaskingInputPreMemo(props){
 
         let sQuoted = false;
         let dQuoted = false;
-        let backSlash = false;
-        let notEmpty = false;
+        let backslash = false;
         let buffer = '';
 
-        str.split('').forEach((v, i, s) => {
-            if(sQuoted && v === `'`){
-                sQuoted = false;
-                if(buffer.length > 0 ){
-                    buffer += v;
-                }else{
-                    buffer += v + v;
-                }
-                return;
-            }
-            if(dQuoted && v === `"`){
-                dQuoted = false;
-                if(buffer.length > 0){
-                    buffer += v;
-                }else{
-                    buffer += v + v;
-                }
+        str.split('').forEach((value, i, s) => {
+            //loop over every value in the string
+            //console.log(value);
+            if(value === "\\"){
+                backslash = true;
                 return;
             }
             if(!sQuoted && !dQuoted){
-                //console.log("not sQuoted and not dQuoted and not backslash");
-                if(v === `'`){
+                //console.log("not sQuoted and not dQuoted");
+                if(value === `'`){
+                    if(backslash){
+                        backslash = false;
+                        buffer += "'";
+                        return;
+                    }
                     sQuoted = true;
-                    if(buffer.length > 0 ){
-                        buffer += v;
-                        return;
-                    }
-                    
+                    buffer += value;
                     return;
                 }
-                if(v === '"'){
+                else if(value === '"'){
+                    if(backslash){
+                        backslash = false;
+                        buffer += '"';
+                        return;
+                    }
                     dQuoted = true;
-                    //console.log("double quoted now, skipping char: ", v);
-                    if(buffer.length > 0 ){
-                        buffer += v;
-                        return;
-                    }
-                    
+                    //console.log("double quoted now, skipping char: ", value);
+                    buffer += value;
                     return;
                 }
-                if(['\t', ' '].includes(v)){
+                else if(value === " "){
+                    if(backslash){
+                        backslash = false;
+                        buffer += " ";
+                        return;
+                    }
                     if(buffer.length > 0){
-                        if([`'`, `"`].includes(buffer[buffer.length-1])){
-                            res.push(buffer.slice(0, -1))
+                        if(buffer[buffer.length-1] === buffer[0] && [`'`, `"`].includes(buffer[0])){
+                            //console.log("stripping off surrounding ' or \" for ", buffer)
+                            res.push(buffer.slice(1, -1))
                         }else{
+                            //console.log("not stripping off for", buffer);
                             res.push(buffer);
                         }
-                        
-                        //console.log("pushed buffer:", buffer);
-                        notEmpty = false;
+                        //console.log("pushed to buffer:", buffer);
                     }
                     buffer = '';
                     return;
                 }
             }
-            if(!sQuoted && dQuoted && v === '"'){
-                //console.log("not sQuoted, yes dQuoted, not backSlash, found matching \", skipping: ", v);
-                dQuoted = false;
+            if(sQuoted && value === `'`){
+                // if we're already inside of an explicit single quote and see another single quote, then we're not quoted anymore
+                if(backslash){
+                    buffer += "'";
+                    backslash = false;
+                    return;
+                }
+                sQuoted = false;
                 if(buffer.length > 0 ){
-                    buffer += v;
+                    buffer += value;
+                }else{
+                    buffer += value + value;
                 }
                 return;
             }
-
-            //console.log("adding to buffer: ", v);
-            buffer += v;
-        });
-
-        if(buffer.length > 0 || notEmpty){
-            //console.log("pushed end buffer: ", buffer);
-            if([`'`, `"`].includes(buffer[buffer.length-1])){
-                res.push(buffer.slice(0, -1))
+            if(dQuoted && value === `"`){
+                if(backslash){
+                    buffer += '"';
+                    backslash = false;
+                    return;
+                }
+                dQuoted = false;
+                if(buffer.length > 0){
+                    buffer += value;
+                }else{
+                    buffer += value + value;
+                }
+                return;
+            }
+            //console.log("adding to buffer: ", value);
+            if(backslash){
+                buffer += `\\${value}`;
+                backslash = false;
             }else{
+                buffer += value;
+            }
+            
+        });
+        if(buffer.length > 0){
+            //console.log("pushed end buffer: ", buffer);
+            if(buffer[buffer.length-1] === buffer[0] && [`'`, `"`].includes(buffer[0])){
+                //console.log("stripping off surrounding ' or \" for ", buffer)
+                res.push(buffer.slice(1, -1))
+            }else{
+                //console.log("not stripping off for", buffer);
                 res.push(buffer);
             }
-            notEmpty = false;
         }
         if(dQuoted) throw new SyntaxError('unexpected end of string while looking for matching double quote');
         if(sQuoted) throw new SyntaxError('unexpected end of string while looking for matching single quote');
-
         return res;
     }
-    const parseCommandLine = (command_line, cmd) => {
-        // given a command line and the associated command
+    const parseArgvToDict = (argv, cmd) => {
         let stringArgs = [];
         let booleanArgs = [];
         let arrayArgs = [];
         let numberArgs = [];
+        for(let i = 0; i < cmd.commandparameters.length; i++){
+            switch(cmd.commandparameters[i].parameter_type){
+                case "Choice":
+                case "String":
+                    stringArgs.push("-" + cmd.commandparameters[i].cli_name);
+                    break;
+                case "Number":
+                    numberArgs.push("-" + cmd.commandparameters[i].cli_name);
+                    break;
+                case "Boolean":
+                    booleanArgs.push("-" + cmd.commandparameters[i].cli_name);
+                    break;
+                case "Array":
+                case "ChoiceMultiple":
+                    arrayArgs.push("-" + cmd.commandparameters[i].cli_name);
+                    break;
+                default:
+                    stringArgs.push("-" + cmd.commandparameters[i].cli_name);
+            }
+        }
+        let result = {"_": []};
+        let current_argument = "";
+        let current_argument_type = "";
+        for(let i = 0; i < argv.length; i++){
+            let value = argv[i];
+            if(current_argument === ""){
+                // not currently processing the value for an argument
+                // check to see if this is the start of a new argument
+                // or a positional argument
+                if(stringArgs.includes(value)){
+                    current_argument_type = "string";
+                    current_argument = value;
+                }else if(booleanArgs.includes(value)){
+                    current_argument_type = "boolean";
+                    current_argument = value;
+                }else if(arrayArgs.includes(value)){
+                    current_argument_type = "array";
+                    current_argument = value;
+                }else if(numberArgs.includes(value)){
+                    current_argument_type = "number";
+                    current_argument = value;
+                } else {
+                    // we don't have this as a named argument, so we'll process it as a positional one
+                    result["_"].push(value);
+                }
+            } else {
+                // we have a named argument that we just saw, so interpret this as that argument's value
+                switch(current_argument_type){
+                    case "string":
+                        result[current_argument.slice(1)] = value;
+                        current_argument = "";
+                        current_argument_type = "";
+                        break;
+                    case "boolean":
+                        if(["false", "true"].includes(value.toLowerCase())){
+                            if(value.toLowerCase() === "false"){
+                                result[current_argument.slice(1)] = false;
+                            } else {
+                                result[current_argument.slice(1)] = true;
+                            }
+                        }else{
+                            // we see something like `-flag bob`, so interpret this as `-flag true bob`
+                            result[current_argument.slice(1)] = true;
+                        }
+                        current_argument = "";
+                        current_argument_type = "";
+                        break;
+                    case "number":
+                        try{
+                            let num = Number(value);
+                            if(isNaN(num)){
+                                snackActions.warning("Failed to parse number: " + value, snackMessageStyles);
+                                return undefined;
+                            }
+                            result[current_argument.slice(1)] = num;
+                        }catch(error){
+                            snackActions.warning("Failed to parse number: " + error, snackMessageStyles);
+                            return undefined;
+                        }
+                        current_argument = "";
+                        current_argument_type = "";
+                        break;
+                    case "array":
+                        // in this case, it's not as easy as just parsing a single value
+                        // this will be a greedy match until the value matches another named argument
+                        if(stringArgs.includes(value)){
+                            current_argument_type = "string";
+                            current_argument = value;
+                        }else if(booleanArgs.includes(value)){
+                            current_argument_type = "boolean";
+                            current_argument = value;
+                        }else if(arrayArgs.includes(value)){
+                            current_argument_type = "array";
+                            current_argument = value;
+                        }else if(numberArgs.includes(value)){
+                            current_argument_type = "number";
+                            current_argument = value;
+                        } else {
+                            if(result[current_argument.slice(1)] === undefined){
+                                result[current_argument.slice(1)] = [value]
+                            } else {
+                                result[current_argument.slice(1)].push(value);
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                
+            }
+        };
+        return result;
+    }
+    const parseCommandLine = (command_line, cmd) => {
+        // given a command line and the associated command
+        
         if(command_line.length > 0 && command_line[0] === "{"){
             try{
                 let json_arguments = JSON.parse(command_line);
@@ -534,45 +667,14 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 return undefined;
             }
         }
-        for(let i = 0; i < cmd.commandparameters.length; i++){
-            switch(cmd.commandparameters[i].parameter_type){
-                case "Choice":
-                case "String":
-                    stringArgs.push(cmd.commandparameters[i].cli_name);
-                case "Number":
-                    numberArgs.push(cmd.commandparameters[i].cli_name);
-                    break;
-                case "Boolean":
-                    booleanArgs.push(cmd.commandparameters[i].cli_name);
-                    break;
-                case "Array":
-                case "ChoiceMultiple":
-                    arrayArgs.push(cmd.commandparameters[i].cli_name);
-                    break;
-                default:
-                    stringArgs.push(cmd.commandparameters[i].cli_name);
-            }
-        }
+        
         try{
             let new_command_line = command_line;//.replaceAll("\\", "\\\\");
             //console.log("new_command_line", new_command_line);
             const argv = parseToArgv(new_command_line);
-            //console.log("argv", argv);
-            //console.log("arrayArgs", arrayArgs);
-            const yargs_parsed = parser(argv, {
-                string: stringArgs,
-                boolean: booleanArgs,
-                number: numberArgs,
-                array: arrayArgs,
-                configuration: {
-                    "short-option-groups": false,
-                    "camel-case-expansion": false,
-                    "dot-notation": false,
-                    "unknown-options-as-args": false,
-                    "greedy-arrays": true
-                }
-            });
-            //console.log(yargs_parsed, cmd.commandparameters);
+            console.log("argv", argv);
+            const yargs_parsed = parseArgvToDict(argv, cmd);
+            console.log("yargs_parsed", yargs_parsed);
             return yargs_parsed;
         }catch(error){
             snackActions.warning("Failed to parse command line: " + error, snackMessageStyles);
@@ -615,6 +717,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }
         }
         // now cmdGroupOptions is a list of all the matching parameter_group_names for the commandline arguments we've specified
+        console.log("cmdGroupOptions", cmdGroupOptions)
         return cmdGroupOptions;
     }
     const fillOutPositionalArguments = (cmd, parsed, groupNames) => {
@@ -634,7 +737,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         const groupParameters = cmd.commandparameters.filter(c => c.parameter_group_name === usedGroupName);
         groupParameters.sort((a,b) => a.ui_position < b.ui_position ? -1 : 1);
         // now we have all of the parameters and they're sorted by `ui_position`
-        console.log(groupParameters);
+        console.log("groupParameters", groupParameters);
         let unSatisfiedArguments = [];
         for(let i = 0; i < groupParameters.length; i++){
             if( !(groupParameters[i]["cli_name"] in parsedCopy)){
@@ -647,13 +750,85 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             // we cut this short by one so that the last unSatisifedArgument can do a greedy matching for the rest of what was supplied
             // this parameter hasn't been supplied yet, check if we have any positional parameters in parsedCopy["_"]
             if(parsedCopy["_"].length > 0){
-                parsedCopy[unSatisfiedArguments[i]["cli_name"]] = parsedCopy["_"].shift();
+                let temp = parsedCopy["_"].shift();
+                switch(unSatisfiedArguments[i]["parameter_type"]){
+                    case "Choice":
+                    case "String":
+                        parsedCopy[unSatisfiedArguments[i]["cli_name"]] = temp;
+                        break;
+                    case "Number":
+                        try{
+                            temp = Number(temp);
+                            if(isNaN(temp)){
+                                snackActions.warning("Failed to parse number: " + temp, snackMessageStyles);
+                                return undefined;
+                            }
+                            parsedCopy[unSatisfiedArguments[i]["cli_name"]] = temp;
+                        }catch(error){
+                            snackActions.warning("Failed to parse number: " + error, snackMessageStyles);
+                            return undefined;
+                        }
+                        break;
+                    case "Boolean":
+                        if(temp.toLowerCase() === "false"){
+                            parsedCopy[unSatisfiedArguments[i]["cli_name"]] = false;
+                        } else if(temp.toLowerCase() === "true"){
+                            parsedCopy[unSatisfiedArguments[i]["cli_name"]] = true;
+                        } else {
+                            snackActions.warning("Failed to parse boolean: " + temp, snackMessageStyles);
+                            return undefined;
+                        }
+                        break;
+                    case "Array":
+                    case "ChoiceMultiple":
+                        parsedCopy[unSatisfiedArguments[i]["cli_name"]] = [temp];
+                        break;
+                    default:
+                        parsedCopy[unSatisfiedArguments[i]["cli_name"]] = temp;
+                        break;
+                }
             }
         }
         
         if(unSatisfiedArguments.length > 0 && parsedCopy["_"].length > 0){
-            parsedCopy["_"] = parsedCopy["_"].map( c => typeof(c) === "string" && c.includes(" ") ? "\"" + c + "\"" : c);
-            parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = parsedCopy["_"].join(" ");
+            //parsedCopy["_"] = parsedCopy["_"].map( c => typeof(c) === "string" && c.includes(" ") ? "\"" + c + "\"" : c);
+            let temp = parsedCopy["_"].join(" ");
+            switch(unSatisfiedArguments[unSatisfiedArguments.length -1]["parameter_type"]){
+                case "Choice":
+                case "String":
+                    parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = temp;
+                    break;
+                case "Number":
+                    try{
+                        temp = Number(temp);
+                        if(isNaN(temp)){
+                            snackActions.warning("Failed to parse number: " + temp, snackMessageStyles);
+                            return undefined;
+                        }
+                        parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = temp;
+                    }catch(error){
+                        snackActions.warning("Failed to parse number: " + error, snackMessageStyles);
+                        return undefined;
+                    }
+                    break;
+                case "Boolean":
+                    if(temp.toLowerCase() === "false"){
+                        parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = false;
+                    } else if(temp.toLowerCase() === "true"){
+                        parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = true;
+                    } else {
+                        snackActions.warning("Failed to parse boolean: " + temp, snackMessageStyles);
+                        return undefined;
+                    }
+                    break;
+                case "Array":
+                case "ChoiceMultiple":
+                    parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = [temp];
+                    break;
+                default:
+                    parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = temp;
+                    break;
+            }
             parsedCopy["_"] = [];
         }
         
@@ -685,7 +860,8 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }   
         }else{
             let parsed = parseCommandLine(params, cmd);
-            if(!parsed){
+            //console.log("result of parseCommandLine", parsed, !parsed)
+            if(parsed === undefined){
                 return;
             }
             parsed["_"].unshift(cmd);
@@ -694,7 +870,10 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             cmdGroupName.sort();
             if(cmd.commandparameters.length > 0){
                 parsedWithPositionalParameters = fillOutPositionalArguments(cmd, parsed, cmdGroupName);
-                console.log(parsedWithPositionalParameters);
+                //console.log(parsedWithPositionalParameters);
+                if(parsedWithPositionalParameters === undefined){
+                    return;
+                }
                 if(parsedWithPositionalParameters["_"].length > 0){
                     snackActions.warning("Too many positional arguments given. Did you mean to quote some of them?", snackMessageStyles);
                     return;
@@ -724,7 +903,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             setUnmodifiedHistoryValue("parsed_cli");
             return;
         }
-        //console.log("positional args added in:", parsedWithPositionalParameters);
+        console.log("positional args added in:", parsedWithPositionalParameters);
         props.onSubmitCommandLine(message, cmd, parsedWithPositionalParameters, Boolean(force_parsed_popup), cmdGroupName, unmodifiedHistoryValue);
         setMessage("");
         setTaskOptionsIndex(-1);

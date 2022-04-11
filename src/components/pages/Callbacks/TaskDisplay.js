@@ -439,6 +439,8 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
   const [alertBadges, setAlertBadges] = React.useState(0);
   const classes = useStyles();
   const accordionClasses = accordionUseStyles();
+  const localStorageInitialHideUsernameValue = localStorage.getItem(`${me?.user?.user_id || 0}-hideUsernames`);
+  const initialHideUsernameValue = localStorageInitialHideUsernameValue === null ? false : (localStorageInitialHideUsernameValue.toLowerCase() === "false" ? false : true);
   const toggleDisplayComment = (evt) => {
     evt.stopPropagation();
     setDisplayComment(!displayComment);
@@ -493,7 +495,7 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
                         <Typography className={classes.heading} onClick={preventPropagation}>{task.comment}</Typography>
                     </React.Fragment>
                   ) : (null)}
-                    <Typography className={classes.taskAndTimeDisplay} onClick={preventPropagation}>[{toLocalTime(task.timestamp, me.user.view_utc_time)}] / {task.id} / {task.operator.username}
+                    <Typography className={classes.taskAndTimeDisplay} onClick={preventPropagation}>[{toLocalTime(task.timestamp, me.user.view_utc_time)}] / {task.id} {initialHideUsernameValue ? '' : `/ ${task.operator.username}`}
                       <TaskStatusDisplay task={task} theme={theme}/>
                     </Typography>
                   <div>

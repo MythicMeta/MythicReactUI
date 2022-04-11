@@ -22,11 +22,15 @@ import { toLocalTime } from '../../utilities/Time';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 
-export function SettingsOperator(props){
+export function SettingsOperatorRow(props){
     const [open, setOpen] = React.useState(false);
     const [openUpdate, setOpenUpdateDialog] = React.useState(false);
     const [openDelete, setOpenDeleteDialog] = React.useState(false);
     const me = useReactiveVar(meState);
+    const isMe = ( me?.user?.user_id || 0 ) === props.id;
+    const localStorageInitialHideUsernameValue = localStorage.getItem(`${me?.user?.user_id || 0}-hideUsernames`);
+    const initialHideUsernameValue = localStorageInitialHideUsernameValue === null ? false : (localStorageInitialHideUsernameValue.toLowerCase() === "false" ? false : true);
+    const [hideUsernames, setHideUsernames] = React.useState(initialHideUsernameValue);
     const onViewUTCChanged = (evt) => {
         const {id} = props;
         props.onViewUTCChanged(id, !props[evt.target.name]);
@@ -52,6 +56,11 @@ export function SettingsOperator(props){
         props.onDeleteOperator(id);
         setOpenDeleteDialog(false);
     }
+    const onHideUsernamesChanged = (evt) => {
+      localStorage.setItem(`${me?.user?.user_id || 0}-hideUsernames`, !hideUsernames);
+      console.log("old hideUsernames", hideUsernames, "new value", !hideUsernames);
+      setHideUsernames(!hideUsernames);
+    }
     return (
         <React.Fragment>
             <TableRow key={props.id}>
@@ -76,6 +85,18 @@ export function SettingsOperator(props){
                         inputProps={{ 'aria-label': 'primary checkbox' }}
                         name="view_utc_time"
                       />
+                </TableCell>
+                <TableCell>
+                  {isMe && 
+                  <Switch
+                    checked={hideUsernames}
+                    onChange={onHideUsernamesChanged}
+                    color="primary"
+                    inputProps={{ 'aria-label': 'primary checkbox' }}
+                    name="hide_usernames"
+                  />
+                  }
+                  
                 </TableCell>
                 <TableCell>
                     <Switch
