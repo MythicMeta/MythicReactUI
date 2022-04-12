@@ -64,8 +64,12 @@ export function PayloadsTableRow(props){
     const theme = useTheme();
     const [triggerRebuild] = useMutation(rebuildPayloadMutation, {
       onCompleted: (data) => {
-        console.log(data);
-        snackActions.success("Successfully triggered rebuild");
+        if(data.rebuild_payload.status === "success"){
+          snackActions.success("Successfully triggered rebuild");
+        } else {
+          snackActions.error("Failed to build:\n" + data.rebuild_payload.error);
+        }
+        
       },
       onError: (data) => {
         snackActions.error("Failed to trigger rebuild: " + data);
