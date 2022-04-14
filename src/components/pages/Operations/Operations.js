@@ -2,6 +2,7 @@ import React from 'react';
 import { OperationTable } from './OperationTable';
 import {useQuery, gql} from '@apollo/client';
 import {CommandBlockListTable} from './CommandBlockListTable';
+import { snackActions } from '../../utilities/Snackbar';
 
 const GET_Operations = gql`
 query GetOperations {
@@ -51,7 +52,7 @@ export function Operations(props){
         setOperations(data.operation);
       },
       onError: (data) => {
-
+        snackActions.error("Failed to get list of operations");
       }
     });
     useQuery(GET_BlockLists, {fetchPolicy: "network-only",
@@ -74,8 +75,8 @@ export function Operations(props){
         setBlockLists(arrayForm);
       },
       onError: (data) => {
-
-      }
+        snackActions.error("Failed to get blocklist options");
+      } 
     });
     const onUpdateOperation = ({id, name, complete}) => {
       const updatedOperations = operations.map( o => {

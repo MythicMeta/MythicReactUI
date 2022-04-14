@@ -67,7 +67,7 @@ export function Step4C2Profiles(props){
     const me = useReactiveVar(meState);
     const [c2Profiles, setC2Profiles] = React.useState([]);
     const [selectedInstance, setSelectedInstance] = React.useState("");
-    const { loading, error } = useQuery(GET_Payload_Types, {variables:{payloadType: props.buildOptions["payload_type"], operation_id: me.user.current_operation_id},
+    const { loading, error } = useQuery(GET_Payload_Types, {variables:{payloadType: props.buildOptions["payload_type"], operation_id: me?.user?.current_operation_id || 0},
         onCompleted: data => {
             const profiles = data.c2profile.map( (c2) => {
                 if(props.prevData !== undefined){
@@ -268,6 +268,7 @@ export function Step4C2Profiles(props){
         return <div><CircularProgress /></div>;
        }
        if (error) {
+           snackActions.error("")
         console.error(error);
         return <div>Error!</div>;
        }
@@ -322,7 +323,7 @@ export function Step4C2Profiles(props){
                 </React.Fragment>
                 ))
             }
-<br/>
+            <br/>
             <CreatePayloadNavigationButtons first={props.first} last={props.last} canceled={canceled} finished={finished} />
             <br/><br/>
         </div>

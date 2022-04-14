@@ -110,7 +110,7 @@ export function BrowserScripts(props){
       variables: {operator_id: me.user.id}, fetchPolicy: "no-cache",
       shouldResubscribe: true,
       onSubscriptionData: ({subscriptionData}) => {
-        console.log(subscriptionData)
+        //console.log(subscriptionData)
         if(!mountedRef.current){return}
         let scripts = [...subscriptionData.data.browserscript];
         scripts.sort((a,b) => {
@@ -124,8 +124,8 @@ export function BrowserScripts(props){
         setBrowserScripts(scripts);
       }
     });
-      useSubscription(SUB_OperationBrowserScripts, {
-        variables: {operation_id: me.user.current_operation_id}, fetchPolicy: "no-cache",
+    useSubscription(SUB_OperationBrowserScripts, {
+        variables: {operation_id: me?.user?.current_operation_id || 0}, fetchPolicy: "no-cache",
         shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
           if(!mountedRef.current){return}
@@ -138,6 +138,7 @@ export function BrowserScripts(props){
         },
         onError: data => {
             console.error(data);
+            snackActions.error("Failed to update status");
         }
     });
     const [updateScript] = useMutation(updateBrowserScriptScript, {
@@ -146,6 +147,7 @@ export function BrowserScripts(props){
         },
         onError: data => {
             console.error(data);
+            snackActions.error("Failed to update script");
         }
     });
     const [revertScript] = useMutation(updateBrowserScriptRevert, {
@@ -154,6 +156,7 @@ export function BrowserScripts(props){
         },
         onError: data => {
             console.error(data);
+            snackActions.error("Failed to revert script");
         }
     });
     const [createBrowserScript] = useMutation(addBrowserScript, {
@@ -200,7 +203,7 @@ export function BrowserScripts(props){
     }, [])
     return (
     <React.Fragment>
-        <BrowserScriptsTable browserscripts={browserScripts} operation_id={me.user.current_operation_id} onToggleActive={onToggleActive} 
+        <BrowserScriptsTable browserscripts={browserScripts} operation_id={me?.user?.current_operation_id || 0} onToggleActive={onToggleActive} 
           onSubmitEdit={onSubmitEdit} onRevert={onRevert} onSubmitNew={onSubmitCreateNewBrowserScript} onDelete={onDelete}
           onSubmitApplyToOperation={onSubmitApplyToOperation} 
           onSubmitRemoveFromOperation={onSubmitRemoveFromOperation}

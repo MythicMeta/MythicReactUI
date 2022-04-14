@@ -516,7 +516,7 @@ export const SearchTabFilesPanel = (props) =>{
         setSearchHost(searchHost);
         if(adjustedSearchLocation === "FileBrowser"){
             getfilenameFileBrowserSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 filename: "%" + search + "%",
@@ -524,7 +524,7 @@ export const SearchTabFilesPanel = (props) =>{
             }})
         }else if(adjustedSearchLocation === "Uploads"){
             getfilenameFileMetaUploadSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 filename: "%" + search + "%",
@@ -532,7 +532,7 @@ export const SearchTabFilesPanel = (props) =>{
             }})
         }else if(adjustedSearchLocation === "Downloads"){
             getfilenameFileMetaDownloadSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 filename: "%" + search + "%",
@@ -540,7 +540,7 @@ export const SearchTabFilesPanel = (props) =>{
             }})
         }else{
             getfilenameFileMetaScreenshotSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 filename: "%" + search + "%",
@@ -560,7 +560,7 @@ export const SearchTabFilesPanel = (props) =>{
             setFileMetaData([]);
         }else if(adjustedSearchLocation === "Uploads"){
             gethashFileMetaUploadSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 hash: "%" + search + "%",
@@ -568,7 +568,7 @@ export const SearchTabFilesPanel = (props) =>{
             }})
         }else if(adjustedSearchLocation === "Downloads"){
             gethashFileMetaDownloadSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 hash: "%" + search + "%",
@@ -576,7 +576,7 @@ export const SearchTabFilesPanel = (props) =>{
             }})
         }else{
             gethashFileMetaScreenshotSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 hash: "%" + search + "%",
@@ -594,7 +594,7 @@ export const SearchTabFilesPanel = (props) =>{
         setSearchHost(searchHost);
         if(adjustedSearchLocation === "FileBrowser"){
             getcommentFileBrowserSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 comment: "%" + new_search + "%",
@@ -602,7 +602,7 @@ export const SearchTabFilesPanel = (props) =>{
             }})
         }else if(adjustedSearchLocation === "Uploads"){
             getcommentFileMetaUploadSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 comment: "%" + new_search + "%",
@@ -610,7 +610,7 @@ export const SearchTabFilesPanel = (props) =>{
             }})
         }else if(adjustedSearchLocation === "Downloads"){
             getcommentFileMetaDownloadSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 comment: "%" + new_search + "%",
@@ -618,7 +618,7 @@ export const SearchTabFilesPanel = (props) =>{
             }})
         }else{
             getcommentFileMetaScreenshotSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 comment: "%" + new_search + "%",

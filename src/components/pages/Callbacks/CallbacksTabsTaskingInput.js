@@ -437,8 +437,15 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             //loop over every value in the string
             //console.log(value);
             if(value === "\\"){
-                backslash = true;
-                return;
+                if(!backslash){
+                    backslash = true;
+                    return;
+                } else {
+                    backslash = false;
+                    buffer += "\\\\"
+                    return;
+                }
+                
             }
             if(!sQuoted && !dQuoted){
                 //console.log("not sQuoted and not dQuoted");

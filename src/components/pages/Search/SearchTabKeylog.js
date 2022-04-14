@@ -310,7 +310,7 @@ export const SearchTabKeylogsPanel = (props) =>{
             new_search = "_";
         }
         getKeylogSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             keylog: "%" + new_search + "%",
@@ -321,14 +321,14 @@ export const SearchTabKeylogsPanel = (props) =>{
         setSearch(search);
         if(search === ""){
             getUserUniqueSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 user: "%_%",
             }})
         }else{
             getUserSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 user: "%" + search + "%",
@@ -341,14 +341,14 @@ export const SearchTabKeylogsPanel = (props) =>{
         setSearch(search);
         if(search === ""){
             getProgramUniqueSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 program: "%_%",
             }})
         }else{
             getProgramSearch({variables:{
-                operation_id: me.user.current_operation_id,
+                operation_id: me?.user?.current_operation_id || 0,
                 offset: offset,
                 fetchLimit: fetchLimit,
                 program: "%" + search + "%",
@@ -364,7 +364,7 @@ export const SearchTabKeylogsPanel = (props) =>{
             new_search = "_";
         }
         getHostSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             host: "%" + new_search + "%",

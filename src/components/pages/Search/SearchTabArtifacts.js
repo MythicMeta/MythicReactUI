@@ -295,7 +295,7 @@ export const SearchTabArtifactsPanel = (props) =>{
             new_search = "_";
         }
         getArtifactSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             artifact: "%" + new_search + "%",
@@ -309,7 +309,7 @@ export const SearchTabArtifactsPanel = (props) =>{
             new_search = "_";
         }
         getCommandSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             command: "%" + new_search + "%",
@@ -323,7 +323,7 @@ export const SearchTabArtifactsPanel = (props) =>{
             new_search = "_";
         }
         getHostSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             host: "%" + new_search + "%",
@@ -337,7 +337,7 @@ export const SearchTabArtifactsPanel = (props) =>{
             new_search = "_";
         }
         getTypeSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             type: "%" + new_search + "%",
@@ -351,7 +351,7 @@ export const SearchTabArtifactsPanel = (props) =>{
         snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getTaskSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             task_id: parseInt(search),
@@ -365,7 +365,7 @@ export const SearchTabArtifactsPanel = (props) =>{
         snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getCallbackSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             callback_id: search,

@@ -277,7 +277,7 @@ export const SearchTabCredentialsPanel = (props) =>{
         snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getAccountSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             account: "%" + search + "%",
@@ -287,7 +287,7 @@ export const SearchTabCredentialsPanel = (props) =>{
         snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getRealmSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             realm: "%" + search + "%",
@@ -297,7 +297,7 @@ export const SearchTabCredentialsPanel = (props) =>{
         snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getCredentialSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             credential: "%" + search + "%",
@@ -311,7 +311,7 @@ export const SearchTabCredentialsPanel = (props) =>{
             new_search = "_";
         }
         getCommentSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             comment: "%" + new_search + "%",

@@ -66,7 +66,7 @@ export function OperationTable(props){
             }
         },
         onError: (err) => {
-          snackActions.warning("Unable to create new operator");
+          snackActions.warning("Unable to create new operator - Access Denied");
           console.log(err);
         }
     });
@@ -91,6 +91,7 @@ export function OperationTable(props){
             }
         },
         onError: (data) => {
+            snackActions.error("Unable to create new operation - Access Denied")
             console.log(data);
         }
     })

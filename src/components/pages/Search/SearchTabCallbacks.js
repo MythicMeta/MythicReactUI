@@ -268,7 +268,7 @@ export const SearchTabCallbacksPanel = (props) =>{
             new_search = "_";
         }
         getUserSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             user: "%" + new_search + "%",
@@ -282,7 +282,7 @@ export const SearchTabCallbacksPanel = (props) =>{
             new_search = "_";
         }
         getDomainSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             domain: "%" + new_search + "%",
@@ -296,7 +296,7 @@ export const SearchTabCallbacksPanel = (props) =>{
             new_search = "_";
         }
         getHostSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             host: "%" + new_search + "%",
@@ -310,7 +310,7 @@ export const SearchTabCallbacksPanel = (props) =>{
             new_search = "_";
         }
         getDescriptionSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             description: "%" + new_search + "%",
@@ -324,7 +324,7 @@ export const SearchTabCallbacksPanel = (props) =>{
             new_search = "_";
         }
         getIPSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             ip: "%" + new_search + "%",

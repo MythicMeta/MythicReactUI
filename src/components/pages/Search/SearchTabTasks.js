@@ -250,7 +250,7 @@ export const SearchTabTasksPanel = (props) =>{
             newTaskStatus = "_";
         }
         getOutputSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             search: "%" + new_search + "%",
@@ -269,7 +269,7 @@ export const SearchTabTasksPanel = (props) =>{
             newTaskStatus = "_";
         }
         getParameterSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             search: "%" + new_search + "%",
@@ -288,7 +288,7 @@ export const SearchTabTasksPanel = (props) =>{
         }
         setSearch(search);
         getCommentSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             search: "%" + new_search + "%",
@@ -307,7 +307,7 @@ export const SearchTabTasksPanel = (props) =>{
         }
         setSearch(search);
         getCommandSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             search: "%" + new_search + "%",

@@ -27,6 +27,9 @@ export function Step5Build(props){
             }else{
                 snackActions.error(data.createPayload.error);
             }
+        },
+        onError: () => {
+            snackActions.error("Failed to create Payload. Do you have an active operation set?")
         }
     });
     useEffect( () => {

@@ -70,14 +70,14 @@ export const SearchTabSocksPanel = (props) =>{
     });
     useEffect(() => {
         if(props.value === props.index){
-            onSocksSearch({variables: {offset: 0, operation_id: me.user.current_operation_id, fetchLimit}});
+            onSocksSearch({variables: {offset: 0, operation_id: me?.user?.current_operation_id || 0, fetchLimit}});
         }
     }, [props.value, props.index])
     const onChangePage = (event, value) => {
         if(value === 1){
-            onSocksSearch({variables: { offset: 0, operation_id: me.user.current_operation_id, fetchLimit}});
+            onSocksSearch({variables: { offset: 0, operation_id: me?.user?.current_operation_id || 0, fetchLimit}});
         }else{
-            onSocksSearch({variables: { offset: (value - 1) * fetchLimit, operation_id: me.user.current_operation_id, fetchLimit}});        
+            onSocksSearch({variables: { offset: (value - 1) * fetchLimit, operation_id: me?.user?.current_operation_id || 0, fetchLimit}});        
         }
     }
     return (

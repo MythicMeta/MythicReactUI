@@ -257,7 +257,7 @@ export const SearchTabTokensPanel = (props) =>{
             new_search = "_";
         }
         getUserGroupSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             name: "%" + new_search + "%",
@@ -271,7 +271,7 @@ export const SearchTabTokensPanel = (props) =>{
             new_search = "_";
         }
         getLogonTypeSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             logontype: "%" + new_search + "%",
@@ -285,7 +285,7 @@ export const SearchTabTokensPanel = (props) =>{
             new_search = "_";
         }
         getHostSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             host: "%" + new_search + "%",
@@ -299,7 +299,7 @@ export const SearchTabTokensPanel = (props) =>{
             new_search = "_";
         }
         getSIDSearch({variables:{
-            operation_id: me.user.current_operation_id,
+            operation_id: me?.user?.current_operation_id || 0,
             offset: offset,
             fetchLimit: fetchLimit,
             sid: "%" + new_search + "%",
