@@ -1,8 +1,7 @@
 import React from 'react';
 import { MitreGrid } from './MitreGrid';
 import {useQuery, gql, useLazyQuery} from '@apollo/client';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import { snackActions } from '../../utilities/Snackbar';
 import { Backdrop } from '@mui/material';
 import {CircularProgress} from '@mui/material';
@@ -120,7 +119,7 @@ query getTaskTags ($operation_id: Int!) {
 `;
 
 export function MitreAttack(props){
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const [backdropOpen, setBackdropOpen] = React.useState(true);
     const [mitreAttack, setMitreAttack] = React.useState({
       "Reconnaissance": {rows: [], tactic: "Reconnaissance", commands: 0, tasks: 0},

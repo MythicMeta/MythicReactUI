@@ -9,8 +9,7 @@ import {useTheme} from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery } from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Button, Typography } from '@mui/material';
 import {FileMetaDownloadTable, FileMetaUploadTable, FileMetaScreenshotTable} from './FileMetaTable';
@@ -405,7 +404,7 @@ export const SearchTabFilesPanel = (props) =>{
     const [searchHost, setSearchHost] = React.useState("");
     const [searchField, setSearchField] = React.useState("Filename");
     const [searchLocation, setSearchLocation] = React.useState("Downloads");
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const onChangeSearchField = (field) => {
         setSearchField(field);
         switch(field){

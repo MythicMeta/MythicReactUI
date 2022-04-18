@@ -2,7 +2,6 @@ import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicCo
 import React from 'react';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import FormLabel from '@mui/material/FormLabel';
 import Grid from '@mui/material/Grid';
 import SearchIcon from '@mui/icons-material/Search';
 import Tooltip from '@mui/material/Tooltip';
@@ -10,8 +9,7 @@ import {useTheme} from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Typography } from '@mui/material';
 import {TokenTable} from './TokenTable';
@@ -197,7 +195,7 @@ export const SearchTabTokensPanel = (props) =>{
     const [totalCount, setTotalCount] = React.useState(0);
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("User/Group");
-    const me = useReactiveVar(meState);
+    const me = MeHook();
 
     const onChangeSearchField = (field) => {
         setSearchField(field);

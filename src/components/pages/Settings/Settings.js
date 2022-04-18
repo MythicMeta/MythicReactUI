@@ -1,8 +1,7 @@
 import React from 'react';
 import { SettingsOperatorTable } from './SettingsOperatorTable';
 import {useMutation, useQuery, gql} from '@apollo/client';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook, meState } from '../../../cache';
 import { snackActions } from '../../utilities/Snackbar';
 
 const GET_Operator = gql`
@@ -108,7 +107,7 @@ mutation deleteAPIToken($id: Int!){
 }
 `;
 export function Settings(props){
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const [operators, setOperators] = React.useState([]);
     useQuery(GET_Operator, {fetchPolicy: "no-cache",
       onCompleted: (data) => {

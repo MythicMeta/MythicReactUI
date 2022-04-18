@@ -2,8 +2,7 @@ import React from 'react';
 import {useSubscription, gql } from '@apollo/client';
 import {CallbacksTable} from './CallbacksTable';
 import {CallbacksGraph} from './CallbacksGraph';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
@@ -94,7 +93,7 @@ subscription CallbacksSubscription ($operation_id: Int!){
 }
  `;
 export function CallbacksTop(props){
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const theme = useTheme();
     const [callbacks, setCallbacks] = React.useState([]);
     const [callbackEdges, setCallbackEdges] = React.useState([]);

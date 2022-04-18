@@ -8,8 +8,7 @@ import Paper from '@mui/material/Paper';
 import {Button, Grid} from '@mui/material';
 import {IncludeMoreTasksDialog} from './IncludeMoreTasksDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
-import { useReactiveVar } from '@apollo/client';
-import { meState } from '../../../cache';
+import { MeHook } from '../../../cache';
 import {snackActions} from '../../utilities/Snackbar';
 import {copyStringToClipboard} from '../../utilities/Clipboard';
 import Switch from '@mui/material/Switch';
@@ -98,7 +97,7 @@ query tasksAcrossAllCallbacksByOperator($operation_id: Int!, $baseTask: Int!, $b
     }
 }`;
 export function SingleTaskView(props){
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const {taskId} = useParams();
     const [taskIDs, setTaskIDs] = React.useState([]);
     const [taskOptions, setTaskOptions] = React.useState([]);

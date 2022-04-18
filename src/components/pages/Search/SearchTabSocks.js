@@ -2,14 +2,12 @@ import {MythicTabPanel, MythicSearchTabLabel} from '../../../components/MythicCo
 import React, { useEffect } from 'react';
 import { gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Typography } from '@mui/material';
 import {SocksSearchTable} from './SocksSearchTable';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSocks} from '@fortawesome/free-solid-svg-icons';
-import IconButton from '@mui/material/IconButton';
 
 const callbackFragment = gql`
 fragment callbackData on callback{
@@ -52,7 +50,7 @@ export function SearchTabSocksLabel(props){
 export const SearchTabSocksPanel = (props) =>{
     const [callbackData, setCallbackData] = React.useState([]);
     const [totalCount, setTotalCount] = React.useState(0);
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const [onSocksSearch] = useLazyQuery(userSearch, {
         fetchPolicy: "network-only",
         onCompleted: (data) => {

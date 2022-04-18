@@ -12,6 +12,7 @@ subscription EventFeedNotificationSubscription($fromNow: timestamp!, $operation_
     operator {
         username
     }
+    id
     message
     level
     resolved
@@ -22,11 +23,12 @@ subscription EventFeedNotificationSubscription($fromNow: timestamp!, $operation_
 
 export function EventFeedNotifications(props) {
     const me = useReactiveVar(meState);
+    let seenIds = React.useRef([]);
     const fromNow = React.useRef( (new Date()).toISOString() );
-
     const { loading, error, data } = useSubscription(subscribe_payloads, {
         variables: {fromNow: fromNow.current, operation_id: me?.user?.current_operation_id || 0}, 
         fetchPolicy: "no-cache",
+        shouldResubscribe: true,
         onError: (errorData) => {
             snackActions.warning("Failed to get event notifications");
         }
@@ -41,11 +43,13 @@ export function EventFeedNotifications(props) {
             if(data.operationeventlog[0].resolved){
                 return;
             }
-            if(data.operationeventlog[0].operator ){
+            if(data.operationeventlog[0].operator && !seenIds.current.includes(data.operationeventlog[0].id)){
                 const message = data.operationeventlog[0].operator.username + ":" + data.operationeventlog[0].message;
                 snackActions.toast(message, data.operationeventlog[0].level, { autoHideDuration: 2000});
-            }else if(!data.operationeventlog[0].operator){
+                seenIds.current.push(data.operationeventlog[0].id);
+            }else if(!data.operationeventlog[0].operator && !seenIds.current.includes(data.operationeventlog[0].id)){
                 snackActions.toast(data.operationeventlog[0].message, data.operationeventlog[0].level, {autoHideDuration: 3000});
+                seenIds.current.push(data.operationeventlog[0].id);
             }
         }else if(error){
             console.error(error);

@@ -11,8 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery } from '@apollo/client';
 import {taskingDataFragment} from '../Callbacks/CallbacksTabsTasking'
 import { snackActions } from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Typography } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
@@ -186,7 +185,7 @@ export const SearchTabTasksPanel = (props) =>{
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Output");
     const [taskStatus, setTaskStatus] = React.useState("");
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const onChangeSearchField = (field) => {
         setSearchField(field);
         switch(field){

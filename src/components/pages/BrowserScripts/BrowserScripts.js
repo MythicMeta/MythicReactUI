@@ -1,10 +1,11 @@
 import React  from 'react';
 import { gql, useMutation, useSubscription } from '@apollo/client';
-import { useReactiveVar } from '@apollo/client';
-import { meState } from '../../../cache';
+import { MeHook } from '../../../cache';
 import {BrowserScriptsTable} from './BrowserScriptsTable';
 import {BrowserScriptsOperationsTable} from './BrowserScriptsOperationsTable';
 import {snackActions} from '../../utilities/Snackbar';
+import { Backdrop } from '@mui/material';
+import {CircularProgress} from '@mui/material';
 
 
 const SUB_BrowserScripts = gql`
@@ -102,10 +103,11 @@ mutation deleteBrowserScriptMutation($browserscript_id: Int!){
 
 
 export function BrowserScripts(props){
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const [browserScripts, setBrowserScripts] = React.useState([]);
     const [operationBrowserScripts, setOperationBrowserScripts] = React.useState({"browserscriptoperation": []});
     const mountedRef = React.useRef(true);
+    const [backdropOpen, setBackdropOpen] = React.useState(true);
     useSubscription(SUB_BrowserScripts, {
       variables: {operator_id: me.user.id}, fetchPolicy: "no-cache",
       shouldResubscribe: true,
@@ -119,9 +121,9 @@ export function BrowserScripts(props){
           }else{
             return 0;
           }
-        
         } )
         setBrowserScripts(scripts);
+        if(backdropOpen){setBackdropOpen(false);}
       }
     });
     useSubscription(SUB_OperationBrowserScripts, {
@@ -203,6 +205,9 @@ export function BrowserScripts(props){
     }, [])
     return (
     <React.Fragment>
+        <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={false}>
+            <CircularProgress color="inherit" />
+        </Backdrop>
         <BrowserScriptsTable browserscripts={browserScripts} operation_id={me?.user?.current_operation_id || 0} onToggleActive={onToggleActive} 
           onSubmitEdit={onSubmitEdit} onRevert={onRevert} onSubmitNew={onSubmitCreateNewBrowserScript} onDelete={onDelete}
           onSubmitApplyToOperation={onSubmitApplyToOperation} 

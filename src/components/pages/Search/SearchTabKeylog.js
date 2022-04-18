@@ -9,8 +9,7 @@ import {useTheme} from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Typography } from '@mui/material';
 import {KeylogsTable} from './KeylogsTable';
@@ -210,7 +209,7 @@ export const SearchTabKeylogsPanel = (props) =>{
     const [totalCount, setTotalCount] = React.useState(0);
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Keystroke");
-    const me = useReactiveVar(meState);
+    const me = MeHook();
 
     const onChangeSearchField = (field) => {
         setSearchField(field);

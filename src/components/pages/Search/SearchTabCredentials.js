@@ -8,8 +8,7 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery, useMutation} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Button, Typography } from '@mui/material';
 import {CredentialTable} from './CredentialTable';
@@ -220,7 +219,7 @@ export const SearchTabCredentialsPanel = (props) =>{
     const [totalCount, setTotalCount] = React.useState(0);
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Account");
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const addCredential = (credential) => {
         setCredentialData([credential, ...credentialaData]);
     }

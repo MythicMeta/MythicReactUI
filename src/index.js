@@ -5,7 +5,7 @@ import { App } from './components/App';
 import {BrowserRouter as Router} from 'react-router-dom'
 import { ApolloProvider, ApolloClient, InMemoryCache, from, split, HttpLink } from '@apollo/client';
 import { WebSocketLink } from "@apollo/client/link/ws";
-import { successfulRefresh, FailedRefresh } from './cache';
+import { successfulRefresh, FailedRefresh} from './cache';
 import { onError } from "@apollo/client/link/error";
 import { RetryLink } from "@apollo/client/link/retry";
 import { SubscriptionClient } from 'subscriptions-transport-ws'
@@ -16,8 +16,8 @@ import MessageTypes from 'subscriptions-transport-ws/dist/message-types';
 import jwt_decode from 'jwt-decode';
 import {meState} from './cache';
 
-export const mythicVersion = "2.3.8";
-export const mythicUIVersion = "0.0.50";
+export const mythicVersion = "2.3.9";
+export const mythicUIVersion = "0.0.51";
 
 let fetchingNewToken = false;
 

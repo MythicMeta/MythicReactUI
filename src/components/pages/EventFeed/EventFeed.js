@@ -1,7 +1,6 @@
 import React  from 'react';
 import { gql, useMutation, useLazyQuery, useSubscription } from '@apollo/client';
-import { useReactiveVar } from '@apollo/client';
-import { meState } from '../../../cache';
+import { MeHook } from '../../../cache';
 import {EventFeedTable} from './EventFeedTable';
 import {snackActions} from '../../utilities/Snackbar';
 
@@ -125,11 +124,11 @@ mutation UpdateLevelOperationEventLog($id: Int!) {
   }
    `;
 export function EventFeed(props){
-  const me = useReactiveVar(meState);
+  const me = MeHook();
   const [operationeventlog, setOperationEventLog] = React.useState([]);
   const [offset, setOffset] = React.useState(0);
   useSubscription(SUB_Event_Feed, {
-    variables: {operation_id: me.user.current_operation_id, offset: 0, eventQuerySize: EVENT_QUERY_SIZE}, fetchPolicy: "network-only",
+    variables: {operation_id: me?.user?.current_operation_id || 0, offset: 0, eventQuerySize: EVENT_QUERY_SIZE}, fetchPolicy: "network-only",
     shouldResubscribe: true,
     onSubscriptionData: ({subscriptionData}) => {
       if(offset === 0){
@@ -303,15 +302,15 @@ export function EventFeed(props){
   }
   const loadMore = () => {
     snackActions.info("Loading more events...");
-    getMoreTasking({variables: {operation_id: me.user.current_operation_id, offset: offset, eventQuerySize: EVENT_QUERY_SIZE}})
+    getMoreTasking({variables: {operation_id: me?.user?.current_operation_id || 0, offset: offset, eventQuerySize: EVENT_QUERY_SIZE}})
   }
   const loadNextError = () => {
     snackActions.info("Loading more errors...");
-    getNextError({variables: {operation_id: me.user.current_operation_id}})
+    getNextError({variables: {operation_id: me?.user?.current_operation_id || 0}})
   }
   const getSurroundingEvents = ({id}) => {
     snackActions.info("Loading surrounding events...");
-    getSurroundingEventQuery({variables: {lower_id: id - SURROUNDING_EVENTS, upper_id: id + SURROUNDING_EVENTS, operation_id: me.user.current_operation_id}})
+    getSurroundingEventQuery({variables: {lower_id: id - SURROUNDING_EVENTS, upper_id: id + SURROUNDING_EVENTS, operation_id: me?.user?.current_operation_id || 0}})
   }
   const resolveViewableErrors = () => {
     snackActions.info("Resolving Errors...");
@@ -326,7 +325,7 @@ export function EventFeed(props){
   }
   const resolveAllErrors = () => {
     snackActions.info("Resolving Errors...");
-    updateResolveAllErrors({variables: {operation_id: me.user.current_operation_id}});
+    updateResolveAllErrors({variables: {operation_id: me?.user?.current_operation_id || 0}});
   }
   return (
       <EventFeedTable onSubmitMessage={onSubmitMessage} operationeventlog={operationeventlog} loadMore={loadMore} loadNextError={loadNextError}

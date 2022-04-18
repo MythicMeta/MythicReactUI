@@ -1,8 +1,7 @@
 import React from 'react';
 import { PayloadsTable } from './PayloadsTable';
 import {useMutation, useQuery, gql, useSubscription} from '@apollo/client';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
+import { MeHook } from '../../../cache';
 import { snackActions } from '../../utilities/Snackbar';
 const payloadFragment = gql`
 fragment payloadData on payload {
@@ -83,7 +82,7 @@ mutation RestorePayloadToUndeleted($id: Int!){
 `;
 
 export function Payloads(props){
-    const me = useReactiveVar(meState);
+    const me = MeHook();
     const [payloads, setPayloads] = React.useState([]);
     const mountedRef = React.useRef(true);
     useQuery(Get_Payloads, {
