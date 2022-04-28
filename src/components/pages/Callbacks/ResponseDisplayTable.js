@@ -486,6 +486,14 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
         });
     }, [sortedData]
   );
+  const contextMenuOptions = [
+    {
+        name: 'Copy Row To Clipboard', 
+        click: ({event, columnIndex, rowIndex, data}) => {
+            onCopyToClipboard(JSON.stringify(data, null, 2));
+        }
+    },
+];
   
   useEffect( () => {
     setAllData([...table.rows]);
@@ -517,6 +525,7 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
                   onDoubleClickRow={doubleClickRow}
                   rowHeight={rowHeight}
                   onClickHeader={onClickHeader}
+                  rowContextMenuOptions={contextMenuOptions}
               />
             
           </div>

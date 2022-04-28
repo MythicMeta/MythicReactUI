@@ -75,7 +75,7 @@ export function PayloadsTable({payload, onDeletePayload, onUpdateCallbackAlert, 
                 <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
                     Payloads
                 </Typography>
-                <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" style={{marginRight: "10px", marginTop:"10px", float: "right"}} color="primary">
+                <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" style={{float: "right", marginRight: "10px", marginTop:"10px"}} color="primary">
                     <Button size="small" color="primary" aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
                         aria-expanded={dropdownOpen ? 'true' : undefined}
                         aria-haspopup="menu"

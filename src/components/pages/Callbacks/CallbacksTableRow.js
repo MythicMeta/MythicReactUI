@@ -29,7 +29,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faQuestion, faSkullCrossbones, faFolderOpen, faList} from '@fortawesome/free-solid-svg-icons';
-import {faLinux, faApple, faWindows, faChrome} from '@fortawesome/free-brands-svg-icons';
+import {faLinux, faApple, faWindows, faChrome, faAndroid} from '@fortawesome/free-brands-svg-icons';
 import {useSubscription, gql } from '@apollo/client';
 import {DetailedCallbackTable} from './DetailedCallbackTable';
 import InfoIcon from '@mui/icons-material/Info';
@@ -455,12 +455,16 @@ export const CallbacksTableOSCell = React.memo( ({rowData, cellData}) => {
             case "linux":
             case "centos":
             case "redhat":
+            case "debian":
+            case "fedora":
             case "freebsd":
                 return <FontAwesomeIcon icon={faLinux} size="2x" style={{cursor: "pointer"}} onClick={displayOSInfo} />
             case "macos":
                 return <FontAwesomeIcon icon={faApple} size="2x" style={{cursor: "pointer"}} onClick={displayOSInfo}/>
             case "chrome":
                 return <FontAwesomeIcon icon={faChrome} size="2x" style={{cursor: "pointer"}} onClick={displayOSInfo} />
+            case "android":
+                return <FontAwesomeIcon icon={faAndroid} size="2x" style={{cursor: "pointer"}} onClick={displayOSInfo} />
             default:
                 return <FontAwesomeIcon icon={faQuestion} size="2x" style={{cursor: "pointer"}} onClick={displayOSInfo} />
         }
