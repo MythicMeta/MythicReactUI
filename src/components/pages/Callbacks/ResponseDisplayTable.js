@@ -486,13 +486,65 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
         });
     }, [sortedData]
   );
+  const filterOutButtonsFromRowData = (data) => {
+    let rowData = {};
+    for(const key of Object.keys(data)){
+      if(data[key]["plaintext"] !== undefined){
+        rowData[key] = data[key]["plaintext"];
+      }
+    }
+    return rowData;
+  }
   const contextMenuOptions = [
     {
-        name: 'Copy Row To Clipboard', 
+        name: 'Copy Row as JSON', 
         click: ({event, columnIndex, rowIndex, data}) => {
-            onCopyToClipboard(JSON.stringify(data, null, 2));
+            const filteredData = filterOutButtonsFromRowData(data);
+            onCopyToClipboard(JSON.stringify(filteredData, null, 2));
         }
     },
+    {
+      name: 'Copy Row as CSV', 
+      click: ({event, columnIndex, rowIndex, data}) => {
+          const filteredData = filterOutButtonsFromRowData(data);
+          let outputHeaders = "";
+          let outputRow = "";
+          for(const key of Object.keys(filteredData)){
+            if(outputHeaders === ""){
+              outputHeaders += key;
+            } else {
+              outputHeaders += "," + key;
+            }
+            if(outputRow === ""){
+              outputRow += filteredData[key];
+            }else{
+              outputRow += "," + filteredData[key];
+            }
+          }
+          onCopyToClipboard(outputHeaders + "\n" + outputRow);
+      }
+  },
+  {
+    name: 'Copy Row as TSV', 
+    click: ({event, columnIndex, rowIndex, data}) => {
+      const filteredData = filterOutButtonsFromRowData(data);
+      let outputHeaders = "";
+      let outputRow = "";
+      for(const key of Object.keys(filteredData)){
+        if(outputHeaders === ""){
+          outputHeaders += key;
+        } else {
+          outputHeaders += "\t" + key;
+        }
+        if(outputRow === ""){
+          outputRow += filteredData[key];
+        }else{
+          outputRow += "\t" + filteredData[key];
+        }
+      }
+      onCopyToClipboard(outputHeaders + "\n" + outputRow);
+    }
+},
 ];
   
   useEffect( () => {
