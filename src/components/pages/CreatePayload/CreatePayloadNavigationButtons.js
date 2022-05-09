@@ -1,6 +1,8 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
+import { useReactiveVar } from '@apollo/client';
+import { meState } from '../../../cache';
 
 /*
     Takes in props for Boolean of first/last
@@ -8,8 +10,10 @@ import { Link } from 'react-router-dom';
     Takes in props for finished
 */
 export function CreatePayloadNavigationButtons(props){
-
+  const me = useReactiveVar(meState);
+  const disabledButtons = (me?.user?.current_operation_id || 0) > 0 ? false : true;
     return (
+      
         <div >
             <Button
                 disabled={props.first}
@@ -22,6 +26,7 @@ export function CreatePayloadNavigationButtons(props){
                 variant="contained"
                 color={props.last ? "success" : "primary"}
                 onClick={props.finished}
+                disabled={disabledButtons}
               >
                 {props.last ? 'Create Payload' : 'Next'}
               </Button>

@@ -75,7 +75,11 @@ export function EditScriptDialog(props) {
     })
     useEffect( () => {
         if(props.script !== undefined){
-          setScript(atob(props.script));
+          try{
+            setScript(atob(props.script));
+          }catch(error){
+            setScript(props.script);
+          }
         }        
     }, [props.script]);
     const onChange = (value) => {

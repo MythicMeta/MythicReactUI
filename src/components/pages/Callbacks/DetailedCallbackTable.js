@@ -23,11 +23,6 @@ query GetCallbackDetails($callback_id: Int!) {
       payloadtype{
           ptype
           id
-          commands(where: {script_only: {_eq: true}, deleted: {_eq: false}}){
-            id
-            cmd
-            version
-          }
       }
       filemetum {
         filename_text
@@ -102,11 +97,8 @@ export function DetailedCallbackTable(props){
             const commandState = data.callback_by_pk.loadedcommands.map( (c) => 
             { 
                 return {cmd: c.command.cmd, mythic: c.command.version, payload: c.version} 
-            });
-            const commandsWithScriptOnly = data.callback_by_pk.payload.payloadtype.commands.reduce( (prev, cur) => {
-              return [...prev, {cmd: cur.cmd, mythic: cur.version, payload: cur.version}]
-            }, [...commandState]).sort((a,b) => (a.cmd > b.cmd) ? 1: ((b.cmd > a.cmd) ? -1 : 0))
-            setCommands(commandsWithScriptOnly);
+            }).sort((a,b) => (a.cmd > b.cmd) ? 1: ((b.cmd > a.cmd) ? -1 : 0));
+            setCommands(commandState);
             const buildParametersState = data.callback_by_pk.payload.buildparameterinstances.map( (b) =>
             {
                 return {description: b.buildparameter.description, value: b.parameter}

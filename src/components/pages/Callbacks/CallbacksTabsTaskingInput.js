@@ -849,7 +849,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         let splitMessage = message.trim().split(" ");
         let cmd = loadedOptions.find( l => l.cmd === splitMessage[0]);
         if(cmd === undefined){
-            snackActions.warning("Unknown command", snackMessageStyles);
+            snackActions.warning("Unknown (or not loaded) command", snackMessageStyles);
             return;
         }
         let cmdGroupName = ["Default"];
