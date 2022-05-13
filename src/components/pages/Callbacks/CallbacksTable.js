@@ -86,8 +86,27 @@ function CallbacksTablePreMemo(props){
     });
     const onSubmitAdjustColumns = ({left, right}) => {
       setColumnVisibility({visible: right, hidden: left});
-      //localStorage.setItem("callbacks_table_columns", JSON.stringify(right));
+      localStorage.setItem("callbacks_table_columns", JSON.stringify(right));
     }
+    React.useEffect( () => {
+      // on startup, want to see if `callbacks_table_columns` exists in storage and load it if possible
+      try {
+        const storageItem = localStorage.getItem("callbacks_table_columns");
+        if(storageItem !== null){
+          let loadedColumnNames = JSON.parse(storageItem);
+          let allColumns = [...columnVisibility["visible"].map(c => c), ...columnVisibility["hidden"].map(c => c)];
+          let newHidden = [];
+          allColumns.forEach((v,i,a) => {
+            if(!loadedColumnNames.includes(v)){
+              newHidden.push(v);
+            }
+          })
+          setColumnVisibility({visible: loadedColumnNames, hidden: newHidden});
+        }
+      }catch(error){
+        console.log("Failed to load callbacks_table_columns", error);
+      }
+    }, [])
     const columns = useMemo( 
       () => 
         [
