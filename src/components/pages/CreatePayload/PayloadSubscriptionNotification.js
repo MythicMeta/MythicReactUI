@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {gql, useSubscription} from '@apollo/client';
 import { useSnackbar, SnackbarContent } from 'notistack';
 import Button from '@mui/material/Button';
-import clsx from 'clsx';
 import makeStyles from '@mui/styles/makeStyles';
 import Collapse from '@mui/material/Collapse';
 import Paper from '@mui/material/Paper';
@@ -56,13 +55,9 @@ const useStyles =  makeStyles(theme => ({
     },
     expand: {
         padding: '8px 8px',
-        transform: 'rotate(0deg)',
         transition: theme.transitions.create('transform', {
             duration: theme.transitions.duration.shortest,
         }),
-    },
-    expandOpen: {
-        transform: 'rotate(180deg)',
     },
     collapse: {
         padding: 16,
