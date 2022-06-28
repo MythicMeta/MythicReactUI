@@ -8,11 +8,11 @@ import Typography from '@mui/material/Typography';
 
 const GET_Payload_Types = gql`
 query getPayloadTypesBuildParametersQuery($os: String!) {
-  payloadtype(where: {supported_os: {_ilike: $os}, deleted: {_eq: false}, wrapper: {_eq: false}}) {
+  payloadtype(where: {supported_os: {_ilike: $os}, deleted: {_eq: false}, wrapper: {_eq: false}}, order_by: {ptype: asc}) {
     ptype
     file_extension
     supports_dynamic_loading
-    buildparameters(where: {deleted: {_eq: false} }) {
+    buildparameters(where: {deleted: {_eq: false} }, order_by: {description: asc}) {
       id
       name
       description
@@ -34,7 +34,7 @@ export function Step2SelectPayloadType(props){
         onCompleted: data => {
             if(data.payloadtype.length > 0){
                 if(props.prevData !== undefined && props.prevData.os === props.buildOptions){
-                    console.log(props.prevData);
+                    //console.log(props.prevData);
                     setSelectedPayloadType(props.prevData.payload_type);
                     setFileExtension(props.prevData.file_extension);
                     setSupportsDynamicLoading(props.prevData.supports_dynamic_loading);
@@ -74,7 +74,7 @@ export function Step2SelectPayloadType(props){
                     }, []);
                     payloadtypedata.sort((a,b) => -b.description.localeCompare(a.description));
                     setSelectedPayloadTypeParameters(payloadtypedata);
-                    console.log(payloadtypedata);
+                    //console.log(payloadtypedata);
                 }
                 
                 
@@ -103,7 +103,7 @@ export function Step2SelectPayloadType(props){
                 setFileExtension(payload.file_extension);
                 setSupportsDynamicLoading(payload.supports_dynamic_loading);
                 const params = payload.buildparameters.map( (param) => {
-                    console.log(param);
+                    //console.log(param);
                     if(param.parameter_type === "ChooseOne"){
                         return {...param, error: param.required, value: param.default_value.split("\n")[0]}
                     }else if(param.parameter_type === "Boolean"){

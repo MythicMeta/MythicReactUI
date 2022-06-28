@@ -32,7 +32,6 @@ export function Step1SelectOS(props){
             return [...currentOptions, ...adds];
         }, []);
         const sortedOptions = optionsReduced.sort();
-        console.log(props.prevData);
         if(props.prevData !== undefined){
             setOS(props.prevData);
         }

@@ -1003,6 +1003,8 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 onChange={handleInputChange}                     
                 size="small"
                 variant="outlined"
+                multiline={true}
+                maxRows={15}
                 disabled={reverseSearching}
                 value={message}
                 autoFocus={true}
