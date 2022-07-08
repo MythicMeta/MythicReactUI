@@ -66,6 +66,7 @@ class MythicTextField extends React.Component {
                     required={this.props.requiredValue ? this.props.requiredValue : false} 
                     InputLabelProps={this.props.inputLabelProps}
                     multiline={this.props.multiline ? this.props.multiline : false}
+                    maxRows={this.props.maxRows}
                     error={this.checkError()} 
                     type={this.props.type === undefined ? "text" : this.props.type}
                     InputProps={this.props.InputProps}

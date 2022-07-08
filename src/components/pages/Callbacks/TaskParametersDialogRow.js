@@ -8,7 +8,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Switch from '@mui/material/Switch';
 import Input from '@mui/material/Input';
-import {Button} from '@mui/material';
+import {Button, IconButton} from '@mui/material';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import Paper from '@mui/material/Paper';
 import TableHead from '@mui/material/TableHead';
@@ -439,20 +439,20 @@ export function TaskParametersDialogRow(props){
                             <TableBody>
                                 {arrayValue.map( (a, i) => (
                                     <TableRow key={'array' + props.name + i} hover>
-                                        <TableCell style={{width: "4rem"}}>
-                                            <Button onClick={() => removeArrayValue(i)} style={{backgroundColor: theme.palette.error.main,}} size="small" variant="contained">x</Button>
+                                        <TableCell style={{width: "2rem", paddingLeft:"0"}}>
+                                            <IconButton onClick={(e) => {removeArrayValue(i)}} size="large"><DeleteIcon color="error" /> </IconButton>
                                         </TableCell>
                                         <TableCell>
                                             <MythicTextField required={props.required} fullWidth={true} placeholder={""} value={a} multiline={true} autoFocus={props.autoFocus }
-                                                onChange={(n,v,e) => onChangeArrayText(v, e, i)} display="inline-block"
+                                                onChange={(n,v,e) => onChangeArrayText(v, e, i)} display="inline-block" maxRows={5}
                                                 validate={testParameterValues} errorText={"Must match: " + props.verifier_regex}
                                             />
                                         </TableCell>
                                     </TableRow>
                                 ))}
                                 <TableRow hover>
-                                    <TableCell style={{width: "5rem"}}>
-                                        <Button onClick={addNewArrayValue} size="small" variant="contained" style={{backgroundColor: theme.palette.success.main}}>+</Button>
+                                    <TableCell style={{width: "5rem", paddingLeft:"0"}}>
+                                        <IconButton onClick={addNewArrayValue} size="large"> <AddCircleIcon color="success"  /> </IconButton>
                                     </TableCell>
                                     <TableCell></TableCell>
                                 </TableRow>
@@ -462,7 +462,7 @@ export function TaskParametersDialogRow(props){
                 )
             case "String":
                 return (
-                    <MythicTextField required={props.required} placeholder={props.default_value} value={value} multiline={false}
+                    <MythicTextField required={props.required} placeholder={props.default_value} value={value} multiline={true} maxRows={5}
                         onChange={onChangeText} display="inline-block" onEnter={props.onSubmit} autoFocus={props.autoFocus}
                         validate={testParameterValues} errorText={"Must match: " + props.verifier_regex}
                     />

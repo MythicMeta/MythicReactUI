@@ -33,9 +33,10 @@ export function PayloadTypeBuildDialog(props) {
     const { loading, error } = useQuery(GET_Payload_Details, {
         variables: {payload_name: props.payload_name},
         onCompleted: data => {
-            console.log(data);
+            //console.log(data);
             const buildParams = data.payloadtype[0].buildparameters.map((param) => {
               switch(param.parameter_type){
+                case "ChooseMultiple":
                 case "ChooseOne":
                   return {...param, defaultParameter: param.parameter.split("\n")[0], options: param.parameter.split("\n").join(", ")};
                 default:
@@ -76,7 +77,7 @@ export function PayloadTypeBuildDialog(props) {
                             <b>Scripting/Building Name: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.name}</pre><br/>
                             <b>Parameter Type: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.parameter_type}</pre><br/>
                             <b>Default Parameter: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.defaultParameter}</pre><br/>
-                            {param.parameter_type === "ChooseOne" ? (
+                            {param.parameter_type === "ChooseOne" || param.parameter_type === "ChooseMultiple" ? (
                               <React.Fragment>
                                 <b>Parameter Options: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.options}</pre><br/>
                               </React.Fragment>

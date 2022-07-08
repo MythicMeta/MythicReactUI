@@ -5,8 +5,15 @@ import GetAppIcon from '@mui/icons-material/GetApp';
 import { snackActions } from '../../utilities/Snackbar';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import {MythicStyledTooltip} from '../../MythicComponents/MythicStyledTooltip';
+import { MythicDialog } from '../../MythicComponents/MythicDialog';
+import {PayloadBuildMessageDialog} from './PayloadBuildMessageDialog';
 
 export function PayloadsTableRowBuildStatus(props){
+    const [openBuildMessage, setOpenBuildMessageDialog] = React.useState(false);
+    const onErrorClick = () => {
+        snackActions.warning("Payload failed to build, cannot download");
+        setOpenBuildMessageDialog(true);
+    }
     return (
         <React.Fragment>
             {props.build_phase === "success" ?
@@ -31,10 +38,16 @@ export function PayloadsTableRowBuildStatus(props){
                 (<MythicStyledTooltip title="Failed to build payload">
                     <IconButton
                         variant="contained"
-                        onClick={() => snackActions.warning("Payload failed to build, cannot download")}
+                        onClick={onErrorClick}
                         size="large">
                         <ReportProblemIcon color="error" />
                     </IconButton>
+                    {openBuildMessage ? (
+                    <MythicDialog fullWidth={true} maxWidth="lg" open={openBuildMessage} 
+                        onClose={()=>{setOpenBuildMessageDialog(false);}} 
+                        innerDialog={<PayloadBuildMessageDialog payload_id={props.id} viewError={true} onClose={()=>{setOpenBuildMessageDialog(false);}} />}
+                    />
+                ): (null) }
                 </MythicStyledTooltip>
                 ) 
                 )

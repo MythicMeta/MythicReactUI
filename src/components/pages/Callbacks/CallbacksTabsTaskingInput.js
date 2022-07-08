@@ -199,6 +199,8 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             setMessage("");
             setReverseSearchString("");
             setUnmodifiedHistoryValue("parsed_cli");
+            event.stopPropagation();
+            event.preventDefault();
         }
         if(event.key === "Tab"){
             // if we're still typing the command, we want this to cycle through possible matching commands
@@ -939,6 +941,8 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         }
     }
     const onReverseSearchKeyDown = (event) => {
+        event.stopPropagation();
+        event.preventDefault();
         if(event.key === "Escape"){
             setReverseSearching(false);
             setReverseSearchIndex(0);
@@ -1003,6 +1007,8 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 onChange={handleInputChange}                     
                 size="small"
                 variant="outlined"
+                multiline={true}
+                maxRows={15}
                 disabled={reverseSearching}
                 value={message}
                 autoFocus={true}
