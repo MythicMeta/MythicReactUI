@@ -941,8 +941,6 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         }
     }
     const onReverseSearchKeyDown = (event) => {
-        event.stopPropagation();
-        event.preventDefault();
         if(event.key === "Escape"){
             setReverseSearching(false);
             setReverseSearchIndex(0);
@@ -981,6 +979,11 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                 setReverseSearchIndex(newIndex);
                 setMessage(reverseSearchOptions[newIndex].command_name + " " + reverseSearchOptions[newIndex].original_params);
             }
+        }else if(event.key === "r" && event.ctrlKey){
+            //this means they typed ctrl+r, so they're wanting to do a reverse search for a command
+            setReverseSearching(false);
+            event.stopPropagation();
+            event.preventDefault();
         }
     }
     return (

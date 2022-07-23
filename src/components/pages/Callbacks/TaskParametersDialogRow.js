@@ -393,7 +393,7 @@ export function TaskParametersDialogRow(props){
         if(value.includes("\n")){
             let new_values = value.split("\n");
             values = [...values, ...new_values.slice(1)];
-            values[index] = values[index] + new_values[0];
+            values[index] = new_values[0];
         }else{
             values[index] = value;
         }
