@@ -82,6 +82,7 @@ query GetCallbackDetails($callback_id: Int!) {
     agent_callback_id
     operation_id
     process_name
+    init_callback
   }
   
 }

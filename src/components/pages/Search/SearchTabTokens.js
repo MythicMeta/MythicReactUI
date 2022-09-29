@@ -194,7 +194,7 @@ export const SearchTabTokensPanel = (props) =>{
     const [tokenData, setTokenData] = React.useState([]);
     const [totalCount, setTotalCount] = React.useState(0);
     const [search, setSearch] = React.useState("");
-    const [searchField, setSearchField] = React.useState("User/Group");
+    const [searchField, setSearchField] = React.useState("Host");
     const me = MeHook();
 
     const onChangeSearchField = (field) => {
@@ -248,7 +248,7 @@ export const SearchTabTokensPanel = (props) =>{
         onError: handleCallbackSearchFailure
     })
     const onUserGroupSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -262,7 +262,7 @@ export const SearchTabTokensPanel = (props) =>{
         }})
     }
     const onLogonTypeSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -276,7 +276,7 @@ export const SearchTabTokensPanel = (props) =>{
         }})
     }
     const onHostSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -290,7 +290,7 @@ export const SearchTabTokensPanel = (props) =>{
         }})
     }
     const onSIDSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){

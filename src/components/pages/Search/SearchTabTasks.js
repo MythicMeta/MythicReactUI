@@ -238,7 +238,7 @@ export const SearchTabTasksPanel = (props) =>{
         onError: handleCallbackSearchFailure
     })
     const onOutputSearch = ({search, offset, taskStatus}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(search === ""){
@@ -257,7 +257,7 @@ export const SearchTabTasksPanel = (props) =>{
         }})
     }
     const onParameterSearch = ({search, offset, taskStatus}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(search === ""){
@@ -276,7 +276,7 @@ export const SearchTabTasksPanel = (props) =>{
         }})
     }
     const onCommentSearch = ({search, offset, taskStatus}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         let new_search = search;
         if(search === ""){
             new_search = "_";
@@ -295,7 +295,7 @@ export const SearchTabTasksPanel = (props) =>{
         }})
     }
     const onCommandSearch = ({search, offset, taskStatus}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         let new_search = search;
         if(search === ""){
             new_search = "_";

@@ -287,7 +287,7 @@ export const SearchTabArtifactsPanel = (props) =>{
         onError: handleCallbackSearchFailure
     })
     const onArtifactSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -301,7 +301,7 @@ export const SearchTabArtifactsPanel = (props) =>{
         }})
     }
     const onCommandSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -315,7 +315,7 @@ export const SearchTabArtifactsPanel = (props) =>{
         }})
     }
     const onHostSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -329,7 +329,7 @@ export const SearchTabArtifactsPanel = (props) =>{
         }})
     }
     const onTypeSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -347,7 +347,7 @@ export const SearchTabArtifactsPanel = (props) =>{
             snackActions.warning("Must specify a task number");
             return;
         }
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getTaskSearch({variables:{
             operation_id: me?.user?.current_operation_id || 0,
@@ -361,7 +361,7 @@ export const SearchTabArtifactsPanel = (props) =>{
             snackActions.warning("Must specify a callback number");
             return;
         }
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getCallbackSearch({variables:{
             operation_id: me?.user?.current_operation_id || 0,

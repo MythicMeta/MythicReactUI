@@ -29,9 +29,18 @@ export function CallbacksTabsTaskingInputTokenSelect(props) {
         return "Default Token";
       }
       if(value.User === null){
-        return value.tokenId;
+        if(value.description === null){
+          return value.TokenId + " - No Description";
+        }else{
+          return value.TokenId + " - " + value.description;
+        }
       }else{
-        return value.User;
+        if(value.description === null){
+          return value.TokenId + " - " + value.User;
+        }else{
+          return value.TokenId + " - " + value.User + " - " + value.description;
+        }
+        
       }
     }
   return (
@@ -48,7 +57,7 @@ export function CallbacksTabsTaskingInputTokenSelect(props) {
         >
           <MenuItem value={"Default Token"} key={0}>Default Token</MenuItem>
           {options.map( (opt) => (
-              <MenuItem value={opt.token} key={opt.token.id}>{opt.token.User === null ? opt.token.TokenId + " - " + opt.token.description : opt.token.User + " - " + opt.token.description}</MenuItem>
+              <MenuItem value={opt.token} key={opt.token.id}>{opt.token.User === null ? opt.token.TokenId + (opt.token.description === null ? " - No Description" : " - " + opt.token.description) : opt.token.User + " - " + opt.token.description}</MenuItem>
           ) )}
         </Select>
       </FormControl>

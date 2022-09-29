@@ -255,7 +255,7 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
                 </Button>
             </ButtonGroup>
             {getConfigString()}
-            <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal>
+            <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition style={{zIndex: 200}}>
               {({ TransitionProps, placement }) => (
                 <Grow
                   {...TransitionProps}

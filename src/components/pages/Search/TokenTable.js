@@ -12,12 +12,13 @@ import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
 import { gql, useMutation } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
 import {useTheme} from '@mui/material/styles';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import EditIcon from '@mui/icons-material/Edit';
 import {TaskTokenDialog} from '../Callbacks/TaskTokenDialog';
 import {TokenDescriptionDialog} from './TokenDescriptionDialog';
+import {TokenUserDialog} from './TokenUserDialog';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
 const updateCredentialDeleted = gql`
@@ -52,15 +53,34 @@ export function TokenTable(props){
         });
         setTokens(updates);
     }
+    const onUpdateDescription = ({id, description}) => {
+        const updates = tokens.map( (cred) => {
+            if(cred.id === id){
+                return {...cred, description}
+            }else{
+                return {...cred}
+            }
+        });
+        setTokens(updates);
+    }
+    const onUpdateUser = ({id, User}) => {
+        const updates = tokens.map( (cred) => {
+            if(cred.id === id){
+                return {...cred, User}
+            }else{
+                return {...cred}
+            }
+        });
+        setTokens(updates);
+    }
 
     return (
         <TableContainer component={Paper} className="mythicElement" style={{height: "calc(78vh)"}}>
             <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
-                        <TableCell style={{width: "5rem"}}>Delete</TableCell>
+                        <TableCell style={{width: "5rem"}}>Visibility</TableCell>
                         <TableCell >User</TableCell>
-                        <TableCell >Groups</TableCell>
                         <TableCell >TokenId</TableCell>
                         <TableCell >Logon Session</TableCell>
                         <TableCell >Description</TableCell>
@@ -71,10 +91,12 @@ export function TokenTable(props){
                 </TableHead>
                 <TableBody>
                 
-                {tokens.map( (op) => (
+                {tokens.map( (op, index) => (
                     <TokenTableRow
-                        key={"cred" + op.id}
+                        key={"token" + index}
                         onEditDeleted={onEditDeleted}
+                        onUpdateDescription={onUpdateDescription}
+                        onUpdateUser={onUpdateUser}
                         {...op}
                     />
                 ))}
@@ -89,6 +111,7 @@ function TokenTableRow(props){
     const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
     const [viewTokenDialog, setViewTokenDialog] = React.useState(false);
     const [editDescriptionDialog, setEditDescriptionDialog] = React.useState(false);
+    const [editUserDialog, setEditUserDialog] = React.useState(false);
     const [updateCallbackTokensDeleted] = useMutation(updateCallbacksOfDeletedToken, {
         onCompleted: (data) => {
             snackActions.success("Removed token from callback");
@@ -116,23 +139,24 @@ function TokenTableRow(props){
     return (
         <React.Fragment>
             <TableRow hover>
-                <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDeleteDialog} acceptText={props.deleted ? "Restore" : "Remove" }/>
+                <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDeleteDialog} acceptText={props.deleted ? "Restore" : "Hide" }/>
                 
                 <TableCell>{props.deleted ? (
                     <MythicStyledTooltip title="Restore Token for use in Tasking">
-                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><RestoreFromTrashIcon/></IconButton>
+                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><VisibilityOffIcon/></IconButton>
                     </MythicStyledTooltip>
                 ) : (
                     <MythicStyledTooltip title="Delete Token so it can't be used in Tasking">
-                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
+                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><VisibilityIcon/></IconButton>
                     </MythicStyledTooltip>
                 )} </TableCell>
                 <TableCell>
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.User}</Typography>
-                    
-                </TableCell>
-                <TableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.Groups}</Typography>
+                <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.User}</Typography>
+                    <IconButton onClick={() => setEditUserDialog(true)} size="small"><EditIcon /></IconButton>
+                        <MythicDialog fullWidth={true} maxWidth="md" open={editUserDialog} 
+                            onClose={()=>{setEditUserDialog(false);}} 
+                            innerDialog={<TokenUserDialog token_id={props.id} onClose={()=>{setEditUserDialog(false);}} onUpdateUser={props.onUpdateUser}/> }
+                        />
                 </TableCell>
                 <TableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.TokenId}</Typography>
@@ -155,8 +179,8 @@ function TokenTableRow(props){
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.description}</Typography>
                     <IconButton onClick={() => setEditDescriptionDialog(true)} size="small"><EditIcon /></IconButton>
                         <MythicDialog fullWidth={true} maxWidth="md" open={editDescriptionDialog} 
-                            onClose={()=>{setEditDescriptionDialog(false);}} 
-                            innerDialog={<TokenDescriptionDialog token_id={props.id} onClose={()=>{setEditDescriptionDialog(false);}}/>}
+                            onClose={()=>{setEditDescriptionDialog(false);}}  
+                            innerDialog={<TokenDescriptionDialog token_id={props.id} onClose={()=>{setEditDescriptionDialog(false);}} onUpdateDescription={props.onUpdateDescription}/> }
                         />
                 </TableCell>
                 <TableCell>
@@ -166,8 +190,14 @@ function TokenTableRow(props){
                     </Link>
                 </TableCell>
                 <TableCell>{props.callbacktokens?.map( (cbt) => (
-                        cbt.callback_id
-                    )) || null
+                    <React.Fragment>
+                        <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" key={"callbacklink" + cbt.callback_id + "row" + props.id}
+                            href={"/new/callbacks/" + cbt.callback_id}>
+                                {cbt.callback_id}
+                        </Link>
+                        {" "}
+                    </React.Fragment>
+                    ))|| null
                 }</TableCell>
                 <TableCell>{props.host}</TableCell>
             </TableRow>

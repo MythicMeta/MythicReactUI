@@ -143,7 +143,7 @@ export function EventFeed(props){
         }
         return [...prev, cur];
       }, [...operationeventlog]);
-      newEvents.sort((a,b) => (a.id > b.id) ? -1 : ((b.id > a.id) ? 1 : 0));
+      newEvents.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
       setOperationEventLog(newEvents);
     }
 });

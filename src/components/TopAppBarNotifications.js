@@ -1,7 +1,7 @@
 import React from 'react';
 import {useSubscription, gql } from '@apollo/client';
 import Badge from '@mui/material/Badge';
-import MailIcon from '@mui/icons-material/Mail';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Link } from 'react-router-dom';
 import { IconButton, Tooltip } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -52,24 +52,16 @@ export function TopAppBarNotifications(props) {
             size="large">
             <Tooltip title="Event Feed" arrow classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
             { 
-                loading ? (
-                    <Badge color="secondary" badgeContent={0}>
-                        <CircularProgress size={20} thickness={4} />
-                    </Badge>
-                ) : 
-                
-                (
                     error ? (
                         <Badge color="secondary" badgeContent={0}>
-                            <ErrorIcon />
+                            <NotificationsActiveIcon />
                         </Badge>
                     ) : (
-                        <Badge badgeContent={data.operationeventlog_aggregate.aggregate.count} color="error">
-                            <MailIcon />
+                        <Badge badgeContent={data?.operationeventlog_aggregate?.aggregate?.count || 0} color="error">
+                            <NotificationsActiveIcon />
                         </Badge>
                     )
-                )
-                
+                                
             }
             </Tooltip>
         </IconButton>

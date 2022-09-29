@@ -273,7 +273,7 @@ export const SearchTabCredentialsPanel = (props) =>{
         onError: handleCallbackSearchFailure
     })
     const onAccountSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getAccountSearch({variables:{
             operation_id: me?.user?.current_operation_id || 0,
@@ -283,7 +283,7 @@ export const SearchTabCredentialsPanel = (props) =>{
         }})
     }
     const onRealmSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getRealmSearch({variables:{
             operation_id: me?.user?.current_operation_id || 0,
@@ -293,7 +293,7 @@ export const SearchTabCredentialsPanel = (props) =>{
         }})
     }
     const onCredentialSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         getCredentialSearch({variables:{
             operation_id: me?.user?.current_operation_id || 0,
@@ -303,7 +303,7 @@ export const SearchTabCredentialsPanel = (props) =>{
         }})
     }
     const onCommentSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){

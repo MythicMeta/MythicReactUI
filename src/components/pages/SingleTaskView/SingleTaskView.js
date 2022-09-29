@@ -54,6 +54,10 @@ fragment TaskData on task {
     tasks {
         id
     }
+    tasktags(order_by: {tag: asc}) {
+        tag
+        id
+    }
     token {
         id
     }

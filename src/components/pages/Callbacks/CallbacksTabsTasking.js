@@ -78,6 +78,10 @@ export const taskingDataFragment = gql`
         tasks {
             id
         }
+        tasktags(order_by: {tag: asc}) {
+            tag
+            id
+        }
         token {
             id
         }
@@ -187,6 +191,9 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
                 return false;
             }
             if(oldArray[i].tasks.length !== newArray[i].tasks.length){
+                return false;
+            }
+            if(oldArray[i].tasktags.length !== newArray[i].tasktags.length){
                 return false;
             }
         }

@@ -260,7 +260,7 @@ export const SearchTabCallbacksPanel = (props) =>{
         onError: handleCallbackSearchFailure
     })
     const onUserSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -274,7 +274,7 @@ export const SearchTabCallbacksPanel = (props) =>{
         }})
     }
     const onDomainSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -288,7 +288,7 @@ export const SearchTabCallbacksPanel = (props) =>{
         }})
     }
     const onHostSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -302,7 +302,7 @@ export const SearchTabCallbacksPanel = (props) =>{
         }})
     }
     const onDescriptionSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -316,7 +316,7 @@ export const SearchTabCallbacksPanel = (props) =>{
         }})
     }
     const onIPSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){

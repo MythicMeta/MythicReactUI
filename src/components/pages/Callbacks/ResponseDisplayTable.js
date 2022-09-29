@@ -549,11 +549,8 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
   
   useEffect( () => {
     setAllData([...table.rows]);
-    if(table.rows.length < maxElements){
       setDataHeight((table.rows.length * rowHeight) + headerHeight);
-    }else{
-      setDataHeight(530);
-    }
+    
   }, [table.rows])
   const sortColumn = table.headers.findIndex((column) => column.plaintext === sortData.sortKey);
   return (

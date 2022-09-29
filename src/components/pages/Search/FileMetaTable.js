@@ -323,8 +323,12 @@ function FileMetaDownloadTableRow(props){
                                                     
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Button variant="contained" style={{marginBottom: "5px"}} color="info" startIcon={<VisibilityIcon />} onClick={onPreviewStrings}>Strings</Button>
-                                                    <Button variant="contained" color="info" startIcon={<VisibilityIcon />} onClick={onPreviewHex}>HEX XXD</Button>
+                                                    <div style={{display: "block"}}>
+                                                        <Button variant="contained" style={{marginBottom: "5px"}} color="info" startIcon={<VisibilityIcon />} onClick={onPreviewStrings}>Strings</Button>
+                                                    </div>
+                                                    <div>
+                                                        <Button variant="contained" color="info" startIcon={<VisibilityIcon />} onClick={onPreviewHex}>HEX XXD</Button>
+                                                    </div>
                                                     {openPreviewStringsDialog &&
                                                         <MythicDialog fullWidth={true} maxWidth="xl" open={openPreviewStringsDialog} 
                                                             onClose={()=>{setOpenPreviewStringsDialog(false);}} 
@@ -607,8 +611,12 @@ function FileMetaUploadTableRow(props){
                                                     )}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Button variant="contained" style={{marginBottom: "5px"}} color="info" startIcon={<VisibilityIcon />} onClick={onPreviewStrings}>Strings</Button>
-                                                    <Button variant="contained" color="info" startIcon={<VisibilityIcon />} onClick={onPreviewHex}>HEX XXD</Button>
+                                                    <div style={{display: "block"}}>
+                                                        <Button variant="contained" style={{marginBottom: "5px"}} color="info" startIcon={<VisibilityIcon />} onClick={onPreviewStrings}>Strings</Button>
+                                                    </div>
+                                                    <div>
+                                                        <Button variant="contained" color="info" startIcon={<VisibilityIcon />} onClick={onPreviewHex}>HEX XXD</Button>
+                                                    </div>
                                                     {openPreviewStringsDialog &&
                                                         <MythicDialog fullWidth={true} maxWidth="xl" open={openPreviewStringsDialog} 
                                                             onClose={()=>{setOpenPreviewStringsDialog(false);}} 

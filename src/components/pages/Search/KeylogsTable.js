@@ -1,7 +1,25 @@
 import React, { useEffect } from 'react';
 import Grid from '@mui/material/Grid';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import { copyStringToClipboard } from '../../utilities/Clipboard';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faCopy} from '@fortawesome/free-solid-svg-icons';
+import {Link} from '@mui/material';
+import Paper from '@mui/material/Paper';
+import {snackActions} from '../../utilities/Snackbar';
+import { meState } from '../../../cache';
+import {useReactiveVar} from '@apollo/client';
+import {IconButton, Typography} from '@mui/material';
+import { toLocalTime } from '../../utilities/Time';
 
-export function KeylogsTable(props){
+/*
+export function KeylogsTableOld(props){
     const [keylogs, setKeylogs] = React.useState([]);
     useEffect( () => {
         const condensed = props.keylogs.reduce( (prev, cur) => {
@@ -42,6 +60,7 @@ export function KeylogsTable(props){
     }, [props.keylogs]);
 //k0["name"]
     return (
+        
         <Grid container spacing={0} direction="row" columns={12}>
             {keylogs.map( k0 => (
                 <React.Fragment key={k0["name"]}>
@@ -70,6 +89,86 @@ export function KeylogsTable(props){
                 </React.Fragment>
             ))}
         </Grid>
+        
+    )
+}
+*/
+export function KeylogsTable(props){
+    const [keylogs, setKeylogs] = React.useState([]);
+    useEffect( () => {
+        setKeylogs(props.keylogs);
+    }, [props.keylogs]);
+//k0["name"]
+    return (
+        
+        <TableContainer component={Paper} className="mythicElement" >
+            <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "scroll"}}>
+                <TableHead>
+                    <TableRow>
+                        <TableCell style={{width: "4rem"}}>Callback</TableCell>
+                        <TableCell style={{width: "4rem"}}>Task</TableCell>
+                        <TableCell style={{width: "15rem"}}>Timestamp</TableCell>
+                        <TableCell >User</TableCell>
+                        <TableCell >Host</TableCell>
+                        <TableCell >Window</TableCell>
+                        <TableCell style={{maxWidth: "70%"}}>Keylogs</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                
+                {keylogs.map( (op) => (
+                    <KeylogTableRow
+                        key={"keylog" + op.id}
+                        {...op}
+                    />
+                ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
+        
+    )
+}
+function KeylogTableRow(props){
+    const me = useReactiveVar(meState);
+    const onCopyToClipboard = (data) => {
+        let result = copyStringToClipboard(data);
+        if(result){
+          snackActions.success("Copied text!");
+        }else{
+          snackActions.error("Failed to copy text");
+        }
+    }
+    return (
+        <React.Fragment>
+            <TableRow hover>
+                <TableCell>
+                    <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/callbacks/" + props.task.callback.id}>{props.task.callback.id}</Link>
+                </TableCell>
+                <TableCell>
+                    <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>
+                </TableCell>
+                <TableCell>
+                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me?.user?.view_utc_time || false)}</Typography>
+                </TableCell>
+                <TableCell>
+                    <Typography variant="body2" >{props.user}</Typography>
+                </TableCell>
+                <TableCell >
+                    <Typography variant="body2" >{props.task.callback.host}</Typography>
+                </TableCell>
+                <TableCell >
+                    <Typography variant="body2" >{props.window}</Typography>
+                </TableCell>
+                <TableCell >
+                    <MythicStyledTooltip title={"Copy to clipboard"} style={{display: "inline-block"}}>
+                        <IconButton onClick={() => onCopyToClipboard(props.keystrokes_text)} size="small">
+                            <FontAwesomeIcon icon={faCopy} />
+                        </IconButton>
+                    </MythicStyledTooltip>
+                    <Typography variant="body2" style={{wordBreak: "break-all", whiteSpace: "pre-wrap", display: "inline-block"}}>{props.keystrokes_text}</Typography>   
+                </TableCell>
+            </TableRow>
+        </React.Fragment>
     )
 }
 

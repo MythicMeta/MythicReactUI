@@ -19,6 +19,7 @@ import TreeItem, {useTreeItem} from '@mui/lab/TreeItem';
 import SvgIcon from '@mui/material/SvgIcon';
 import {gql, useLazyQuery } from '@apollo/client';
 import {TaskDisplayContainer} from './TaskDisplayContainer';
+import Chip from '@mui/material/Chip';
 
 const taskDataFragment = gql`
     fragment taskData on task {
@@ -51,6 +52,10 @@ const taskDataFragment = gql`
         opsec_post_bypassed
         tasks {
             id
+        }
+        tasktags(order_by: {tag: asc}) {
+          tag
+          id
         }
         token {
             id
@@ -96,7 +101,6 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden", 
     textOverflow: "ellipsis", 
     maxWidth: "100%", 
-    width: "100%",
     whiteSpace: "nowrap",
     display: "inline-block",
     cursor: "default",
@@ -273,6 +277,13 @@ const TaskStatusDisplay = ({task, theme}) => {
   }else{
       return (<Typography size="small" component="span"  style={{padding: "0", color: theme.palette.info.main, marginLeft: "5%", display: "inline-block", fontSize: theme.typography.pxToRem(15)}}>{task.status.toLowerCase()}</Typography>)
   }
+}
+const TaskTagDisplay = ({task}) => {
+  return (
+    task.tasktags.map( tt => (
+      <Chip label={tt.tag} color="info" size="small" style={{float: "right"}} key={tt.tag} />
+    ))
+  )
 }
 const ColoredTaskDisplay = ({task, theme, children}) => {
   const [themeColor, setThemeColor] = React.useState(theme.palette.info.main);
@@ -491,13 +502,16 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
               <div id={'scrolltotask' + task.id} style={{width: "100%"}}>
                 {displayComment ? (
                     <React.Fragment>
-                        <Typography className={classes.secondaryHeading} onClick={preventPropagation}>{task.commentOperator.username}</Typography>
+                        <Typography className={classes.taskAndTimeDisplay} onClick={preventPropagation}>{task.commentOperator.username}</Typography><br/>
                         <Typography className={classes.heading} onClick={preventPropagation}>{task.comment}</Typography>
                     </React.Fragment>
                   ) : (null)}
+                  <div >
                     <Typography className={classes.taskAndTimeDisplay} onClick={preventPropagation}>[{toLocalTime(task.timestamp, me.user.view_utc_time)}] / {task.id} {initialHideUsernameValue ? '' : `/ ${task.operator.username}`}
-                      <TaskStatusDisplay task={task} theme={theme}/>
                     </Typography>
+                    <TaskStatusDisplay task={task} theme={theme}/>
+                    <TaskTagDisplay task={task} />
+                  </div>
                   <div>
                   {task.comment !== "" ? (
                         <div className={classes.column}>
@@ -505,7 +519,7 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
                           </div>
                       ) : (null)}
                     <div className={classes.column} onClick={preventPropagation}>
-                        <Badge badgeContent={alertBadges} color="secondary" anchorOrigin={{vertical: 'top', horizontal: 'left'}}>
+                        <Badge badgeContent={alertBadges} color="success" anchorOrigin={{vertical: 'top', horizontal: 'left'}}>
                           <Typography className={classes.heading} >
                             {task.command_name + " " + task.display_params}
                           </Typography>

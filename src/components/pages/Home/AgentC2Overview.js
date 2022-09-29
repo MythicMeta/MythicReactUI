@@ -20,8 +20,9 @@ query GetC2AndPayloadType {
     name
     id
   }
-  payloadtype(where: {deleted: {_eq: false}, wrapper: {_eq: false}}) {
+  payloadtype(where: {deleted: {_eq: false}}) {
     ptype
+    wrapper
     id
     payloadtypec2profiles {
       c2profile {
@@ -32,9 +33,12 @@ query GetC2AndPayloadType {
   }
   wrappers: payloadtype(where: {deleted: {_eq: false}, wrapper: {_eq: true}}) {
     ptype
+    wrapper
     id
     wrap_these_payload_types {
       wrapped {
+        wrapper
+        id
         ptype
       }
     }
@@ -46,6 +50,7 @@ export function AgentC2Overview(props){
     const theme = useTheme();
     const [c2Profiles, setC2Profiles] = React.useState([]);
     const [payloadTypeRows, setPayloadTypeRows] = React.useState([]);
+    const [payloadTypeRowsNoWrappers, setPayloadTypeRowsNoWrappers] = React.useState([]);
     const [wrappers, setWrappers] = React.useState([]);
     const { loading } = useQuery(GetC2ProfilesAndPayloadTypes, {fetchPolicy: "network-only",
       onCompleted: (data) => {
@@ -54,10 +59,12 @@ export function AgentC2Overview(props){
           const payloadc2 = payload.payloadtypec2profiles.map( (c2) => {
             return c2.c2profile.name;
           })
-          return {ptype: payload.ptype, payloadtypec2profiles: payloadc2 };
+          return {ptype: payload.ptype, payloadtypec2profiles: payloadc2, wrapper: payload.wrapper };
         });
+        
         c2Headers.sort();
         payloadRows.sort( (a,b) => a.ptype < b.ptype ? -1 : 1);
+        const payloadTypeNoWrappers = payloadRows.filter( p => !p.wrapper);
         const wrapperRows = data.wrappers.map( (payload) => {
           const wrapped = payload.wrap_these_payload_types.map( (w) => {
             return w.wrapped.ptype;
@@ -68,6 +75,7 @@ export function AgentC2Overview(props){
         setWrappers(wrapperRows);
         setC2Profiles(c2Headers);
         setPayloadTypeRows(payloadRows);
+        setPayloadTypeRowsNoWrappers(payloadTypeNoWrappers);
       },
       onError: (data) => {
 
@@ -94,7 +102,7 @@ export function AgentC2Overview(props){
                 </TableRow>
             </TableHead>
             <TableBody>
-                {payloadTypeRows.map( (payload) => (
+                {payloadTypeRowsNoWrappers.map( (payload) => (
                   <TableRow key={payload.ptype} hover>
                     <TableCell>{payload.ptype}</TableCell>
                     {c2Profiles.map( (c2) => (

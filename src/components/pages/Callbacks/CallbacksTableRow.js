@@ -173,7 +173,6 @@ export const CallbacksTableIDCell = ({rowData, onOpenTab, toggleLock, updateDesc
                 color={rowDataStatic.integrity_level > 2 ? "error" : "primary"} 
                 ref={dropdownAnchorRef} 
                 aria-label="split button"
-                color="info"
             >
                 <Button style={{padding: "0 10px 0 10px"}} color={rowDataStatic.integrity_level > 2 ? "error" : "primary"}  variant="contained"
                     onClick={(evt) => {evt.stopPropagation();localOnOpenTab("interact")}}>

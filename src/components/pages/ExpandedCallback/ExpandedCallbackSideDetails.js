@@ -215,7 +215,7 @@ export function ExpandedCallbackSideDetailsTable(props){
                     <TableRow hover>
                         <TableCell>Elevation Level</TableCell>
                         <TableCell>{props.integrity_level}
-                            {props.integrity_level > 2 ? (" ( Elevated Access )") : ""}
+                            {props.integrity_level > 2 ? (" ( High Integrity )") : ""}
                             {props.integrity_level === 2 ? (" ( Medium Integrity ) ") : ""}
                             {props.integrity_level < 2 ? (" ( Low Integrity )") : ""}
                         </TableCell>
@@ -272,6 +272,10 @@ export function ExpandedCallbackSideDetailsTable(props){
                     <TableRow hover>
                         <TableCell>Last Checkin</TableCell>
                         <TableCell>{displayTime}</TableCell>
+                    </TableRow>
+                    <TableRow hover>
+                        <TableCell>First Checkin</TableCell>
+                        <TableCell>{props.init_callback}</TableCell>
                     </TableRow>
                     <TableRow hover>
                         <TableCell>Description</TableCell>

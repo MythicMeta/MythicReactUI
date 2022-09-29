@@ -15,8 +15,8 @@ import {snackActions} from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import {useTheme} from '@mui/material/styles';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {toggleHideCallbackMutations} from '../Callbacks/CallbackMutations';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import {DetailedCallbackTable} from '../Callbacks/DetailedCallbackTable';
@@ -44,7 +44,7 @@ export function CallbackSearchTable(props){
             <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "auto"}}>
                 <TableHead>
                     <TableRow>
-                        <TableCell style={{width: "5rem"}}>Hide</TableCell>
+                        <TableCell style={{width: "5rem"}}>Visibility</TableCell>
                         <TableCell >User</TableCell>
                         <TableCell >Domain</TableCell>
                         <TableCell >Host</TableCell>
@@ -94,11 +94,11 @@ function CallbackSearchTableRow(props){
                 
                 <TableCell>{!props.active ? (
                     <MythicStyledTooltip title="Restore Callback for Tasking">
-                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><RestoreFromTrashIcon/></IconButton>
+                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><VisibilityOffIcon/></IconButton>
                     </MythicStyledTooltip>
                 ) : (
                     <MythicStyledTooltip title="Hide Callback so it can't be used in Tasking">
-                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
+                        <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><VisibilityIcon/></IconButton>
                     </MythicStyledTooltip>
                 )} </TableCell>
                 <TableCell>

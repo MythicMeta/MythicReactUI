@@ -42,11 +42,11 @@ export function LoginForm(props){
                     console.log("Error", data);
                 }
             }).catch(error => {
-                snackActions.warning("Error getting JSON from server");
+                snackActions.warning("Error getting JSON from server: " + error.toString());
                 console.log("Error trying to get json response", error.toString());
             });
         }).catch(error => {
-            snackActions.warning("Error talking to server");
+            snackActions.warning("Error talking to server: " + error.toString());
             console.log("There was an error!", error.toString());
         });
     }

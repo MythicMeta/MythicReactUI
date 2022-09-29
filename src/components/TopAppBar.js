@@ -5,7 +5,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -268,23 +267,14 @@ export function TopAppBar(props) {
                     onClose={handleClose}
                     MenuListProps={{style: {backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}}
                 >
-                    <MenuItem component={Link} to="/new/settings" onClick={handleClose} name="settings">User Management</MenuItem>
+                    <MenuItem divider={true} style={{display: "block"}} component={Link} to="/new/settings" onClick={handleClose} name="settings"> 
+                      <Typography paragraph={true} variant="caption" style={{marginBottom: "0", color: "white"}}>Signed in as:</Typography>
+                      <Typography paragraph={true} variant="body1"  style={{marginBottom: "0", fontWeight: 600, color: "white"}}> {me?.user?.username } </Typography>
+                    </MenuItem>
                     <MenuItem component={Link} to="/new/login" onClick={handleLogout}>Logout</MenuItem>
                 </Menu>
                 <div style={{display: "inline-flex", justifyContent: "flex-end", float: "right"}}>
-                <IconButton
-                  aria-label="account of current user"
-                  aria-controls="menu-appbar"
-                  aria-haspopup="true"
-                  onClick={handleMenu}
-                  ref={settingsRef}
-                  color="inherit"
-                  style={{float: "right"}}
-                  size="large">
-                  <MythicStyledTooltip title="Settings or Logout">
-                    <AccountCircle />
-                  </MythicStyledTooltip>
-                </IconButton>
+                
                 <IconButton
                   aria-label="documentation links"
                   aria-controls="menu-appbar"
@@ -321,12 +311,21 @@ export function TopAppBar(props) {
                     <MenuItem component={Link} to={{pathname: "https://docs.mythic-c2.net"}} target="_blank" onClick={handleDocumentationClose}>Mythic Documentation</MenuItem>
                 </Menu>
                 <TopAppBarNotifications />
-                { me?.user?.username ? 
-                  <Typography style={{display: "flex", alignItems: "center", paddingRight: "10px"}} >
-                    {me?.user?.username }
-                  </Typography> : (
-                  <Redirect to='/new/login'/>
-                )}
+                <IconButton
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={handleMenu}
+                  ref={settingsRef}
+                  color="inherit"
+                  style={{float: "right"}}
+                  size="large">
+                  <MythicStyledTooltip title="Settings or Logout">
+                    <AccountCircle />
+                  </MythicStyledTooltip>
+                </IconButton>
+                
+                
                 </div>
             </div>
         </Toolbar>

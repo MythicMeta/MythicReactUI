@@ -17,6 +17,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, onEditTabDes
     const [value, setValue] = React.useState(0);
     const handleChange = (event, newValue) => {
         setValue(newValue);
+        //console.log(newValue);
         localStorage.setItem('clickedTab', openTabs[newValue].tabID);
     };
     React.useEffect( () => {
@@ -34,9 +35,11 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, onEditTabDes
         onCloseTab({ tabID, index });
     };
     useEffect(() => {
-        console.log(clickedTabId);
+        //console.log(clickedTabId);
         for (let i = 0; i < openTabs.length; i++) {
+            //console.log("openTabs[i]", i, openTabs[i]);
             if (openTabs[i].tabID === clickedTabId) {
+                //console.log("seting value", i);
                 setValue(i);
             }
         }

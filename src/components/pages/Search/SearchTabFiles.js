@@ -510,7 +510,7 @@ export const SearchTabFilesPanel = (props) =>{
         onError: handleCallbackSearchFailure
     })
     const onFilenameSearch = ({search, searchHost, offset, adjustedSearchLocation}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         setSearchHost(searchHost);
         if(adjustedSearchLocation === "FileBrowser"){
@@ -548,7 +548,7 @@ export const SearchTabFilesPanel = (props) =>{
         }
     }
     const onHashSearch = ({search, searchHost, offset, adjustedSearchLocation}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         setSearchHost(searchHost);
         if(adjustedSearchLocation === "FileBrowser"){
@@ -584,7 +584,7 @@ export const SearchTabFilesPanel = (props) =>{
         }
     }
     const onCommentSearch = ({search, searchHost, offset, adjustedSearchLocation}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         let new_search = search;
         if(search === ""){
             new_search = "_";

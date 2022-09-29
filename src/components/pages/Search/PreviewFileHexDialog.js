@@ -24,16 +24,17 @@ export function PreviewFileHexDialog(props) {
       }else{
         newData += char;
       }
-      if(!["\n", "\r"].includes(data[i])){
-        stringData += data[i];
+      if(data[i] === "\n"){
+        stringData += "\\n";
+      }else if(data[i] === "\r"){
+        stringData += "\\r";
       }else{
-        stringData += " "
+        stringData += data[i];
       }
-      if(i % 4 === 0){
+      if((i+1) % 4 === 0){
         newData += " ";
       }
-
-      if(i % 32 === 0){
+      if((i+1) % 32 === 0){
         newData += ": " + stringData + "\n";
         stringData = "";
       }

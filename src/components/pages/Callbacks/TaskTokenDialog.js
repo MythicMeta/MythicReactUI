@@ -12,7 +12,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Typography } from '@mui/material';
+import { Typography, Link } from '@mui/material';
 import {useTheme} from '@mui/material/styles';
 
 export const allTokenDataFragment = gql`
@@ -31,7 +31,6 @@ fragment allTokenData on token {
     BnoIsolationPrefix
     CanSynchronize
     Capabilities
-    CreationTime
     DefaultDacl
     DenyOnlyGroups
     DeviceClaimAttributes
@@ -165,7 +164,6 @@ export function TaskTokenDialog(props) {
         "BnoIsolationPrefix",
         "CanSynchronize",
         "Capabilities",
-        "CreationTime",
         "DefaultDacl",
         "DenyOnlyGroups",
         "DeviceClaimAttributes",
@@ -275,7 +273,17 @@ export function TaskTokenDialog(props) {
                 setTokenData(data.token_by_pk);
                 const reducedTokenData = tokenKeys.reduce( (prev, key) => {
                   if(data.token_by_pk[key] !== undefined && data.token_by_pk[key] !== null && data.token_by_pk[key] !== ""){
-                    return [...prev, {"name": key, "value": data.token_by_pk[key]}]
+                    if(key === "task_id"){
+                      return [...prev, {"name": key, "value": 
+                      <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" 
+                          href={"/new/task/" + data.token_by_pk[key]}>
+                              {data.token_by_pk[key]}
+                      </Link>}
+                      ]
+                    }else{
+                      return [...prev, {"name": key, "value": data.token_by_pk[key]}]
+                    }
+                    
                   }
                   else{
                     return [...prev];

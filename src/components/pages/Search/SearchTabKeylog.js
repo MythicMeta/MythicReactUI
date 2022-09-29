@@ -16,6 +16,7 @@ import {KeylogsTable} from './KeylogsTable';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
+
 const keylogFragment = gql`
 fragment keylogData on keylog{
     keystrokes_text
@@ -302,7 +303,7 @@ export const SearchTabKeylogsPanel = (props) =>{
         }
     })
     const onKeylogSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
@@ -316,7 +317,7 @@ export const SearchTabKeylogsPanel = (props) =>{
         }})
     }
     const onUserSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         if(search === ""){
             getUserUniqueSearch({variables:{
@@ -336,7 +337,7 @@ export const SearchTabKeylogsPanel = (props) =>{
         
     }
     const onProgramSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         if(search === ""){
             getProgramUniqueSearch({variables:{
@@ -356,7 +357,7 @@ export const SearchTabKeylogsPanel = (props) =>{
         
     }
     const onHostSearch = ({search, offset}) => {
-        snackActions.info("Searching...", {persist:true});
+        //snackActions.info("Searching...", {persist:true});
         setSearch(search);
         let new_search = search;
         if(new_search === ""){
