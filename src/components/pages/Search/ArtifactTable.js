@@ -24,6 +24,7 @@ export function ArtifactTable(props){
                         <TableCell >Command</TableCell>
                         <TableCell >Task</TableCell>
                         <TableCell >Callback</TableCell>
+                        <TableCell >Operator</TableCell>
                         <TableCell >Host</TableCell>
                         <TableCell >Artifact</TableCell>
                     </TableRow>
@@ -63,6 +64,9 @@ function ArtifactTableRow(props){
                         href={"/new/callbacks/" + props.task.callback_id}>
                             {props.task.callback_id}
                     </Link>
+                </TableCell>
+                <TableCell>
+                <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props?.task?.operator?.username || null}</Typography>
                 </TableCell>
                 <TableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.host}</Typography>

@@ -801,10 +801,39 @@ export function CallbacksTabsTaskingInputPreMemo(props){
         
         if(unSatisfiedArguments.length > 0 && parsedCopy["_"].length > 0){
             //parsedCopy["_"] = parsedCopy["_"].map( c => typeof(c) === "string" && c.includes(" ") ? "\"" + c + "\"" : c);
-            let temp = parsedCopy["_"].join(" ");
+            let temp = ""; //parsedCopy["_"].join(" ");
+            // we need to keep inner quotes if they existed as we re-join things together
+            let negativeIndex = message.length;
+            for(let pci = parsedCopy["_"].length -1; pci >= 0; pci--){
+                let startIndex = message.lastIndexOf(parsedCopy["_"][pci], negativeIndex);
+                // now check if startIndex -1 == ' or " and startIndex + parsedCopy["_"][pci].length + 1 == ' or "
+                negativeIndex = startIndex - 1; // update the negative index to move further 
+                if(message[startIndex-1] === "'"){
+                    if(startIndex + parsedCopy["_"][pci].length + 1 < message.length){
+                        if(message[startIndex + parsedCopy["_"][pci].length + 1] === "'"){
+                            temp = "'" + parsedCopy["_"][pci] + "' " + temp;
+                        }
+                    }else{
+                        console.log("mismatched quotes?", message[startIndex-1], message[startIndex + parsedCopy["_"][pci].length + 1])
+                    }
+                }else if(message[startIndex -1] === '"'){
+                    if(startIndex + parsedCopy["_"][pci].length  < message.length){
+                        if(message[startIndex + parsedCopy["_"][pci].length ] === '"'){
+                            temp = '"' + parsedCopy["_"][pci] + '" ' + temp;
+                        }
+                    }else{
+                        console.log("mismatched quotes?", message[startIndex-1], message[startIndex + parsedCopy["_"][pci].length ])
+                    }
+                }else{
+                    temp = parsedCopy["_"][pci] + " " + temp;
+                }
+                temp = temp.trim();
+            }
+            
             switch(unSatisfiedArguments[unSatisfiedArguments.length -1]["parameter_type"]){
                 case "Choice":
                 case "String":
+                    
                     parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = temp;
                     break;
                 case "Number":

@@ -50,7 +50,8 @@ export function SocksSearchTable(props){
                         <TableCell >Domain</TableCell>
                         <TableCell >Host</TableCell>
                         <TableCell >Description</TableCell>
-                        <TableCell >ID</TableCell>
+                        <TableCell >Callback</TableCell>
+                        <TableCell >Port</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -110,7 +111,9 @@ function CallbackSearchTableRow(props){
                             {props.id}
                     </Link>
                 </TableCell>
-                
+                <TableCell>
+                <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.port}</Typography>
+                </TableCell>
             </TableRow>
         </React.Fragment>
     )

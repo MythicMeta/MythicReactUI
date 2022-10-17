@@ -32,6 +32,11 @@ fragment artifactData on taskartifact{
         callback_id
         command {
             cmd
+            id
+        }
+        operator {
+            username
+            id
         }
     }
 }
@@ -72,6 +77,19 @@ query commandQuery($operation_id: Int!, $command: String!, $offset: Int!, $fetch
       }
     }
     taskartifact(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {task: {command: {cmd: {_ilike: $command}}}, operation_id: {_eq: $operation_id}}) {
+      ...artifactData
+    }
+}
+`;
+const operatorSearch = gql`
+${artifactFragment}
+query operatorQuery($operation_id: Int!, $username: String!, $offset: Int!, $fetchLimit: Int!) {
+    taskartifact_aggregate(distinct_on: id, where: {task: {operator: {username: {_ilike: $username}}}, operation_id: {_eq: $operation_id}}){
+      aggregate {
+        count
+      }
+    }
+    taskartifact(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {task: {operator: {username: {_ilike: $username}}}, operation_id: {_eq: $operation_id}}) {
       ...artifactData
     }
 }
@@ -126,7 +144,7 @@ const SearchTabArtifactsSearchPanel = (props) => {
     const theme = useTheme();
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Artifact");
-    const searchFieldOptions = ["Artifact", "Command", "Host", "Type", "Task", "Callback"];
+    const searchFieldOptions = ["Artifact", "Command", "Host", "Type", "Task", "Callback", "Operator"];
     const handleSearchFieldChange = (event) => {
         setSearchField(event.target.value);
         props.onChangeSearchField(event.target.value);
@@ -159,6 +177,8 @@ const SearchTabArtifactsSearchPanel = (props) => {
             case "Callback":
                 props.onCallbackSearch({search:adjustedSearch, offset: 0})
                 break;
+            case "Operator":
+                props.onOperatorSearch({search:adjustedSearch, offset: 0})
             default:
                 break;
         }
@@ -242,6 +262,8 @@ export const SearchTabArtifactsPanel = (props) =>{
             case "Callback":
                 onCallbackSearch({search, offset: 0});
                 break;
+            case "Operator":
+                onOperatorSearch({search, offset: 0});
             default:
                 break;
         }
@@ -282,6 +304,11 @@ export const SearchTabArtifactsPanel = (props) =>{
         onError: handleCallbackSearchFailure
     })
     const [getCallbackSearch] = useLazyQuery(callbackSearch, {
+        fetchPolicy: "no-cache",
+        onCompleted: handleCallbackSearchResults,
+        onError: handleCallbackSearchFailure
+    })
+    const [getOperatorSearch] = useLazyQuery(operatorSearch, {
         fetchPolicy: "no-cache",
         onCompleted: handleCallbackSearchResults,
         onError: handleCallbackSearchFailure
@@ -370,6 +397,19 @@ export const SearchTabArtifactsPanel = (props) =>{
             callback_id: search,
         }})
     }
+    const onOperatorSearch = ({search, offset}) => {
+        setSearch(search);
+        let new_search = search;
+        if(new_search === ""){
+            new_search = "_";
+        }
+        getOperatorSearch({variables:{
+            operation_id: me?.user?.current_operation_id || 0,
+            offset: offset,
+            fetchLimit: fetchLimit,
+            username: "%" + new_search + "%",
+        }})
+    }
     const onChangePage = (event, value) => {
         switch(searchField){
             case "Artifact":
@@ -390,14 +430,20 @@ export const SearchTabArtifactsPanel = (props) =>{
             case "Callback":
                 onCallbackSearch({search, offset: (value - 1) * fetchLimit});
                 break;
+            case "Operator":
+                onOperatorSearch({search, offset: (value - 1) * fetchLimit});
+                break;
             default:
                 break;
         }
     }
     return (
         <MythicTabPanel {...props} >
-                <SearchTabArtifactsSearchPanel onChangeSearchField={onChangeSearchField} onArtifactSearch={onArtifactSearch} onTaskSearch={onTaskSearch} value={props.value} index={props.index}
-                        onCommandSearch={onCommandSearch} onHostSearch={onHostSearch} onTypeSearch={onTypeSearch} onCallbackSearch={onCallbackSearch} changeSearchParam={props.changeSearchParam}/>
+                <SearchTabArtifactsSearchPanel onChangeSearchField={onChangeSearchField} onArtifactSearch={onArtifactSearch} 
+                    onTaskSearch={onTaskSearch} value={props.value} index={props.index}
+                    onCommandSearch={onCommandSearch} onHostSearch={onHostSearch} onOperatorSearch={onOperatorSearch}
+                    onTypeSearch={onTypeSearch} onCallbackSearch={onCallbackSearch} 
+                    changeSearchParam={props.changeSearchParam}/>
          
             <div style={{overflowY: "auto", flexGrow: 1}}>
                 {artifactData.length > 0 ? (
