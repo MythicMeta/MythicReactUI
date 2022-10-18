@@ -19,7 +19,12 @@ query getParametersQuery ($task_id: Int!) {
     params
     tasking_location
     parameter_group_name
+    command_name
     id
+    command {
+      cmd
+      id
+    }
   }
 }
 `;
@@ -35,6 +40,12 @@ export function TaskViewParametersDialog(props) {
             workingComment += "\n\nDisplay Parameters:\n" + data.task_by_pk.display_params;
             workingComment += "\n\nTasking Location:\n" + data.task_by_pk.tasking_location;
             workingComment += "\n\nParameter Group:\n" + data.task_by_pk.parameter_group_name;
+            if(data.task_by_pk.command){
+              if(data.task_by_pk.command.cmd !== data.task_by_pk.command_name){
+                workingComment += "\n\nOriginal Command: " + data.task_by_pk.command.cmd;
+                workingComment += "\nIssued Command: " + data.task_by_pk.command_name;
+              }
+            }
             setComment(workingComment);
         },
         fetchPolicy: "network-only"

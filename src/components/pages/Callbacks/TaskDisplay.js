@@ -521,7 +521,7 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
                     <div className={classes.column} onClick={preventPropagation}>
                         <Badge badgeContent={alertBadges} color="success" anchorOrigin={{vertical: 'top', horizontal: 'left'}}>
                           <Typography className={classes.heading} >
-                            {task.command_name + " " + task.display_params}
+                            {(task?.command?.cmd || task.command_name) + " " + task.display_params}
                           </Typography>
                         </Badge>
                       </div>

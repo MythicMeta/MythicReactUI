@@ -62,6 +62,7 @@ subscription tasksSubscription($callback_id: Int!){
             username
         }
         command {
+            cmd
             commandparameters {
                 id
                 type
@@ -71,6 +72,14 @@ subscription tasksSubscription($callback_id: Int!){
     }
 }
 `;
+
+const GetUpDownArrowName = (task) => {
+    if(task.command){
+        return task.command.cmd + " " + task.original_params;
+    } else {
+        return task.command_name + " " + task.original_params;
+    }
+}
 
 export function CallbacksTabsTaskingInputPreMemo(props){
     const snackMessageStyles = {anchorOrigin:{vertical: "bottom", horizontal: "left"}, autoHideDuration: 2000, preventDuplicate: true, maxSnack: 1, style:{marginBottom: "50px"}};
@@ -399,7 +408,8 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                     newIndex = filteredTaskOptions.length -1;
                 }
                 setTaskOptionsIndex(newIndex);
-                setMessage(filteredTaskOptions[newIndex].command_name + " " + filteredTaskOptions[newIndex].original_params);
+                setMessage(GetUpDownArrowName(filteredTaskOptions[newIndex]));
+                //setMessage(filteredTaskOptions[newIndex].command_name + " " + filteredTaskOptions[newIndex].original_params);
                 setUnmodifiedHistoryValue(filteredTaskOptions[newIndex].tasking_location);
                 //setMessage(taskOptions[newIndex].command_name + " " + taskOptions[newIndex].display_params);
             }
@@ -413,7 +423,8 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                     newIndex = 0;
                 }
                 setTaskOptionsIndex(newIndex);
-                setMessage(filteredTaskOptions[newIndex].command_name + " " + filteredTaskOptions[newIndex].original_params);
+                setMessage(GetUpDownArrowName(filteredTaskOptions[newIndex]));
+                //setMessage(filteredTaskOptions[newIndex].command_name + " " + filteredTaskOptions[newIndex].original_params);
                 setUnmodifiedHistoryValue(filteredTaskOptions[newIndex].tasking_location);
                 //setMessage(taskOptions[newIndex].command_name + " " + taskOptions[newIndex].display_params);
             }
