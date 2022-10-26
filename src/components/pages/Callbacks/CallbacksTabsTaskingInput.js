@@ -541,6 +541,9 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }
             
         });
+        if(backslash){
+            buffer += "\\"; // try to account for a trailing \
+        }
         if(buffer.length > 0){
             //console.log("pushed end buffer: ", buffer);
             if(buffer[buffer.length-1] === buffer[0] && [`'`, `"`].includes(buffer[0])){
@@ -844,7 +847,6 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             switch(unSatisfiedArguments[unSatisfiedArguments.length -1]["parameter_type"]){
                 case "Choice":
                 case "String":
-                    
                     parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = temp;
                     break;
                 case "Number":
@@ -872,7 +874,7 @@ export function CallbacksTabsTaskingInputPreMemo(props){
                     break;
                 case "Array":
                 case "ChoiceMultiple":
-                    parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = [temp];
+                    parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = parsedCopy["_"];
                     break;
                 default:
                     parsedCopy[unSatisfiedArguments[unSatisfiedArguments.length -1]["cli_name"]] = temp;

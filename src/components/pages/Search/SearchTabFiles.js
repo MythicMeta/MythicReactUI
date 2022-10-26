@@ -43,6 +43,9 @@ fragment filemetaData on filemeta{
     task {
         id
         comment
+        callback {
+            id
+        }
         command {
             cmd
             id
@@ -71,6 +74,9 @@ fragment filebrowserData on filebrowserobj{
         task {
             id
             comment
+            callback {
+                id
+            }
         }
     }
 }

@@ -310,8 +310,11 @@ function FileMetaDownloadTableRow(props){
                                                 <TableCell>
                                                     {props.task === null ? (
                                                         null
-                                                    ) : (
-                                                        <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>
+                                                    ) : (<>
+                                                            <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>&nbsp;(
+                                                            <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/callbacks/" + props.task.callback.id}>{props.task.callback.id}</Link>)
+                                                        </>
+                                                        
                                                     )}
                                                     
                                                 </TableCell>
@@ -600,7 +603,10 @@ function FileMetaUploadTableRow(props){
                                                 <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.operator.username}</Typography></TableCell>
                                                 <TableCell>
                                                     {props.task === null ? (null) : (
-                                                        <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>
+                                                        <>
+                                                            <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>&nbsp;(
+                                                            <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/callbacks/" + props.task.callback.id}>{props.task.callback.id}</Link>)
+                                                        </>
                                                     )}
                                                     
                                                 </TableCell>
@@ -743,9 +749,7 @@ function FileMetaScreenshotTableRow(props){
                                     <Table  size="small" style={{"tableLayout": "fixed", "maxWidth": "99%", "overflow": "scroll"}}>
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell >md5</TableCell>
-                                                <TableCell >sha1</TableCell>
-                                                <TableCell >UUID</TableCell>
+                                                <TableCell style={{width: "25rem"}}>Identifiers</TableCell>
                                                 <TableCell >Operator</TableCell>
                                                 <TableCell style={{width: "6rem"}}>Task</TableCell>
                                                 <TableCell>Task Comment</TableCell>
@@ -754,13 +758,18 @@ function FileMetaScreenshotTableRow(props){
                                         </TableHead>
                                         <TableBody>
                                             <TableRow>
-                                                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.md5}</Typography></TableCell>
-                                                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.sha1}</Typography></TableCell>
-                                                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.agent_file_id}</Typography></TableCell>
+                                                <TableCell>
+                                                    <Typography variant="body2" style={{wordBreak: "break-all"}}>MD5:  {props.md5}</Typography>
+                                                    <Typography variant="body2" style={{wordBreak: "break-all"}}>SHA1: {props.sha1}</Typography>
+                                                    <Typography variant="body2" style={{wordBreak: "break-all"}}>UUID: {props.agent_file_id}</Typography>
+                                                </TableCell>
                                                 <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.operator.username}</Typography></TableCell>
                                                 <TableCell>
                                                     {props.task === null ? (null) : (
-                                                        <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>
+                                                        <>
+                                                            <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>&nbsp;(
+                                                            <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/callbacks/" + props.task.callback.id}>{props.task.callback.id}</Link>)
+                                                        </>
                                                     )}
                                                     
                                                 </TableCell>
