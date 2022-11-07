@@ -17,6 +17,7 @@ import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import {IconButton, Typography} from '@mui/material';
 import { toLocalTime } from '../../utilities/Time';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 /*
 export function KeylogsTableOld(props){
@@ -107,7 +108,7 @@ export function KeylogsTable(props){
                     <TableRow>
                         <TableCell style={{width: "4rem"}}>Callback</TableCell>
                         <TableCell style={{width: "4rem"}}>Task</TableCell>
-                        <TableCell style={{width: "15rem"}}>Timestamp</TableCell>
+                        <TableCell style={{width: "12rem"}}>Timestamp</TableCell>
                         <TableCell >User</TableCell>
                         <TableCell >Host</TableCell>
                         <TableCell >Window</TableCell>
@@ -141,32 +142,32 @@ function KeylogTableRow(props){
     return (
         <React.Fragment>
             <TableRow hover>
-                <TableCell>
+                <MythicStyledTableCell>
                     <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/callbacks/" + props.task.callback.id}>{props.task.callback.id}</Link>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me?.user?.view_utc_time || false)}</Typography>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Typography variant="body2" >{props.user}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" >{props.task.callback.host}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" >{props.window}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <MythicStyledTooltip title={"Copy to clipboard"} style={{display: "inline-block"}}>
                         <IconButton onClick={() => onCopyToClipboard(props.keystrokes_text)} size="small">
                             <FontAwesomeIcon icon={faCopy} />
                         </IconButton>
                     </MythicStyledTooltip>
                     <Typography variant="body2" style={{wordBreak: "break-all", whiteSpace: "pre-wrap", display: "inline-block"}}>{props.keystrokes_text}</Typography>   
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
         </React.Fragment>
     )

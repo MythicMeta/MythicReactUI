@@ -10,6 +10,7 @@ const GET_Payload_Types = gql`
 query getPayloadTypesBuildParametersQuery($os: String!) {
   payloadtype(where: {supported_os: {_ilike: $os}, deleted: {_eq: false}, wrapper: {_eq: false}}, order_by: {ptype: asc}) {
     ptype
+    id
     file_extension
     supports_dynamic_loading
     buildparameters(where: {deleted: {_eq: false} }, order_by: {description: asc}) {

@@ -21,6 +21,7 @@ import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { toLocalTime } from '../../utilities/Time';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 export function SettingsOperatorRow(props){
     const [open, setOpen] = React.useState(false);
@@ -64,20 +65,20 @@ export function SettingsOperatorRow(props){
     return (
         <React.Fragment>
             <TableRow key={props.id}>
-                <TableCell><Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} startIcon={<DeleteIcon/>} color="error" variant="contained">Delete</Button>
+                <MythicStyledTableCell><Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} startIcon={<DeleteIcon/>} color="error" variant="contained">Delete</Button>
                     <MythicDialog open={openDelete} 
                         onClose={()=>{setOpenDeleteDialog(false);}} 
                         innerDialog={<SettingsOperatorDeleteDialog onClose={()=>{setOpenDeleteDialog(false);}}  onAccept={onAcceptDelete} {...props} />}
                      />
-                </TableCell>
-                <TableCell>{props.username}</TableCell>
-                <TableCell><Button size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="info" variant="contained">Update</Button>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>{props.username}</MythicStyledTableCell>
+                <MythicStyledTableCell><Button size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="info" variant="contained">Update</Button>
                     <MythicDialog open={openUpdate} 
                         onClose={()=>{setOpenUpdateDialog(false);}} 
                         innerDialog={<SettingsOperatorDialog onAccept={onAccept} handleClose={()=>{setOpenUpdateDialog(false);}} title="Update Operator"  {...props}/>}
                      />
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Switch
                         checked={props.view_utc_time}
                         onChange={onViewUTCChanged}
@@ -85,8 +86,8 @@ export function SettingsOperatorRow(props){
                         inputProps={{ 'aria-label': 'primary checkbox' }}
                         name="view_utc_time"
                       />
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                   {isMe && 
                   <Switch
                     checked={hideUsernames}
@@ -97,37 +98,37 @@ export function SettingsOperatorRow(props){
                   />
                   }
                   
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Switch
                         checked={props.active}
                         onChange={onActiveChanged}
                         inputProps={{ 'aria-label': 'primary checkbox' }}
                         name="active"
                       />
-                </TableCell>
-                <TableCell>{toLocalTime(props.last_login, me.user.view_utc_time)}</TableCell>
-                <TableCell>{toLocalTime(props.creation_time, me.user.view_utc_time)}</TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>{toLocalTime(props.last_login, me.user.view_utc_time)}</MythicStyledTableCell>
+                <MythicStyledTableCell>{toLocalTime(props.creation_time, me.user.view_utc_time)}</MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Switch
                         checked={props.admin}
                         onChange={onAdminChanged}
                         inputProps={{ 'aria-label': 'primary checkbox' }}
                         name="admin"
                       />
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                   {props.id === me.user.id && 
                     <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
                       {open ? <KeyboardArrowUpIcon className="mythicElement"/> : <KeyboardArrowDownIcon className="mythicElement"/>}
                     </IconButton>
                   }
                     
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
             <TableRow>
               {props.id === me.user.id &&
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+                <MythicStyledTableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
                   <Collapse in={open} timeout="auto" unmountOnExit>
                     <Box margin={1}>
                       <Typography variant="h6" gutterBottom component="div" style={{display: "inline-block"}}>
@@ -149,7 +150,7 @@ export function SettingsOperatorRow(props){
                       </Table>
                     </Box>
                   </Collapse>
-                </TableCell>
+                </MythicStyledTableCell>
               }
             
           </TableRow>

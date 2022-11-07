@@ -21,6 +21,9 @@ import {toggleHideCallbackMutations} from '../Callbacks/CallbackMutations';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import {DetailedCallbackTable} from '../Callbacks/DetailedCallbackTable';
 import InfoIcon from '@mui/icons-material/Info';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
+
+
 
 export function CallbackSearchTable(props){
     const [callbacks, setCallbacks] = React.useState([]);
@@ -44,7 +47,7 @@ export function CallbackSearchTable(props){
             <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "auto"}}>
                 <TableHead>
                     <TableRow>
-                        <TableCell style={{width: "5rem"}}>Visibility</TableCell>
+                        <TableCell style={{width: "2rem"}}>View</TableCell>
                         <TableCell >User</TableCell>
                         <TableCell >Domain</TableCell>
                         <TableCell >Host</TableCell>
@@ -52,7 +55,7 @@ export function CallbackSearchTable(props){
                         <TableCell >IP</TableCell>
                         <TableCell >ID</TableCell>
                         <TableCell>Agent</TableCell>
-                        <TableCell>Details</TableCell>
+                        <TableCell style={{width: "2rem"}}>Details</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -92,7 +95,7 @@ function CallbackSearchTableRow(props){
             <TableRow hover>
                 <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDeleteDialog} acceptText={props.active ? "Hide" : "Restore" }/>
                 
-                <TableCell>{!props.active ? (
+                <MythicStyledTableCell>{!props.active ? (
                     <MythicStyledTooltip title="Restore Callback for Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><VisibilityOffIcon/></IconButton>
                     </MythicStyledTooltip>
@@ -100,35 +103,35 @@ function CallbackSearchTableRow(props){
                     <MythicStyledTooltip title="Hide Callback so it can't be used in Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><VisibilityIcon/></IconButton>
                     </MythicStyledTooltip>
-                )} </TableCell>
-                <TableCell>
+                )} </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.user}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.domain}</Typography>
-                </TableCell>
-                <TableCell>{props.host}</TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>{props.host}</MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.description}</Typography>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {props.ip}
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                 <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" 
                         href={"/new/callbacks/" + props.id}>
                             {props.id}
                     </Link>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                 <MythicStyledTooltip title={props.payload.payloadtype.ptype}>
                     <img
                         style={{width: "35px", height: "35px"}}
                         src={"/static/" + props.payload.payloadtype.ptype + ".svg"}
                     />
                 </MythicStyledTooltip>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <InfoIcon onClick={() => setOpenMetaDialog(true)} style={{color: theme.palette.info.main, cursor: "pointer"}}/>
                     {openMetaDialog && 
                         <MythicDialog fullWidth={true} maxWidth="lg" open={openMetaDialog}
@@ -136,7 +139,7 @@ function CallbackSearchTableRow(props){
                             innerDialog={<DetailedCallbackTable onClose={()=>{setOpenMetaDialog(false);}} callback_id={props.id} />}
                         />
                     }
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
         </React.Fragment>
     )

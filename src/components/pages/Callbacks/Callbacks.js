@@ -109,6 +109,66 @@ export function Callbacks() {
         setHeights(newHeights);
         localStorage.setItem('heights', JSON.stringify(newHeights));
     }, []);
+    const onDragTab = ({selected, toLeftOf}) => {
+        //console.log("onDragTab in CallbacksTabs", selected, toLeftOf);
+        let selectedPieces = selected.split("-");
+        let targetTabIndex = selectedPieces[selectedPieces.length -1] -0;
+        let newLocationPieces = toLeftOf.split("-");
+        let newLocation = newLocationPieces[newLocationPieces.length -1] -0;
+        if(newLocation > targetTabIndex){
+            newLocation = newLocation -1;
+        }
+        //console.log("from index", targetTabIndex, "to index", newLocation);
+        if(targetTabIndex === newLocation){
+            return;
+        }
+        let newOpenTabList = [];
+        for(let i = 0; i < openTabs.length; i++){
+            if(i === targetTabIndex){
+                //console.log("matched targetTabIndex")
+                continue;
+            } else if(i === newLocation){
+                //console.log("matched new location")
+                if(newLocation > targetTabIndex){
+                    newOpenTabList.push(openTabs[i]);
+                    newOpenTabList.push(openTabs[targetTabIndex]);
+                }else{
+                    newOpenTabList.push(openTabs[targetTabIndex]);
+                    newOpenTabList.push(openTabs[i]);
+                }
+                
+                setClickedTabId(openTabs[targetTabIndex].tabID)
+            } else {
+                newOpenTabList.push(openTabs[i]);
+            }
+        }
+        setOpenTabs(newOpenTabList);
+        //openTabRef.current = newOpenTabList;
+        localStorage.setItem('openTabs', JSON.stringify(newOpenTabList));
+    }
+    const closeAllTabs = () => {
+        setOpenTabs([]);
+        localStorage.setItem('openTabs', JSON.stringify([]));
+    }
+    const closeAllExceptThisTab = ({event, index}) => {
+        const newOpenTabs = [openTabs[index]];
+        setOpenTabs(newOpenTabs);
+        localStorage.setItem('openTabs', JSON.stringify(newOpenTabs));
+    }
+    const contextMenuOptions = [
+        {
+            name: 'Close All Tabs', 
+            click: ({event}) => {
+                closeAllTabs();
+            }
+        },
+        {
+            name: 'Close All Other Tabs', 
+            click: ({event, index}) => {
+                closeAllExceptThisTab({event, index});
+            }
+        },
+    ];
     return (
         <div style={{ maxWidth: '100%', height: '100%', flexDirection: 'column'}}>
             <React.Fragment>
@@ -125,6 +185,8 @@ export function Callbacks() {
                         key={'callbackstabs'}
                         clickedTabId={clickedTabId}
                         openTabs={openTabs}
+                        onDragTab={onDragTab}
+                        contextMenuOptions={contextMenuOptions}
                     />
                 </div>
             </React.Fragment>

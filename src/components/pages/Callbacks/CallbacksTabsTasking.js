@@ -16,11 +16,6 @@ import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip'
 export function CallbacksTabsTaskingLabel(props){
     const [description, setDescription] = React.useState(props.tabInfo.payloadDescription !== props.tabInfo.callbackDescription ? props.tabInfo.callbackDescription : "Callback: " + props.tabInfo.callbackID)
     const [openEditDescriptionDialog, setOpenEditDescriptionDialog] = React.useState(false);
-    const onContextMenu = (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        setOpenEditDescriptionDialog(true);
-    }
     useEffect( () => {
         if(props.tabInfo.customDescription !== "" && props.tabInfo.customDescription !== undefined){
             setDescription(props.tabInfo.customDescription);
@@ -33,9 +28,17 @@ export function CallbacksTabsTaskingLabel(props){
     const editDescriptionSubmit = (description) => {
         props.onEditTabDescription(props.tabInfo, description);
     }
+    const contextMenuOptions = props.contextMenuOptions.concat([
+        {
+            name: 'Set Tab Description', 
+            click: ({event}) => {
+                setOpenEditDescriptionDialog(true);
+            }
+        },
+    ]);
     return (
         <React.Fragment>
-            <MythicTabLabel label={description} onContextMenu={onContextMenu} {...props}/>
+            <MythicTabLabel label={description} onDragTab={props.onDragTab} {...props} contextMenuOptions={contextMenuOptions}/>
             {openEditDescriptionDialog &&
                 <MythicDialog fullWidth={true} open={openEditDescriptionDialog}  onClose={() => {setOpenEditDescriptionDialog(false);}}
                     innerDialog={

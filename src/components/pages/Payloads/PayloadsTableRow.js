@@ -29,6 +29,7 @@ import {useMutation, gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 const rebuildPayloadMutation = gql`
 mutation triggerRebuildMutation($uuid: String!) {
@@ -169,7 +170,7 @@ export function PayloadsTableRow(props){
       shouldDisplay ? (
         <React.Fragment>
             <TableRow key={"payload" + props.uuid} hover>
-                <TableCell>
+                <MythicStyledTableCell>
                   {props.deleted ? (
                     <MythicStyledTooltip title={"Mark payload as not deleted so you can get callbacks, but does not recreate the payload on disk"}>
                       <IconButton size="small" onClick={() => {props.onRestorePayload(props.id)}} color="success" variant="contained"><RestoreFromTrashIcon /></IconButton>
@@ -187,9 +188,9 @@ export function PayloadsTableRow(props){
                     </React.Fragment>
                   )}
                   
-                </TableCell>
-                <TableCell>{toLocalTime(props.creation_time, me.user.view_utc_time)}</TableCell>
-                <TableCell><Button ref={dropdownAnchorRef} size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="primary" variant="contained">Actions</Button>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>{toLocalTime(props.creation_time, me.user.view_utc_time)}</MythicStyledTableCell>
+                <MythicStyledTableCell><Button ref={dropdownAnchorRef} size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="primary" variant="contained">Actions</Button>
                 <Popper open={openUpdate} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal style={{zIndex: 4}}>
                   {({ TransitionProps, placement }) => (
                     <Grow
@@ -245,20 +246,20 @@ export function PayloadsTableRow(props){
                         innerDialog={<PayloadRedirectRulesDialog uuid={props.uuid} onClose={()=>{setOpenRedirectRulesDialog(false);}} />}
                     />
                 ): (null) }
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <PayloadsTableRowBuildStatus {...props} />
-                </TableCell>
-                <TableCell>{props.filemetum.filename_text}</TableCell>
-                <TableCell>{props.tag}</TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>{props.filemetum.filename_text}</MythicStyledTableCell>
+                <MythicStyledTableCell>{props.tag}</MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <PayloadsTableRowC2Status payloadc2profiles={props.payloadc2profiles} uuid={props.uuid} />
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <IconButton size="small" color="info" onClick={() => setOpenDetailedView(true)}>
                         <InfoIcon />
                     </IconButton>
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
             <TableRow>
             {openDetailedView ? (

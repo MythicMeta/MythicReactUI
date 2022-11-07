@@ -30,7 +30,13 @@ const EventList = ({onUpdateDeleted, onUpdateLevel, onUpdateResolution, getSurro
     const listRef = React.createRef();
     const getItemSize = (index) => {
         const op = operationeventlog[operationeventlog.length - index - 1];
-        return 75 + (24 * (op["message"].match(/\n/g) || []).length);
+        const rows = (op["message"].match(/\n/g) || []).length;
+        if(rows > 1){
+            return 90 + (24 * rows);
+        } else {
+            return 90;
+        }
+        
     }
     const eventlogWithFunctions = operationeventlog.map( (oplog) => {
         return {onUpdateDeleted, onUpdateLevel, onUpdateResolution, getSurroundingEvents, ...oplog}

@@ -92,11 +92,14 @@ query getHostsQuery($operation_id: Int!, $host:String!){
 export function CallbacksTabsProcessBrowserLabel(props){
     const [description, setDescription] = React.useState("Processes: " + props.tabInfo.host)
     const [openEditDescriptionDialog, setOpenEditDescriptionDialog] = React.useState(false);
-    const onContextMenu = (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        setOpenEditDescriptionDialog(true);
-    }
+    const contextMenuOptions = props.contextMenuOptions.concat([
+        {
+            name: 'Set Tab Description', 
+            click: ({event}) => {
+                setOpenEditDescriptionDialog(true);
+            }
+        },
+    ]);
     useEffect( () => {
         if(props.tabInfo.customDescription !== "" && props.tabInfo.customDescription !== undefined){
             setDescription(props.tabInfo.customDescription);
@@ -109,7 +112,7 @@ export function CallbacksTabsProcessBrowserLabel(props){
     }
     return (
         <React.Fragment>
-            <MythicTabLabel label={description} onContextMenu={onContextMenu} {...props}/>
+            <MythicTabLabel label={description} onDragTab={props.onDragTab}  {...props} contextMenuOptions={contextMenuOptions}/>
             {openEditDescriptionDialog &&
                 <MythicDialog fullWidth={true} open={openEditDescriptionDialog}  onClose={() => {setOpenEditDescriptionDialog(false);}}
                     innerDialog={

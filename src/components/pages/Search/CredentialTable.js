@@ -27,6 +27,7 @@ import Popper from '@mui/material/Popper';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 const updateCredentialComment = gql`
 mutation updateCommentMutation($credential_id: Int!, $comment: String!){
@@ -145,7 +146,7 @@ export function CredentialTable(props){
             <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
-                        <TableCell style={{width: "4rem"}}>Delete</TableCell>
+                        <TableCell style={{width: "2rem"}}>Delete</TableCell>
                         <TableCell style={{width: "4rem"}}>Edit</TableCell>
                         <TableCell >Account</TableCell>
                         <TableCell >Realm</TableCell>
@@ -280,7 +281,8 @@ function CredentialTableRow(props){
                 {editCommentDialogOpen &&
                     <MythicDialog fullWidth={true} maxWidth="md" open={editCommentDialogOpen} 
                         onClose={()=>{setEditCommentDialogOpen(false);}} 
-                        innerDialog={<MythicModifyStringDialog title="Edit Credential Comment" onSubmit={onSubmitUpdatedComment} value={props.comment} onClose={()=>{setEditCommentDialogOpen(false);}} />}
+                        innerDialog={<MythicModifyStringDialog onEnter={()=>{}} title="Edit Credential Comment" onSubmit={onSubmitUpdatedComment} value={props.comment} onClose={()=>{setEditCommentDialogOpen(false);}} 
+                        multiline={true} maxRows={20}/>}
                     />
                 }
                 {editAccountDialogOpen &&
@@ -298,11 +300,12 @@ function CredentialTableRow(props){
                 {editCredentialDialogOpen &&
                     <MythicDialog fullWidth={true} maxWidth="md" open={editCredentialDialogOpen} 
                         onClose={()=>{setEditCredentialDialogOpen(false);}} 
-                        innerDialog={<MythicModifyStringDialog title="Edit Credential Credential" onSubmit={onSubmitUpdatedCredential} value={props.credential_text} onClose={()=>{setEditCredentialDialogOpen(false);}} />}
+                        innerDialog={<MythicModifyStringDialog onEnter={()=>{}} title="Edit Credential Credential" onSubmit={onSubmitUpdatedCredential} value={props.credential_text} onClose={()=>{setEditCredentialDialogOpen(false);}} 
+                        multiline={true} maxRows={20}/>}
                     />
                 }
                 
-                <TableCell>{props.deleted ? (
+                <MythicStyledTableCell>{props.deleted ? (
                     <MythicStyledTooltip title="Restore Credential for use in Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.success.main}} variant="contained"><RestoreFromTrashIcon/></IconButton>
                     </MythicStyledTooltip>
@@ -310,7 +313,7 @@ function CredentialTableRow(props){
                     <MythicStyledTooltip title="Delete Credential so it can't be used in Tasking">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
                     </MythicStyledTooltip>
-                )} </TableCell>
+                )} </MythicStyledTableCell>
                 <TableCell>
                     <Button size="small" variant="contained" color="primary" ref={dropdownAnchorRef}
                         onClick={() => setOpenDropdownButton(true)} >{"Edit"}
@@ -341,13 +344,13 @@ function CredentialTableRow(props){
                     )}
                     </Popper>
                 </TableCell>
-                <TableCell>
+                <MythicStyledTableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.account}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.realm}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     {props.credential_text.length > 64 ? 
                     (
                         <React.Fragment>
@@ -366,19 +369,19 @@ function CredentialTableRow(props){
                         </React.Fragment>   
                     )}
                     
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.comment}</Typography>
-                    </TableCell>
-                <TableCell>
+                    </MythicStyledTableCell>
+                <MythicStyledTableCell>
                 <Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me?.user?.view_utc_time || false)}</Typography>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {props.task_id !== null ? (
                         <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task_id}>{props.task_id}</Link>
                     ): (props.operator.username)}
-                </TableCell>
-                <TableCell>{props.type}</TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>{props.type}</MythicStyledTableCell>
             </TableRow>
         </React.Fragment>
     )

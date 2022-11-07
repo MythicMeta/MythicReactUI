@@ -9,12 +9,12 @@ import Typography from '@mui/material/Typography';
 
 const GET_Payload_Types = gql`
 query getPayloadTypesBuildParametersQuery($os: String!) {
-  payloadtype(where: {supported_os: {_ilike: $os}, deleted: {_eq: false}, wrapper: {_eq: true}}) {
+  payloadtype(where: {supported_os: {_ilike: $os}, deleted: {_eq: false}, wrapper: {_eq: true}}, order_by: {ptype: asc}) {
     ptype
     id
     file_extension
     supports_dynamic_loading
-    buildparameters(where: {deleted: {_eq: false} }) {
+    buildparameters(where: {deleted: {_eq: false} }, order_by: {description: asc}) {
       id
       name
       description
@@ -67,8 +67,11 @@ export function Step2SelectPayloadType(props){
                             const params = payload.buildparameters.map( (param) => {
                                 if(param.parameter_type === "ChooseOne"){
                                     return {...param, error: param.required, value: param.default_value.split("\n")[0]}
+                                }else if(param.parameter_type === "Boolean"){
+                                    return {...param, error: param.required, value: param.default_value.toLowerCase() === "true" ? true : false}
+                                }else{
+                                    return {...param, error: param.required, value: param.default_value}
                                 }
-                                return {...param, error: param.required, value: param.default_value}
                             });
                             return [...prev, ...params];
                         }
@@ -108,8 +111,11 @@ export function Step2SelectPayloadType(props){
                 setFileExtension(payload.file_extension);
                 setSelectedPayloadTypeID(payload.id);
                 const params = payload.buildparameters.map( (param) => {
+                    //console.log(param);
                     if(param.parameter_type === "ChooseOne"){
                         return {...param, error: param.required, value: param.default_value.split("\n")[0]}
+                    }else if(param.parameter_type === "Boolean"){
+                        return {...param, error: param.required, value: param.default_value.toLowerCase() === "true" ? true : false}
                     }else{
                         return {...param, error: param.required, value: param.default_value}
                     }

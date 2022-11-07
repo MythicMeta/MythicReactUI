@@ -7,6 +7,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 
 export function ArtifactTable(props){
@@ -47,33 +48,33 @@ function ArtifactTableRow(props){
     return (
         <React.Fragment>
             <TableRow hover>
-                <TableCell>
+                <MythicStyledTableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.artifact.name}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.command.cmd}</Typography>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" 
                         href={"/new/task/" + props.task.id}>
                             {props.task.id}
                     </Link>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" 
                         href={"/new/callbacks/" + props.task.callback_id}>
                             {props.task.callback_id}
                     </Link>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                 <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props?.task?.operator?.username || null}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.host}</Typography>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                 <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.artifact_instance_text}</Typography>
-                </TableCell>
+                </MythicStyledTableCell>
               
             </TableRow>
         </React.Fragment>

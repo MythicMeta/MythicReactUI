@@ -15,6 +15,7 @@ import { gql, useMutation } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
 import EditIcon from '@mui/icons-material/Edit';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 const updateFileComment = gql`
 mutation updateCommentMutation($filebrowserobj_id: Int!, $comment: String!){
@@ -111,24 +112,27 @@ function FileBrowserTableRow(props){
                     onClose={()=>{setEditCommentDialogOpen(false);}} 
                     innerDialog={<MythicModifyStringDialog title="Edit File Browser Comment" onSubmit={onSubmitUpdatedComment} value={props.comment} onClose={()=>{setEditCommentDialogOpen(false);}} />}
                 />
-                <TableCell>
+                <MythicStyledTableCell>
                 <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.host}</Typography>
                 <Typography variant="body2" style={{wordBreak: "break-all", textDecoration: props.deleted ? "strike-through" : ""}}>{props.full_path_text}</Typography>
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{convertTime(props.modify_time)}</Typography>
-                </TableCell>
-                <TableCell><IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton><Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.comment}</Typography></TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
+                    <IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
+                    <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.comment}</Typography>
+                    </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Button color="primary" variant="outlined" onClick={() => setViewPermissionsDialogOpen(true)}><PlaylistAddCheckIcon /></Button>
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {props.filemeta.length > 0 ? (
                         <MythicStyledTooltip title="View Download History and Download Files">
                             <Button color="primary" variant="contained" onClick={() => setFileHistoryDialogOpen(true)}><HistoryIcon /></Button>
                         </MythicStyledTooltip>
                     ): (null)}
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
         </React.Fragment>
     )

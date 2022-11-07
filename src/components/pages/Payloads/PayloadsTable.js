@@ -121,7 +121,7 @@ export function PayloadsTable({payload, onDeletePayload, onUpdateCallbackAlert, 
                         <TableHead>
                             <TableRow>
                                 <TableCell style={{width: "4rem"}}> Delete</TableCell>
-                                <TableCell style={{width: "15rem"}}>Timestamp</TableCell>
+                                <TableCell style={{width: "12rem"}}>Timestamp</TableCell>
                                 <TableCell style={{width: "6rem"}}>Modify</TableCell>
                                 <TableCell style={{width: "6rem"}}>Download</TableCell>
                                 <TableCell>File</TableCell>

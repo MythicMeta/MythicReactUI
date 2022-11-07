@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
     },
 }));
-export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, onEditTabDescription }) {
+export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, onEditTabDescription, contextMenuOptions }) {
     const classes = useStyles();
     const mountedRef = React.useRef(true);
     const [value, setValue] = React.useState(0);
@@ -67,6 +67,8 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, onEditTabDes
                                         key={'tablabel' + tab.tabID + tab.tabType}
                                         tabInfo={tab}
                                         index={index}
+                                        onDragTab={onDragTab}
+                                        contextMenuOptions={contextMenuOptions}
                                     />
                                 );
                             case 'fileBrowser':
@@ -77,6 +79,8 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, onEditTabDes
                                         key={'tablabel' + tab.tabID + tab.tabType}
                                         tabInfo={tab}
                                         index={index}
+                                        onDragTab={onDragTab}
+                                        contextMenuOptions={contextMenuOptions}
                                     />
                                 );
                             case 'processBrowser':
@@ -87,6 +91,8 @@ export function CallbacksTabs({ onCloseTab, openTabs, clickedTabId, onEditTabDes
                                         key={'tablabel' + tab.tabID + tab.tabType}
                                         tabInfo={tab}
                                         index={index}
+                                        onDragTab={onDragTab}
+                                        contextMenuOptions={contextMenuOptions}
                                     />
                                 );
                             default:

@@ -30,6 +30,7 @@ import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip'
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import {PreviewFileStringDialog} from './PreviewFileStringDialog';
 import {PreviewFileHexDialog} from './PreviewFileHexDialog';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 const downloadBulkQuery = gql`
 mutation downloadBulkMutation($files: [String!]!){
@@ -233,7 +234,7 @@ function FileMetaDownloadTableRow(props){
         <React.Fragment>
             <TableRow hover>
                 <MythicConfirmDialog onClose={() => {setOpenDelete(false);}} onSubmit={onAcceptDelete} open={openDelete}/>
-                <TableCell>
+                <MythicStyledTableCell>
                     {props.deleted ? (null) : (
                         <MythicStyledTooltip title="Toggle to download multiple files at once">
                             <Switch
@@ -246,13 +247,13 @@ function FileMetaDownloadTableRow(props){
                         </MythicStyledTooltip>
                     )}
                     
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {props.deleted ? (null) : (
                         <IconButton size="small" onClick={()=>{setOpenDelete(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
                     )}
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {props.deleted ? (
                         <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.full_remote_path_text === "" ? props.filename_text : props.full_remote_path_text}</Typography>
                         ) : (
@@ -265,49 +266,49 @@ function FileMetaDownloadTableRow(props){
                             <Typography color="secondary" style={{wordBreak: "break-all"}} >{props.chunks_received} / {props.total_chunks} Chunks Received</Typography>
                         )
                     }
-                </TableCell>
-                <TableCell >
+                </MythicStyledTableCell>
+                <MythicStyledTableCell >
                     <Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me.user.view_utc_time)}</Typography>
-                </TableCell>
-                <TableCell ><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.host}</Typography></TableCell>
-                <TableCell>{props.comment}<IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell ><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.host}</Typography></MythicStyledTableCell>
+                <MythicStyledTableCell>{props.comment}<IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
                     <MythicDialog fullWidth={true} maxWidth="md" open={editCommentDialogOpen} 
                         onClose={()=>{setEditCommentDialogOpen(false);}} 
                         innerDialog={<MythicModifyStringDialog title="Edit File Comment" onSubmit={onSubmitUpdatedComment} value={props.comment} onClose={()=>{setEditCommentDialogOpen(false);}} />}
                     />
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <IconButton size="small" aria-label="expand row" onClick={() => setOpenDetails(!openDetails)}>
                             {openDetails ? <KeyboardArrowUpIcon className="mythicElement"/> : <KeyboardArrowDownIcon className="mythicElement"/>}
                         </IconButton>
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
                 {openDetails ? (
                     <TableRow>
-                        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+                        <MythicStyledTableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                             <Collapse in={openDetails}>
                                 <Box margin={1}>
                                 <TableContainer component={Paper} className="mythicElement" elevation={3}>   
                                     <Table  size="small" style={{tableLayout:"fixed", "width": "100%", "overflow": "scroll"}}>
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell style={{width: "25rem"}}>Identifiers</TableCell>
-                                                <TableCell >Operator</TableCell>
-                                                <TableCell style={{width: "6rem"}}>Task</TableCell>
-                                                <TableCell>Task Comment</TableCell>
-                                                <TableCell>Command</TableCell>
-                                                <TableCell>Preview</TableCell>
+                                                <MythicStyledTableCell style={{width: "25rem"}}>Identifiers</MythicStyledTableCell>
+                                                <MythicStyledTableCell >Operator</MythicStyledTableCell>
+                                                <MythicStyledTableCell style={{width: "6rem"}}>Task</MythicStyledTableCell>
+                                                <MythicStyledTableCell>Task Comment</MythicStyledTableCell>
+                                                <MythicStyledTableCell>Command</MythicStyledTableCell>
+                                                <MythicStyledTableCell>Preview</MythicStyledTableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
                                             <TableRow>
-                                                <TableCell >
+                                                <MythicStyledTableCell >
                                                     <Typography variant="body2" style={{wordBreak: "break-all"}}>MD5:  {props.md5}</Typography>
                                                     <Typography variant="body2" style={{wordBreak: "break-all"}}>SHA1: {props.sha1}</Typography>
                                                     <Typography variant="body2" style={{wordBreak: "break-all"}}>UUID: {props.agent_file_id}</Typography>
-                                                </TableCell>
-                                                <TableCell ><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.operator.username}</Typography></TableCell>
-                                                <TableCell>
+                                                </MythicStyledTableCell>
+                                                <MythicStyledTableCell ><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.operator.username}</Typography></MythicStyledTableCell>
+                                                <MythicStyledTableCell>
                                                     {props.task === null ? (
                                                         null
                                                     ) : (<>
@@ -317,15 +318,15 @@ function FileMetaDownloadTableRow(props){
                                                         
                                                     )}
                                                     
-                                                </TableCell>
-                                                <TableCell>{props.task !== null ? (<Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.comment}</Typography>) : (null)}</TableCell>
-                                                <TableCell>
+                                                </MythicStyledTableCell>
+                                                <MythicStyledTableCell>{props.task !== null ? (<Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.comment}</Typography>) : (null)}</MythicStyledTableCell>
+                                                <MythicStyledTableCell>
                                                     {props.task === null ? (null) : (
                                                         <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.command.cmd}</Typography>
                                                     )}
                                                     
-                                                </TableCell>
-                                                <TableCell>
+                                                </MythicStyledTableCell>
+                                                <MythicStyledTableCell>
                                                     <div style={{display: "block"}}>
                                                         <Button variant="contained" style={{marginBottom: "5px"}} color="info" startIcon={<VisibilityIcon />} onClick={onPreviewStrings}>Strings</Button>
                                                     </div>
@@ -348,14 +349,14 @@ function FileMetaDownloadTableRow(props){
                                                             />}
                                                         />
                                                     }
-                                                </TableCell>
+                                                </MythicStyledTableCell>
                                             </TableRow>
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
                                 </Box>
                             </Collapse>
-                        </TableCell>
+                        </MythicStyledTableCell>
                     </TableRow>
             ) : (null) }
         </React.Fragment>
@@ -529,7 +530,7 @@ function FileMetaUploadTableRow(props){
         <React.Fragment>
             <TableRow hover>
                 <MythicConfirmDialog onClose={() => {setOpenDelete(false);}} onSubmit={onAcceptDelete} open={openDelete}/>
-                <TableCell>
+                <MythicStyledTableCell>
                     {props.deleted ? (null) : (
                         <MythicStyledTooltip title="Toggle to download multiple files at once">
                             <Switch
@@ -542,16 +543,16 @@ function FileMetaUploadTableRow(props){
                         </MythicStyledTooltip>
                     )}
                     
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {props.deleted ? (null) : (
                         <IconButton size="small" onClick={()=>{setOpenDelete(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
                     )}
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <Link style={{wordBreak: "break-all"}} color="textPrimary" download underline="always" target="_blank" href={window.location.origin + "/api/v1.4/files/download/" + props.agent_file_id}>{props.filename_text}</Link>
-                </TableCell>
-                <TableCell  style={{wordBreak: "break-all"}}>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell  style={{wordBreak: "break-all"}}>
                     {props.deleted ? (<Typography variant="body2" style={{wordBreak: "break-all"}}>{props.full_remote_path_text}</Typography>) : (
                         props.complete ? (
                             <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" href={window.location.origin + "/api/v1.4/files/download/" + props.agent_file_id}>{props.full_remote_path_text}</Link>
@@ -561,25 +562,25 @@ function FileMetaUploadTableRow(props){
                             </React.Fragment>
                         )
                     )}
-                </TableCell>
-                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me.user.view_utc_time)}</Typography></TableCell>
-                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.host}</Typography></TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me.user.view_utc_time)}</Typography></MythicStyledTableCell>
+                <MythicStyledTableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.host}</Typography></MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {props.comment}<IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
                     <MythicDialog fullWidth={true} maxWidth="md" open={editCommentDialogOpen} 
                         onClose={()=>{setEditCommentDialogOpen(false);}} 
                         innerDialog={<MythicModifyStringDialog title="Edit File Comment" onSubmit={onSubmitUpdatedComment} value={props.comment} onClose={()=>{setEditCommentDialogOpen(false);}} />}
                     />
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <IconButton size="small" aria-label="expand row" onClick={() => setOpenDetails(!openDetails)}>
                             {openDetails ? <KeyboardArrowUpIcon className="mythicElement"/> : <KeyboardArrowDownIcon className="mythicElement"/>}
                         </IconButton>
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
                 {openDetails ? (
                     <TableRow>
-                        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
+                        <MythicStyledTableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
                             <Collapse in={openDetails}>
                                 <Box margin={1}>
                                 <TableContainer component={Paper} className="mythicElement" elevation={3}>   
@@ -596,12 +597,12 @@ function FileMetaUploadTableRow(props){
                                         </TableHead>
                                         <TableBody>
                                             <TableRow>
-                                                <TableCell>
+                                                <MythicStyledTableCell>
                                                     <Typography variant="body2" style={{wordBreak: "break-all"}}>MD5: {props.md5}</Typography>
                                                     <Typography variant="body2" style={{wordBreak: "break-all"}}>SHA1: {props.sha1}</Typography>
-                                                    <Typography variant="body2" style={{wordBreak: "break-all"}}>UUID: {props.agent_file_id}</Typography></TableCell>
-                                                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.operator.username}</Typography></TableCell>
-                                                <TableCell>
+                                                    <Typography variant="body2" style={{wordBreak: "break-all"}}>UUID: {props.agent_file_id}</Typography></MythicStyledTableCell>
+                                                <MythicStyledTableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.operator.username}</Typography></MythicStyledTableCell>
+                                                <MythicStyledTableCell>
                                                     {props.task === null ? (null) : (
                                                         <>
                                                             <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>&nbsp;(
@@ -609,14 +610,14 @@ function FileMetaUploadTableRow(props){
                                                         </>
                                                     )}
                                                     
-                                                </TableCell>
-                                                <TableCell>{props.task !== null ? (<Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.comment}</Typography>) : (null)}</TableCell>
-                                                <TableCell>
+                                                </MythicStyledTableCell>
+                                                <MythicStyledTableCell>{props.task !== null ? (<Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.comment}</Typography>) : (null)}</MythicStyledTableCell>
+                                                <MythicStyledTableCell>
                                                     {props.task === null ? (null) : (
                                                         <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.command.cmd}</Typography>
                                                     )}
-                                                </TableCell>
-                                                <TableCell>
+                                                </MythicStyledTableCell>
+                                                <MythicStyledTableCell>
                                                     <div style={{display: "block"}}>
                                                         <Button variant="contained" style={{marginBottom: "5px"}} color="info" startIcon={<VisibilityIcon />} onClick={onPreviewStrings}>Strings</Button>
                                                     </div>
@@ -639,14 +640,14 @@ function FileMetaUploadTableRow(props){
                                                             />}
                                                         />
                                                     }
-                                                </TableCell>
+                                                </MythicStyledTableCell>
                                             </TableRow>
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
                                 </Box>
                             </Collapse>
-                        </TableCell>
+                        </MythicStyledTableCell>
                     </TableRow>
             ) : (null) }
         </React.Fragment>
@@ -717,32 +718,32 @@ function FileMetaScreenshotTableRow(props){
     return (
         <React.Fragment>
             <TableRow hover>
-                <TableCell >
+                <MythicStyledTableCell >
                     <img onClick={() => setOpenScreenshot(true)} src={"/api/v1.4/files/screencaptures/" + props.agent_file_id} style={{width: "350px", cursor: "pointer"}} />
                     <MythicDialog fullWidth={true} maxWidth="xl" open={openScreenshot} 
                         onClose={()=>{setOpenScreenshot(false);}} 
                         innerDialog={<ResponseDisplayScreenshotModal images={props.imageRefs} startIndex={props.index} onClose={()=>{setOpenScreenshot(false);}} />} />
                         {props.chunks_received < props.total_chunks ? (<Typography color="secondary" style={{wordBreak: "break-all"}} >{props.chunks_received} / {props.total_chunks} Chunks Received</Typography>) : (null)}
-                </TableCell>
-                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.filename_text}</Typography></TableCell>
-                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me.user.view_utc_time)}</Typography></TableCell>
-                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.host}</Typography></TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.filename_text}</Typography></MythicStyledTableCell>
+                <MythicStyledTableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me.user.view_utc_time)}</Typography></MythicStyledTableCell>
+                <MythicStyledTableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.host}</Typography></MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {props.comment}<IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
                     <MythicDialog fullWidth={true} maxWidth="md" open={editCommentDialogOpen} 
                         onClose={()=>{setEditCommentDialogOpen(false);}} 
                         innerDialog={<MythicModifyStringDialog title="Edit File Comment" onSubmit={onSubmitUpdatedComment} value={props.comment} onClose={()=>{setEditCommentDialogOpen(false);}} />}
                     />
-                </TableCell>
-                <TableCell>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <IconButton size="small" aria-label="expand row" onClick={() => setOpenDetails(!openDetails)}>
                             {openDetails ? <KeyboardArrowUpIcon className="mythicElement"/> : <KeyboardArrowDownIcon className="mythicElement"/>}
                         </IconButton>
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
                 {openDetails ? (
                     <TableRow>
-                        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                        <MythicStyledTableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
                             <Collapse in={openDetails}>
                                 <Box margin={1}>
                                 <TableContainer component={Paper} className="mythicElement">   
@@ -758,13 +759,13 @@ function FileMetaScreenshotTableRow(props){
                                         </TableHead>
                                         <TableBody>
                                             <TableRow>
-                                                <TableCell>
+                                                <MythicStyledTableCell>
                                                     <Typography variant="body2" style={{wordBreak: "break-all"}}>MD5:  {props.md5}</Typography>
                                                     <Typography variant="body2" style={{wordBreak: "break-all"}}>SHA1: {props.sha1}</Typography>
                                                     <Typography variant="body2" style={{wordBreak: "break-all"}}>UUID: {props.agent_file_id}</Typography>
-                                                </TableCell>
-                                                <TableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.operator.username}</Typography></TableCell>
-                                                <TableCell>
+                                                </MythicStyledTableCell>
+                                                <MythicStyledTableCell><Typography variant="body2" style={{wordBreak: "break-all"}}>{props.operator.username}</Typography></MythicStyledTableCell>
+                                                <MythicStyledTableCell>
                                                     {props.task === null ? (null) : (
                                                         <>
                                                             <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task.id}>{props.task.id}</Link>&nbsp;(
@@ -772,20 +773,20 @@ function FileMetaScreenshotTableRow(props){
                                                         </>
                                                     )}
                                                     
-                                                </TableCell>
-                                                <TableCell>{props.task !== null ? (<Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.comment}</Typography>) : (null)}</TableCell>
-                                                <TableCell>
+                                                </MythicStyledTableCell>
+                                                <MythicStyledTableCell>{props.task !== null ? (<Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.comment}</Typography>) : (null)}</MythicStyledTableCell>
+                                                <MythicStyledTableCell>
                                                     {props.task === null ? (null) : (
                                                         <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.command.cmd}</Typography>
                                                     )}
-                                                </TableCell>
+                                                </MythicStyledTableCell>
                                             </TableRow>
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
                                 </Box>
                             </Collapse>
-                        </TableCell>
+                        </MythicStyledTableCell>
                     </TableRow>
             ) : (null) }
         </React.Fragment>
