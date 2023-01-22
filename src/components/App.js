@@ -68,6 +68,7 @@ export function App(props) {
                 pageHeaderText: {
                     main: 'white',
                 },
+                AppHeader: themeMode === 'dark' ? "#B14949": "#7f93c0",
             }),
         [themeMode]
     );
