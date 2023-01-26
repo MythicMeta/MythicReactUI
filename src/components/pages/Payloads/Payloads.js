@@ -213,7 +213,7 @@ export function Payloads(props){
        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     return (
-      <div style={{display: "flex", flexGrow: 1, flexDirection: "column", marginTop:"10px"}}>
+      <div style={{display: "flex", flexGrow: 1, flexDirection: "column" }}>
         <PayloadsTable onDeletePayload={onDeletePayload} onUpdateCallbackAlert={onUpdateCallbackAlert} payload={payloads} onRestorePayload={onRestorePayload}/>
       </div>
     );
