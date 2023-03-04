@@ -4,28 +4,32 @@ import {useSubscription, gql } from '@apollo/client';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
+import { Backdrop, IconButton } from '@mui/material';
+import {CircularProgress} from '@mui/material';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 
  const SUB_Payload_Types = gql`
  subscription getPayloadTypesSubscription {
-  payloadtype(where: {deleted: {_eq: false}}, order_by: {ptype: asc}) {
+  payloadtype(order_by: {name: asc}) {
     author
     container_running
     id
-    last_heartbeat
     note
-    ptype
+    name
+    deleted
     supported_os
     wrapper
     translationcontainer {
         id
         name
-        last_heartbeat
         container_running
     }
     wrap_these_payload_types {
         id
         wrapped {
-          ptype
+          name
         }
     }
   }
@@ -35,8 +39,9 @@ import {useTheme} from '@mui/material/styles';
 
 export function PayloadTypeContainerDisplay(props){
     const theme = useTheme();
-    const {  data } = useSubscription(SUB_Payload_Types);
+    const { loading,  data } = useSubscription(SUB_Payload_Types);
     const [payloadTypes, setPayloadTypes] = React.useState([]);
+    const [showDeleted, setShowDeleted] = React.useState(false);
     useEffect( () => {
       if(data === undefined){
         setPayloadTypes([]);
@@ -46,14 +51,35 @@ export function PayloadTypeContainerDisplay(props){
     }, [data])
     return (
           <div style={{flexDirection: "column", alignItems: "stretch"}}>
+            {loading &&
+                <div style={{position: "relative",  width: "100%", height: "100%"}}>
+                <Backdrop open={loading} style={{zIndex: 1, marginTop: "10%", position: "absolute",}} >
+                    <CircularProgress color="info"  />
+                </Backdrop>
+                </div>
+            }
+            
               <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
                   <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
                       Payload Types
                   </Typography>
+                  {showDeleted ? (
+                    <MythicStyledTooltip title={"Hide Deleted Payload Types"} style={{float: "right"}}>
+                        <IconButton size="small" style={{float: "right", marginTop: "5px"}} variant="contained" onClick={() => setShowDeleted(!showDeleted)}><VisibilityIcon /></IconButton>
+                    </MythicStyledTooltip>
+                    
+                  ) : (
+                    <MythicStyledTooltip title={"Show Deleted Payload Types"} style={{float: "right"}}>
+                      <IconButton size="small" style={{float: "right",  marginTop: "5px"}} variant="contained" onClick={() => setShowDeleted(!showDeleted)} ><VisibilityOffIcon /></IconButton>
+                    </MythicStyledTooltip>
+                  )}
                 </Paper> 
               {
                   payloadTypes.map( (pt) => (
-                      <PayloadTypeCard key={"payloadtype" + pt.id} {...pt} />
+                    showDeleted || !pt.deleted ? (
+                      <PayloadTypeCard key={"payloadtype" + pt.id} me={props.me} {...pt} />
+                    ) : (null)
+                      
                   ))
               }
               

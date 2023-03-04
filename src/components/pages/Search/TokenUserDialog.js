@@ -8,8 +8,8 @@ import {useQuery, gql, useMutation} from '@apollo/client';
 
 const updateUserMutation = gql`
 mutation updateUser($token_id: Int!, $user: String) {
-  update_token_by_pk(pk_columns: {id: $token_id}, _set: {User: $user}) {
-    User
+  update_token_by_pk(pk_columns: {id: $token_id}, _set: {user: $user}) {
+    user
     id
   }
 }
@@ -17,7 +17,7 @@ mutation updateUser($token_id: Int!, $user: String) {
 const getUserQuery = gql`
 query getUserQuery ($token_id: Int!) {
   token_by_pk(id: $token_id) {
-    User
+    user
     id
   }
 }
@@ -28,14 +28,14 @@ export function TokenUserDialog(props) {
     useQuery(getUserQuery, {
         variables: {token_id: props.token_id},
         onCompleted: data => {
-            setComment(data.token_by_pk.User)
+            setComment(data.token_by_pk.user)
         },
         fetchPolicy: "network-only"
     });
     const [updateComment] = useMutation(updateUserMutation, {
         onCompleted: (data) => {
           //console.log('udpated');
-          props.onUpdateUser({id: props.token_id, User: data.update_token_by_pk.User});
+          props.onUpdateUser({id: props.token_id, user: data.update_token_by_pk.user});
           props.onClose();
         },
         onError: (data) => {

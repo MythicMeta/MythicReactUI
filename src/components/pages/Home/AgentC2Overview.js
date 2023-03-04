@@ -21,7 +21,7 @@ query GetC2AndPayloadType {
     id
   }
   payloadtype(where: {deleted: {_eq: false}}) {
-    ptype
+    name
     wrapper
     id
     payloadtypec2profiles {
@@ -32,14 +32,14 @@ query GetC2AndPayloadType {
     }
   }
   wrappers: payloadtype(where: {deleted: {_eq: false}, wrapper: {_eq: true}}) {
-    ptype
+    name
     wrapper
     id
     wrap_these_payload_types {
       wrapped {
         wrapper
         id
-        ptype
+        name
       }
     }
   }
@@ -59,19 +59,19 @@ export function AgentC2Overview(props){
           const payloadc2 = payload.payloadtypec2profiles.map( (c2) => {
             return c2.c2profile.name;
           })
-          return {ptype: payload.ptype, payloadtypec2profiles: payloadc2, wrapper: payload.wrapper };
+          return {name: payload.name, payloadtypec2profiles: payloadc2, wrapper: payload.wrapper };
         });
         
         c2Headers.sort();
-        payloadRows.sort( (a,b) => a.ptype < b.ptype ? -1 : 1);
+        payloadRows.sort( (a,b) => a.name < b.name ? -1 : 1);
         const payloadTypeNoWrappers = payloadRows.filter( p => !p.wrapper);
         const wrapperRows = data.wrappers.map( (payload) => {
           const wrapped = payload.wrap_these_payload_types.map( (w) => {
-            return w.wrapped.ptype;
+            return w.wrapped.name;
           });
-          return {ptype: payload.ptype, wrapped}
+          return {name: payload.name, wrapped}
         });
-        wrapperRows.sort( (a,b) => a.ptype < b.ptype ? -1 : 1);
+        wrapperRows.sort( (a,b) => a.name < b.name ? -1 : 1);
         setWrappers(wrapperRows);
         setC2Profiles(c2Headers);
         setPayloadTypeRows(payloadRows);
@@ -103,12 +103,12 @@ export function AgentC2Overview(props){
             </TableHead>
             <TableBody>
                 {payloadTypeRowsNoWrappers.map( (payload) => (
-                  <TableRow key={payload.ptype} hover>
-                    <TableCell>{payload.ptype}</TableCell>
+                  <TableRow key={payload.name} hover>
+                    <TableCell>{payload.name}</TableCell>
                     {c2Profiles.map( (c2) => (
                       <TableCell key={'payload' + c2}>
                         {payload.payloadtypec2profiles.includes(c2) ? 
-                        <MythicStyledTooltip title={payload.ptype + " supports " + c2}>
+                        <MythicStyledTooltip title={payload.name + " supports " + c2}>
                             <CheckCircleIcon color="success"/>
                         </MythicStyledTooltip>
                      : ""}
@@ -126,18 +126,18 @@ export function AgentC2Overview(props){
                       <TableRow hover>
                           <TableCell></TableCell>
                           {payloadTypeRows.map( (pt) => (
-                            <TableCell key={'wrapped' + pt.ptype}>{pt.ptype}</TableCell>
+                            <TableCell key={'wrapped' + pt.name}>{pt.name}</TableCell>
                           ))}
                       </TableRow>
                   </TableHead>
                   <TableBody>
                       {wrappers.map( (payload) => (
-                        <TableRow key={'wrapper' + payload.ptype} hover>
-                          <TableCell>{payload.ptype}</TableCell>
+                        <TableRow key={'wrapper' + payload.name} hover>
+                          <TableCell>{payload.name}</TableCell>
                           {payloadTypeRows.map( (wr) => (
-                            <TableCell key={'payload' + wr.ptype}>
-                              {payload.wrapped.includes(wr.ptype) ? 
-                              <MythicStyledTooltip title={payload.ptype + " wraps " + wr.ptype}>
+                            <TableCell key={'payload' + wr.name}>
+                              {payload.wrapped.includes(wr.name) ? 
+                              <MythicStyledTooltip title={payload.name + " wraps " + wr.name}>
                                   <CheckCircleIcon color="success"/>
                               </MythicStyledTooltip>
                           : ""}

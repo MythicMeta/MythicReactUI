@@ -124,10 +124,10 @@ function CallbackSearchTableRow(props){
                     </Link>
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>
-                <MythicStyledTooltip title={props.payload.payloadtype.ptype}>
+                <MythicStyledTooltip title={props.payload.payloadtype.name}>
                     <img
                         style={{width: "35px", height: "35px"}}
-                        src={"/static/" + props.payload.payloadtype.ptype + ".svg"}
+                        src={"/static/" + props.payload.payloadtype.name + ".svg"}
                     />
                 </MythicStyledTooltip>
                 </MythicStyledTableCell>

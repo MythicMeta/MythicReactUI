@@ -5,9 +5,12 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/theme-xcode';
 import {useTheme} from '@mui/material/styles';
 
+
+
 export const ResponseDisplayPlaintext = (props) =>{
   const theme = useTheme();
   const [plaintextView, setPlaintextView] = React.useState(String(props.plaintext));
+  
   useEffect( () => {
     try{
       const newPlaintext = JSON.stringify(JSON.parse(String(props.plaintext)), null, 4);
@@ -16,10 +19,11 @@ export const ResponseDisplayPlaintext = (props) =>{
       //console.log("trying to JSONify plaintext error", error);
       setPlaintextView(props.plaintext);
     }
-  }, [props.plaintext])
+  }, [props.plaintext]);
+  
   return (
     <AceEditor 
-        mode="text"
+        mode="json"
         theme={theme.palette.mode === "dark" ? "monokai" : "xcode"}
         fontSize={14}
         showGutter={true}
@@ -28,7 +32,7 @@ export const ResponseDisplayPlaintext = (props) =>{
         value={plaintextView}
         width={"100%"}
         minLines={2}
-        maxLines={Infinity}
+        maxLines={50}
         setOptions={{
           showLineNumbers: true,
           tabSize: 4,

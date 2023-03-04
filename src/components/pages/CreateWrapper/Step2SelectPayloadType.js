@@ -6,22 +6,26 @@ import { CreatePayloadNavigationButtons} from './CreatePayloadNavigationButtons'
 import {CreatePayloadBuildParametersTable} from './CreatePayloadBuildParametersTable';
 import {snackActions} from '../../utilities/Snackbar';
 import Typography from '@mui/material/Typography';
+import {getDefaultValueForType, getDefaultChoices} from '../CreatePayload/Step2SelectPayloadType';
 
 const GET_Payload_Types = gql`
-query getPayloadTypesBuildParametersQuery($os: String!) {
-  payloadtype(where: {supported_os: {_ilike: $os}, deleted: {_eq: false}, wrapper: {_eq: true}}, order_by: {ptype: asc}) {
-    ptype
+query getPayloadTypesBuildParametersQuery($os: jsonb!) {
+  payloadtype(where: {supported_os: {_contains: $os}, deleted: {_eq: false}, wrapper: {_eq: true}}, order_by: {name: asc}) {
+    name
     id
     file_extension
     supports_dynamic_loading
     buildparameters(where: {deleted: {_eq: false} }, order_by: {description: asc}) {
-      id
-      name
-      description
-      default_value: parameter
-      parameter_type
-      required
-      verifier_regex
+        default_value
+        description
+        format_string
+        id
+        name
+        parameter_type
+        randomize
+        required
+        verifier_regex
+        choices
     }
   }
 }
@@ -32,7 +36,7 @@ export function Step2SelectPayloadType(props){
     const [selectedPayloadTypeID, setSelectedPayloadTypeID] = React.useState(0);
     const [fileExtension, setFileExtension] = React.useState('');
     const [payloadTypeParameters, setSelectedPayloadTypeParameters] = React.useState([]);
-    const { loading, error, data } = useQuery(GET_Payload_Types, {variables:{os: "%" + props.buildOptions + "%"},
+    const { loading, error, data } = useQuery(GET_Payload_Types, {variables:{os: props.buildOptions},
         onCompleted: data => {
             if(data.payloadtype.length > 0){
                 if(props.prevData !== undefined && props.prevData.os === props.buildOptions){
@@ -41,11 +45,16 @@ export function Step2SelectPayloadType(props){
                     setSelectedPayloadTypeID(props.prevData.payload_type_id);
                     setFileExtension(props.prevData.file_extension);
                     const payloadtypedata = data.payloadtype.reduce( (prev, payload) => {
-                        if(payload.ptype === props.prevData.payload_type){
+                        if(payload.name === props.prevData.payload_type){
                             const params = payload.buildparameters.map( (param) => {
                                 for(let p = 0; p < props.prevData.parameters.length; p++){
                                     if(props.prevData.parameters[p]["name"] === param.name){
-                                        return {...param, error: param.required, value: props.prevData.parameters[p]["value"]}
+                                        return {...param, error: false, 
+                                            value: props.prevData.parameters[p]["value"], 
+                                            trackedValue: props.prevData.parameters[p]["value"], 
+                                            initialValue: getDefaultValueForType(param),
+                                            choices: getDefaultChoices(param)
+                                        }
                                     }
                                 }
                             });
@@ -59,19 +68,17 @@ export function Step2SelectPayloadType(props){
                         snackActions.warning("No available payload types exist for the selected OS");
                     }
                 }else{
-                    setSelectedPayloadType(data.payloadtype[0].ptype);
+                    setSelectedPayloadType(data.payloadtype[0].name);
                     setSelectedPayloadTypeID(data.payloadtype[0].id);
                     setFileExtension(data.payloadtype[0].file_extension);
                     const payloadtypedata = data.payloadtype.reduce( (prev, payload) => {
-                        if(payload.ptype === data.payloadtype[0].ptype){
+                        if(payload.name === data.payloadtype[0].name){
                             const params = payload.buildparameters.map( (param) => {
-                                if(param.parameter_type === "ChooseOne"){
-                                    return {...param, error: param.required, value: param.default_value.split("\n")[0]}
-                                }else if(param.parameter_type === "Boolean"){
-                                    return {...param, error: param.required, value: param.default_value.toLowerCase() === "true" ? true : false}
-                                }else{
-                                    return {...param, error: param.required, value: param.default_value}
-                                }
+                                const initialValue = getDefaultValueForType(param);
+                                return {...param, error: false, value: initialValue, 
+                                    trackedValue: initialValue, 
+                                    initialValue: initialValue, 
+                                    choices: getDefaultChoices(param)}
                             });
                             return [...prev, ...params];
                         }
@@ -88,15 +95,12 @@ export function Step2SelectPayloadType(props){
 
     
     const finished = () => {
-        const finishedParams = payloadTypeParameters.map( (param) => {
-            return {"name": param.name, "value": param.value}
-        });
         if(selectedPayloadType === ""){
             snackActions.warning("No payload type selected");
             return;
         }
         props.finished({"payload_type": selectedPayloadType, 
-                        "parameters": finishedParams, 
+                        "parameters": payloadTypeParameters, 
                         "payload_type_id": selectedPayloadTypeID,
                         "file_extension": fileExtension, 
                         "os": props.buildOptions});
@@ -107,19 +111,11 @@ export function Step2SelectPayloadType(props){
     const changePayloadType = (evt) => {
         setSelectedPayloadType(evt.target.value);
         const payloadtypedata = data.payloadtype.reduce( (prev, payload) => {
-            if(payload.ptype === evt.target.value){
+            if(payload.name === evt.target.value){
                 setFileExtension(payload.file_extension);
                 setSelectedPayloadTypeID(payload.id);
                 const params = payload.buildparameters.map( (param) => {
-                    //console.log(param);
-                    if(param.parameter_type === "ChooseOne"){
-                        return {...param, error: param.required, value: param.default_value.split("\n")[0]}
-                    }else if(param.parameter_type === "Boolean"){
-                        return {...param, error: param.required, value: param.default_value.toLowerCase() === "true" ? true : false}
-                    }else{
-                        return {...param, error: param.required, value: param.default_value}
-                    }
-                    
+                    return {...param, error: false, value: getDefaultValueForType(param), choices: getDefaultChoices(param)}
                 });
                 return [...prev, ...params];
             }
@@ -142,7 +138,7 @@ export function Step2SelectPayloadType(props){
     }
     if (error) {
         console.error(error);
-        return <div>Error!</div>;
+        return <div>Error! {error.message}</div>;
     }
     return (
         <div >
@@ -157,7 +153,7 @@ export function Step2SelectPayloadType(props){
             >
             {
                 data.payloadtype.map((opt) => (
-                    <option key={"step2" + opt.ptype} value={opt.ptype}>{opt.ptype}</option>
+                    <option key={"step2" + opt.name} value={opt.name}>{opt.name}</option>
                 ))
             }
             </Select><br/>

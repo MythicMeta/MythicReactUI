@@ -30,7 +30,9 @@ class MythicTextField extends React.Component {
         requiredValue: PropTypes.bool,
         type: PropTypes.string,
         onEnter: PropTypes.func,
-        autoFocus: PropTypes.bool
+        autoFocus: PropTypes.bool,
+        autoComplete: PropTypes.bool,
+        showLabel: PropTypes.bool
     }
     onChange = evt => {
         const name = this.props.name;
@@ -44,7 +46,7 @@ class MythicTextField extends React.Component {
     onKeyPress = (event) => {
       if(event.key === "Enter"){
         if(this.props.onEnter !== undefined){
-          this.props.onEnter();
+          this.props.onEnter(event);
         }
       }else{
         this.onChange(event);
@@ -59,9 +61,11 @@ class MythicTextField extends React.Component {
                     value={this.props.value} 
                     onChange={this.onChange}
                     onKeyPress={this.onKeyPress} 
-                    label={this.props.name} 
+                    label={this.props.showLabel === undefined ? this.props.name : this.props.showLabel ? this.props.name : undefined} 
                     autoFocus={this.props.autoFocus ? true : false}
                     variant="outlined" 
+                    data-lpignore={true}
+                    autoComplete={this.props.autoComplete === undefined ? "off" : (this.props.autoComplete ? "on" : "off")}
                     disabled={this.props.disabled === undefined ? false : this.props.disabled}
                     required={this.props.requiredValue ? this.props.requiredValue : false} 
                     InputLabelProps={this.props.inputLabelProps}

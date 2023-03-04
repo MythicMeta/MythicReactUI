@@ -19,6 +19,7 @@ import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { toLocalTime } from '../../utilities/Time';
 import InfoIcon from '@mui/icons-material/Info';
 import IconButton from '@mui/material/IconButton';
+import {b64DecodeUnicode} from '../Callbacks/ResponseDisplay';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -41,10 +42,10 @@ query getWrappablePayloads($payloadType: Int!) {
   payloadtype_by_pk(id: $payloadType) {
     wrap_these_payload_types {
       wrapped {
-        ptype
+        name
         payloads(where: {auto_generated: {_eq: false}, build_phase: {_eq: "success"}, deleted: {_eq: false}}) {
           id
-          tag
+          description
           uuid
           creation_time
           filemetum {
@@ -67,7 +68,7 @@ export function Step3SelectPayload(props){
             let options = [];
             for(let i = 0; i < data.payloadtype_by_pk.wrap_these_payload_types.length; i++){
               for(let j = 0; j < data.payloadtype_by_pk.wrap_these_payload_types[i].wrapped.payloads.length; j++){
-                options.push({ptype: data.payloadtype_by_pk.wrap_these_payload_types[i].wrapped.ptype, ...data.payloadtype_by_pk.wrap_these_payload_types[i].wrapped.payloads[j] })
+                options.push({name: data.payloadtype_by_pk.wrap_these_payload_types[i].wrapped.name, ...data.payloadtype_by_pk.wrap_these_payload_types[i].wrapped.payloads[j] })
               }
             }
             setPayloadOptions(options);
@@ -100,8 +101,6 @@ export function Step3SelectPayload(props){
 } 
 
 function PayloadSelect(props) {
-  const classes = useStyles();
-  
   const finished = (payload) => {
     props.finished(payload);
   }
@@ -151,8 +150,8 @@ export function PayloadsTableRow(props){
               <Button size="small" onClick={onSelected} color="primary" variant="contained">Select</Button>
               </TableCell>
               <TableCell>{toLocalTime(props.payload.creation_time, me.user.view_utc_time)}</TableCell>
-              <TableCell>{props.payload.filemetum.filename_text}</TableCell>
-              <TableCell>{props.payload.tag}</TableCell>
+              <TableCell>{b64DecodeUnicode(props.payload.filemetum.filename_text)}</TableCell>
+              <TableCell>{props.payload.description}</TableCell>
               <TableCell>
                   <IconButton size="small" color="primary" onClick={() => setOpenDetailedView(true)}>
                       <InfoIcon />
@@ -161,9 +160,9 @@ export function PayloadsTableRow(props){
           </TableRow>
           <TableRow>
           {openDetailedView ? (
-            <MythicDialog fullWidth={true} maxWidth="md" open={openDetailedView} 
+            <MythicDialog fullWidth={true} maxWidth="md" open={openDetailedView} me={me}
                 onClose={()=>{setOpenDetailedView(false);}} 
-                innerDialog={<DetailedPayloadTable {...props} payload_id={props.payload.id} onClose={()=>{setOpenDetailedView(false);}} />}
+                innerDialog={<DetailedPayloadTable {...props} me={me} payload_id={props.payload.id} onClose={()=>{setOpenDetailedView(false);}} />}
             />
           ) : (null) }
         </TableRow>

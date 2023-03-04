@@ -1,11 +1,9 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Badge from '@mui/material/Badge';
 import {C2ProfileBuildDialog} from './C2ProfileBuildDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import WifiIcon from '@mui/icons-material/Wifi';
@@ -27,6 +25,11 @@ import BookmarkIcon from '@mui/icons-material/Bookmark';
 import {C2ProfileSavedInstancesDialog} from './C2ProfileSavedInstancesDialog';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
+import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreFromTrashOutlinedIcon from '@mui/icons-material/RestoreFromTrashOutlined';
+import {C2ProfileListFilesDialog} from './C2ProfileListFilesDialog';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,35 +55,13 @@ const useStyles = makeStyles((theme) => ({
     color: 'red',
   },
 }));
-const StyledAvatar = styled(Badge)(({theme}) => ({
-    '& .MuiBadge-badge': {
-        boxShadow: "0 0 0 2px white",
-        width: 15,
-        height: 15,
-        zIndex: 0,
-        '&::after': {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          borderRadius: '50%',
-          animation: 'ripple 1.2s infinite ease-in-out',
-          border: '1px solid currentColor',
-          content:'""'
-        },
-      },
-  '@keyframes ripple': {
-    '0%': {
-      transform: 'scale(.8)',
-      opacity: 1,
-    },
-    '100%': {
-      transform: 'scale(2.4)',
-      opacity: 0,
-    },
-  },
-}));
+const toggleDeleteStatus = gql`
+mutation toggleC2ProfileDeleteStatus($c2profile_id: Int!, $deleted: Boolean!){
+  update_c2profile_by_pk(pk_columns: {id: $c2profile_id}, _set: {deleted: $deleted}) {
+    id
+  }
+}
+`;
 const startStopProfileMutation = gql`
 mutation StartStopProfile($id: Int!, $action: String) {
   startStopProfile(id: $id, action: $action) {
@@ -99,11 +80,12 @@ mutation setProfileConfiguration($id: Int!, $file_path: String!, $data: String!)
   }
 }
 `;
+
 export function C2ProfilesCard(props) {
-  let date = new Date();
   const theme = useTheme();
   const classes = useStyles(theme);
   const [openBuildingDialog, setOpenBuildingDialog] = React.useState(false);
+  const [openListFilesDialog, setOpenListFilesDialog] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const dropdownAnchorRef = React.useRef(null);
   const handleDropdownToggle = () => {
@@ -130,9 +112,9 @@ export function C2ProfilesCard(props) {
     });
     const onStartStopProfile = () => {
         if(props.running){
-            snackActions.info("Submitting stop task..." );
+            snackActions.info("Submitting stop task. Waiting 3s for output ..." );
         }else{
-            snackActions.info("Submitting start task..." );
+            snackActions.info("Submitting start task. Waiting 3s for output ..." );
         }  
         startStopProfile({variables: {id: props.id, action: props.running ? "stop" : "start"}});
     }
@@ -158,38 +140,73 @@ export function C2ProfilesCard(props) {
         }
     });
     const onConfigSubmit = (content) => {
-        configSubmit({variables: {id: props.id, file_path: "config.json", data: content}});
+      //console.log(content)
+      configSubmit({variables: {id: props.id, file_path: "config.json", data: content}});
     }
+    const [openDelete, setOpenDeleteDialog] = React.useState(false);
+    const [updateDeleted] = useMutation(toggleDeleteStatus, {
+      onCompleted: data => {
+      },
+      onError: error => {
+        if(props.deleted){
+          snackActions.error("Failed to restore c2 profile");
+        } else {
+          snackActions.error("Failed to mark c2 profile as deleted");
+        }
+        
+      }
+    });
+    const onAcceptDelete = () => {
+      updateDeleted({variables: {c2profile_id: props.id, deleted: !props.deleted}})
+      setOpenDeleteDialog(false);
+    }
+
   return (
     <Card className={classes.root} elevation={5} style={{maxWidth: "100%"}}>
-          <StyledAvatar overlap="circular" color={props.container_running ? "success" : "error"} variant="dot" anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
             {props.is_p2p ? 
             (<FontAwesomeIcon icon={faLink}  style={{width: "100px", height: "100px", marginTop: "25px"}} />)
             : 
             (<WifiIcon style={{width: "100px", height: "100px", marginTop: "25px"}}/>)
             }
-          </StyledAvatar>
         <div style={{maxWidth: "60%"}}>
           <Typography variant="h4" component="h1" style={{textAlign:"left", marginLeft: "10px", display: "inline-block"}}>{props.name}</Typography>
-          {!props.is_p2p && props.running &&
-            <Typography variant="h6" component="h1" style={{textAlign:"left", marginLeft: "10px", display: "inline-block", color:theme.palette.success.main}}>(Server Running)</Typography>
-          }
-          {!props.is_p2p && !props.running &&
-            <Typography variant="h6" component="h1" style={{textAlign:"left", marginLeft: "10px", display: "inline-block", color:theme.palette.error.main}}>(Server Not Running)</Typography>
-          }
           <CardContent style={{textAlign:"left"}}>
               <Typography variant="body1" component="p">
                 <b>Author:</b> {props.author}
               </Typography>
               <Typography variant="body1" component="p">
-                <b>Supported Agents:</b> {props.payloadtypec2profiles.map( (pt) => (pt.payloadtype.ptype + " ") )}
+                <b>Supported Agents:</b> {props.payloadtypec2profiles.filter( (pt) => !pt.payloadtype.deleted ).map(c => c.payloadtype.name).join(", ")}
               </Typography>
               <Typography variant="body2" component="p">
-                {props.description}
+                <b>Description: </b>{props.description}
               </Typography>
-              <Typography variant="body2" component="p">
-               
+              <Typography variant="body2" component="p" >
+                <b>Container Status: </b>
               </Typography>
+              <Typography variant="body2" component="p" color={props.container_running ? theme.palette.success.main : theme.palette.error.main} >
+                <b>{props.container_running ? "Online" : "Offline"}</b>
+              </Typography>
+              {!props.is_p2p && props.running &&
+              <React.Fragment>
+                <Typography variant="body2" component="p" >
+                  <b>C2 Server Status: </b>
+                </Typography>
+                <Typography variant="body2" component="p" style={{ color:theme.palette.success.main}}>
+                  <b>{"Accepting Connections"}</b>
+                </Typography>
+              </React.Fragment>
+              }
+              {!props.is_p2p && !props.running &&
+                <React.Fragment>
+                  <Typography variant="body2" component="p" >
+                    <b>C2 Server Status: </b>
+                  </Typography>
+                  <Typography variant="body2" component="p" style={{color:theme.palette.error.main}}>
+                    <b>{"Not Accepting Connection"}</b>
+                  </Typography>
+                </React.Fragment>
+                
+              }
           </CardContent>
         </div>
         <div style={{display: "inline-flex", paddingRight: "10px", marginLeft: "auto", justifyContent: "space-evenly", alignItems: "stretch", flexDirection: "column", alignContent: "flex-end"}}>
@@ -254,16 +271,30 @@ export function C2ProfilesCard(props) {
               <Button disabled color="secondary">Container Offline</Button>
             )}
              <Button size="small" variant="contained" color="primary" onClick={() => {setOpenProfileSavedInstancesDialog(true);}}><BookmarkIcon /> Saved Instances</Button>
+             {props.deleted ? (
+              <Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} color="success" variant="contained"><RestoreFromTrashOutlinedIcon/> Restore</Button>
+            ) : (
+              <Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} color="error" variant="contained"><DeleteIcon/> Delete</Button>
+            )}
+            {props.container_running && 
+              <Button size="small" color="primary" variant="contained" onClick={()=>{setOpenListFilesDialog(true);}}><FormatListBulletedIcon /> Manage Files</Button>
+            }
+            {openDelete && 
+              <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} 
+                open={openDelete} 
+                acceptText={props.deleted ? "Restore" : "Remove"} 
+                acceptColor={props.deleted ? "success": "error"} />
+            }
              {openProfileDialog &&
               <MythicDialog fullWidth={true} maxWidth="lg" open={openProfileDialog} 
                 onClose={()=>{setOpenProfileDialog(false);}} 
-                innerDialog={<C2ProfileOutputDialog {...props} payload_name={props.name} onClose={()=>{setOpenProfileDialog(false);}} profile_id={props.id} />}
+                innerDialog={<C2ProfileOutputDialog {...props}  payload_name={props.name} onClose={()=>{setOpenProfileDialog(false);}} profile_id={props.id} />}
               />
              }
             {openProfileConfigDialog &&
             <MythicDialog fullWidth={true} maxWidth="lg" open={openProfileConfigDialog} 
               onClose={()=>{setOpenProfileConfigDialog(false);}} 
-              innerDialog={<C2ProfileConfigDialog {...props} onConfigSubmit={onConfigSubmit} payload_name={props.name} onClose={()=>{setOpenProfileConfigDialog(false);}} profile_id={props.id} />}
+              innerDialog={<C2ProfileConfigDialog filename={"config.json"} onConfigSubmit={onConfigSubmit} payload_name={props.name} onClose={()=>{setOpenProfileConfigDialog(false);}} profile_id={props.id} />}
             />
             }
             {openProfileSavedInstancesDialog &&
@@ -272,7 +303,12 @@ export function C2ProfilesCard(props) {
                 innerDialog={<C2ProfileSavedInstancesDialog {...props} onClose={()=>{setOpenProfileSavedInstancesDialog(false);}} />}
             />
             }
-            
+            {openListFilesDialog &&
+              <MythicDialog fullWidth={true} maxWidth="md" open={openListFilesDialog} 
+                onClose={()=>{setOpenListFilesDialog(false);}} 
+                innerDialog={<C2ProfileListFilesDialog {...props} onClose={()=>{setOpenListFilesDialog(false);}} />}
+            />
+            }
             <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal style={{zIndex: 4}}>
               {({ TransitionProps, placement }) => (
                 <Grow

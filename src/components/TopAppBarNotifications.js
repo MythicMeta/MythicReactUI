@@ -4,8 +4,6 @@ import Badge from '@mui/material/Badge';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Link } from 'react-router-dom';
 import { IconButton, Tooltip } from '@mui/material';
-import CircularProgress from '@mui/material/CircularProgress';
-import ErrorIcon from '@mui/icons-material/Error';
 import {snackActions} from './utilities/Snackbar';
 import { meState } from '../cache';
 import { useReactiveVar } from '@apollo/client';
@@ -13,10 +11,9 @@ import makeStyles from '@mui/styles/makeStyles';
 
 const SUB_Event_Logs = gql`
 subscription MySubscription($operation_id: Int!) {
-  operationeventlog_aggregate(where: {deleted: {_eq: false}, level: {_eq: "warning"}, resolved: {_eq: false}, operation_id: {_eq: $operation_id}}) {
-    aggregate{
-        count
-    }
+  operation_by_pk(id: $operation_id) {
+    id
+    alert_count
   }
 }
  `;
@@ -54,11 +51,11 @@ export function TopAppBarNotifications(props) {
             { 
                     error ? (
                         <Badge color="secondary" badgeContent={0}>
-                            <NotificationsActiveIcon />
+                            <NotificationsActiveIcon  />
                         </Badge>
                     ) : (
-                        <Badge badgeContent={data?.operationeventlog_aggregate?.aggregate?.count || 0} color="error">
-                            <NotificationsActiveIcon />
+                        <Badge badgeContent={data?.operation_by_pk?.alert_count || 0} color="error">
+                            <NotificationsActiveIcon  />
                         </Badge>
                     )
                                 

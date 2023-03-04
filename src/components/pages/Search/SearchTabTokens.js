@@ -9,7 +9,6 @@ import {useTheme} from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Typography } from '@mui/material';
 import {TokenTable} from './TokenTable';
@@ -19,20 +18,9 @@ import Select from '@mui/material/Select';
 const tokenFragment = gql`
 fragment tokenData on token{
     id
-    User
-    Groups
-    TokenId
-    logonsession {
-        LogonType
-        UserName
-        LogonDomain
-        id
-        LogonId
-        authenticationpackages(where: {deleted: {_eq: false}}) {
-            Name
-            id
-        }
-    }
+    user
+    groups
+    token_id
     task {
         id
     }
@@ -49,12 +37,12 @@ const fetchLimit = 20;
 const userGroupSearch = gql`
 ${tokenFragment}
 query usergroupQuery($operation_id: Int!, $name: String!, $offset: Int!, $fetchLimit: Int!) {
-    token_aggregate(distinct_on: id, where: {task: {callback: {operation_id: {_eq: $operation_id}}}, _or: [{Groups: {_ilike: $name}}, {User: {_ilike: $name}}, {logonsession: {UserName: {_ilike: $name}}}]}) {
+    token_aggregate(distinct_on: id, where: {operation_id: {_eq: $operation_id}, _or: [{groups: {_ilike: $name}}, {user: {_ilike: $name}}]}) {
       aggregate {
         count
       }
     }
-    token(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {task: {callback: {operation_id: {_eq: $operation_id}}}, _or: [{Groups: {_ilike: $name}}, {User: {_ilike: $name}}, {logonsession: {UserName: {_ilike: $name}}}]}) {
+    token(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {operation_id: {_eq: $operation_id}, _or: [{groups: {_ilike: $name}}, {user: {_ilike: $name}}]}) {
       ...tokenData
     }
 }
@@ -62,38 +50,25 @@ query usergroupQuery($operation_id: Int!, $name: String!, $offset: Int!, $fetchL
 const SIDSearch = gql`
 ${tokenFragment}
 query sidQuery($operation_id: Int!, $sid: String!, $offset: Int!, $fetchLimit: Int!) {
-    token_aggregate(distinct_on: id, where: {task: {callback: {operation_id: {_eq: $operation_id}}}, _or: [{AppContainerSid: {_ilike: $sid}}, {LogonSid: {_ilike: $sid}}, {Owner: {_ilike: sid}}, {PrimaryGroup: {_ilike: sid}}, {DefaultDacl: {_ilike: sid}}]}) {
+    token_aggregate(distinct_on: id, where: {operation_id: {_eq: $operation_id}, _or: [{app_container_sid: {_ilike: $sid}}, {logon_sid: {_ilike: $sid}}, {default_dacl: {_ilike: sid}}]}) {
       aggregate {
         count
       }
     }
-    token(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {task: {callback: {operation_id: {_eq: $operation_id}}}, _or: [{AppContainerSid: {_ilike: $sid}}, {LogonSid: {_ilike: $sid}}, {Owner: {_ilike: sid}}, {PrimaryGroup: {_ilike: sid}}, {DefaultDacl: {_ilike: sid}}]}) {
+    token(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {operation_id: {_eq: $operation_id}, _or: [{app_container_sid: {_ilike: $sid}}, {logon_sid: {_ilike: $sid}}, {default_dacl: {_ilike: sid}}]}) {
       ...tokenData
     }
 }
 `;
-const logonTypeSearch = gql`
-${tokenFragment}
-query logontypeQuery($operation_id: Int!, $logontype: String!, $offset: Int!, $fetchLimit: Int!) {
-    token_aggregate(distinct_on: id, where: {logonsession: {LogonType: { _ilike: $logontype}}, task: {callback: {operation_id: {_eq: $operation_id}}}}) {
-      aggregate {
-        count
-      }
-    }
-    token(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {logonsession: {LogonType: { _ilike: $logontype}}, task: {callback: {operation_id: {_eq: $operation_id}}}}) {
-      ...tokenData
-    }
-  }
-`;
 const hostSearch = gql`
 ${tokenFragment}
 query hostQuery($operation_id: Int!, $host: String!, $offset: Int!, $fetchLimit: Int!) {
-    token_aggregate(distinct_on: id, where: {host: {_ilike: $host}, task: {callback: {operation_id: {_eq: $operation_id}}}}) {
+    token_aggregate(distinct_on: id, where: {host: {_ilike: $host}, operation_id: {_eq: $operation_id}}) {
       aggregate {
         count
       }
     }
-    token(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, task: {callback: {operation_id: {_eq: $operation_id}}}}) {
+    token(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, operation_id: {_eq: $operation_id}}) {
       ...tokenData
     }
 }
@@ -108,7 +83,7 @@ const SearchTabTokensSearchPanel = (props) => {
     const theme = useTheme();
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("User/Group");
-    const searchFieldOptions = ["User/Group", "SID", "LogonType", "Host"];
+    const searchFieldOptions = ["User/Group", "SID", "Host"];
     const handleSearchFieldChange = (event) => {
         setSearchField(event.target.value);
         props.onChangeSearchField(event.target.value);
@@ -128,9 +103,6 @@ const SearchTabTokensSearchPanel = (props) => {
                 break;
             case "SID":
                 props.onSIDSearch({search:adjustedSearch, offset: 0})
-                break;
-            case "LogonType":
-                props.onLogonTypeSearch({search:adjustedSearch, offset: 0})
                 break;
             case "Host":
                 props.onHostSearch({search:adjustedSearch, offset: 0})
@@ -195,7 +167,7 @@ export const SearchTabTokensPanel = (props) =>{
     const [totalCount, setTotalCount] = React.useState(0);
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Host");
-    const me = MeHook();
+    const me = props.me;
 
     const onChangeSearchField = (field) => {
         setSearchField(field);
@@ -206,9 +178,6 @@ export const SearchTabTokensPanel = (props) =>{
                 break;
             case "SID":
                 onSIDSearch({search, offset: 0});
-                break;
-            case "LogonType":
-                onLogonTypeSearch({search, offset: 0});
                 break;
             case "Host":
                 onHostSearch({search, offset: 0});
@@ -237,11 +206,6 @@ export const SearchTabTokensPanel = (props) =>{
         onCompleted: handleTokenSearchResults,
         onError: handleCallbackSearchFailure
     })
-    const [getLogonTypeSearch] = useLazyQuery(logonTypeSearch, {
-        fetchPolicy: "no-cache",
-        onCompleted: handleTokenSearchResults,
-        onError: handleCallbackSearchFailure
-    })
     const [getHostSearch] = useLazyQuery(hostSearch, {
         fetchPolicy: "no-cache",
         onCompleted: handleTokenSearchResults,
@@ -259,20 +223,6 @@ export const SearchTabTokensPanel = (props) =>{
             offset: offset,
             fetchLimit: fetchLimit,
             name: "%" + new_search + "%",
-        }})
-    }
-    const onLogonTypeSearch = ({search, offset}) => {
-        //snackActions.info("Searching...", {persist:true});
-        setSearch(search);
-        let new_search = search;
-        if(new_search === ""){
-            new_search = "_";
-        }
-        getLogonTypeSearch({variables:{
-            operation_id: me?.user?.current_operation_id || 0,
-            offset: offset,
-            fetchLimit: fetchLimit,
-            logontype: "%" + new_search + "%",
         }})
     }
     const onHostSearch = ({search, offset}) => {
@@ -311,9 +261,6 @@ export const SearchTabTokensPanel = (props) =>{
             case "SID":
                 onSIDSearch({search, offset: (value - 1) * fetchLimit});
                 break;
-            case "LogonType":
-                onLogonTypeSearch({search, offset: (value - 1) * fetchLimit});
-                break;
             case "Host":
                 onHostSearch({search, offset: (value - 1) * fetchLimit});
                 break;
@@ -324,14 +271,14 @@ export const SearchTabTokensPanel = (props) =>{
     return (
         <MythicTabPanel {...props} >
             <SearchTabTokensSearchPanel onChangeSearchField={onChangeSearchField} onUserGroupSearch={onUserGroupSearch} value={props.value} index={props.index}
-                onLogonTypeSearch={onLogonTypeSearch} onHostSearch={onHostSearch} onSIDSearch={onSIDSearch} changeSearchParam={props.changeSearchParam} />
+                onHostSearch={onHostSearch} onSIDSearch={onSIDSearch} changeSearchParam={props.changeSearchParam} />
             <div style={{overflowY: "auto", flexGrow: 1}}>
                 {tokenData.length > 0 ? (
                     <TokenTable tokens={tokenData} />) : (
                     <div style={{display: "flex", justifyContent: "center", alignItems: "center", position: "absolute", left: "50%", top: "50%"}}>No Search Results</div>
                 )}
             </div>
-            <div style={{background: "transparent", display: "flex", justifyContent: "center", alignItems: "center"}}>
+            <div style={{background: "transparent", display: "flex", justifyContent: "center", alignItems: "center",  paddingTop: "5px", paddingBottom: "10px"}}>
             <Pagination count={Math.ceil(totalCount / fetchLimit)} variant="outlined" color="primary" boundaryCount={1}
                     siblingCount={1} onChange={onChangePage} showFirstButton={true} showLastButton={true} style={{padding: "20px"}}/>
                 <Typography style={{paddingLeft: "10px"}}>Total Results: {totalCount}</Typography>

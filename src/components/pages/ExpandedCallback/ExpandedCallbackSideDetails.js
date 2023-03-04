@@ -6,7 +6,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import {getTimeDifference, useInterval } from '../../utilities/Time';
+import {getTimeDifference, useInterval, toLocalTime } from '../../utilities/Time';
 import {useTheme} from '@mui/material/styles';
 import LockIcon from '@mui/icons-material/Lock';
 import WifiIcon from '@mui/icons-material/Wifi';
@@ -19,57 +19,8 @@ import {C2PathDialog} from '../Callbacks/C2PathDialog';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import {useSubscription, gql } from '@apollo/client';
-
-const SUB_Edges = gql`
-subscription CallbacksSubscription ($operation_id: Int!){
-  callbackgraphedge(where: {operation_id: {_eq: $operation_id}}, order_by: {id: desc}) {
-    id
-    end_timestamp
-    direction
-    destination {
-      active
-      id
-      operation_id
-      user
-      host
-      payload {
-        payloadtype {
-          ptype
-          id
-        }
-      }
-      callbackc2profiles {
-        c2profile {
-          name
-        }
-      }
-    }
-    source {
-      active
-      id
-      user
-      operation_id
-      host
-      payload {
-        payloadtype {
-          ptype
-          id
-        }
-      }
-      callbackc2profiles {
-        c2profile {
-          name
-        }
-      }
-    }
-    c2profile {
-      id
-      is_p2p
-      name
-    }
-  }
-}
- `;
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import {SUB_Edges} from '../Callbacks/CallbacksTop';
 
 export function ExpandedCallbackSideDetails(props){
     const maxWidth = "30%";
@@ -90,7 +41,6 @@ export function ExpandedCallbackSideDetails(props){
 
 
 export function ExpandedCallbackSideDetailsTable(props){
-    const dropdownAnchorRef = React.useRef(null);
     const theme = useTheme();
     const me = useReactiveVar(meState);
     const [displayTime, setDisplayTime] = React.useState("");
@@ -102,6 +52,9 @@ export function ExpandedCallbackSideDetailsTable(props){
     const [callbackgraphedgesAll, setCallbackgraphedgesAll] = React.useState([]);
     const [hasEgressRoute, setHasEgressRoute] = React.useState(true);
     const [callbackEdges, setCallbackEdges] = React.useState([]);
+    const lastCheckinDifference = React.useRef(-1);
+    const lastCheckinTimestamp = React.useRef("");
+    const lastCheckinTimestampFromMythic = React.useRef("");
     useSubscription(SUB_Edges, {
         variables: {operation_id: me.user.current_operation_id}, fetchPolicy: "network-only",
         shouldResubscribe: true,
@@ -109,12 +62,29 @@ export function ExpandedCallbackSideDetailsTable(props){
           setCallbackEdges(subscriptionData.data.callbackgraphedge)
         }
     });
-    const updateTime = (curTime) => {
-        setDisplayTime(getTimeDifference(curTime));
-    };
+    const updateDisplayTime = () => {
+        let newTimeDifference = getTimeDifference(lastCheckinDifference.current);
+        if(newTimeDifference.includes("m")){
+            if(newTimeDifference.includes("m0s")){
+                lastCheckinTimestamp.current = toLocalTime(lastCheckinTimestampFromMythic.current, false);
+                setDisplayTime(newTimeDifference.slice(0, newTimeDifference.length-2));
+            }else if(displayTime === ""){
+                lastCheckinTimestamp.current = toLocalTime(lastCheckinTimestampFromMythic.current, false);
+                setDisplayTime(newTimeDifference.slice(0, newTimeDifference.indexOf("m")+1));
+            }
+        } else {
+            lastCheckinTimestamp.current = toLocalTime(lastCheckinTimestampFromMythic.current, false);
+            setDisplayTime(newTimeDifference);
+        }
+    }
     useInterval( () => {
-        updateTime(props.last_checkin);
-    });
+        let last = new Date(props.last_checkin);
+        let currentMythic = new Date(props.current_time);
+        let timeskew = (new Date()) - currentMythic;
+        lastCheckinDifference.current = last - timeskew;
+        lastCheckinTimestampFromMythic.current = props.last_checkin;
+        updateDisplayTime();
+    }, 1000);
     useEffect( () => {
         const routes = callbackgraphedgesAll.filter( (edge) => {
             if(!edge.c2profile.is_p2p && edge.source.id === props.id && edge.destination.id === props.id){
@@ -211,13 +181,15 @@ export function ExpandedCallbackSideDetailsTable(props){
                  ];
     return (
         <Table  size="small" style={{"overflow": "scroll"}}>
-                <TableBody>
+                <TableBody style={{whiteSpace: "pre"}}>
                     <TableRow hover>
                         <TableCell>Elevation Level</TableCell>
                         <TableCell>{props.integrity_level}
-                            {props.integrity_level > 2 ? (" ( High Integrity )") : ""}
+                            {props.integrity_level === 4 ? (" ( SYSTEM Integrity )") : ""}
+                            {props.integrity_level === 3 ? (" ( High Integrity )") : ""}
                             {props.integrity_level === 2 ? (" ( Medium Integrity ) ") : ""}
-                            {props.integrity_level < 2 ? (" ( Low Integrity )") : ""}
+                            {props.integrity_level === 1 ? (" ( Low Integrity )") : ""}
+                            {props.integrity_level === 0 ? (" ( UNKNOWN Integrity )") : ""}
                         </TableCell>
                     </TableRow>
                     <TableRow hover>
@@ -241,9 +213,9 @@ export function ExpandedCallbackSideDetailsTable(props){
                             )}
                         </TableCell>
                     </TableRow>
-                    <TableRow hover>
+                    <TableRow hover >
                         <TableCell>IP Address</TableCell>
-                        <TableCell>{props.ip}</TableCell>
+                        <TableCell>{JSON.parse(props.ip).map(c => c + "\n")}</TableCell>
                     </TableRow>
                     <TableRow hover>
                         <TableCell>External IP</TableCell>
@@ -271,11 +243,15 @@ export function ExpandedCallbackSideDetailsTable(props){
                     </TableRow>
                     <TableRow hover>
                         <TableCell>Last Checkin</TableCell>
-                        <TableCell>{displayTime}</TableCell>
+                        <TableCell>
+                            <MythicStyledTooltip title={lastCheckinTimestamp.current} >
+                                {displayTime}
+                            </MythicStyledTooltip>
+                        </TableCell>
                     </TableRow>
                     <TableRow hover>
                         <TableCell>First Checkin</TableCell>
-                        <TableCell>{props.init_callback}</TableCell>
+                        <TableCell>{toLocalTime(props.init_callback, me?.user?.view_utc_time || false)}</TableCell>
                     </TableRow>
                     <TableRow hover>
                         <TableCell>Description</TableCell>
@@ -287,7 +263,7 @@ export function ExpandedCallbackSideDetailsTable(props){
                     </TableRow>
                     <TableRow hover>
                         <TableCell>Agent Type</TableCell>
-                        <TableCell>{props.payload.payloadtype.ptype}</TableCell>
+                        <TableCell>{props.payload.payloadtype.name}</TableCell>
                     </TableRow>
                     <TableRow hover>
                         <TableCell>Egress Route</TableCell>
@@ -304,7 +280,7 @@ export function ExpandedCallbackSideDetailsTable(props){
                     </TableRow>
                     <MythicDialog fullWidth={true} maxWidth="lg" open={openC2Dialog}
                         onClose={()=>{setOpenC2Dialog(false);}} 
-                        innerDialog={<C2PathDialog onClose={()=>{setOpenC2Dialog(false);}} {...props} callbackgraphedges={activeEgressBool ? callbackgraphedges : callbackgraphedgesAll} />}
+                        innerDialog={<C2PathDialog onClose={()=>{setOpenC2Dialog(false);}} callback={props} callbackgraphedges={activeEgressBool ? callbackgraphedges : callbackgraphedgesAll} />}
                     />
                     <MythicDialog fullWidth={true} open={openEditDescriptionDialog}  onClose={() => {setOpenEditDescriptionDialog(false);}}
                         innerDialog={
@@ -315,6 +291,27 @@ export function ExpandedCallbackSideDetailsTable(props){
                         <TableCell>Extra Info</TableCell>
                         <TableCell>{props.extra_info}</TableCell>
                     </TableRow>
+                    {props.enc_key_base64 !== undefined ? (
+                        <TableRow hover>
+                            <TableCell>Encryption Keys</TableCell>
+                            <TableCell>
+                                {props.crypto_type}
+                                {props.enc_key_base64 === null ? (null) : (
+                                    <React.Fragment>
+                                    <br/><b>Encryption Key: </b> {props.enc_key_base64}
+                                    </React.Fragment>
+                                    ) 
+                                }
+                                {props.dec_key_base64 === null ? (null) : (
+                                    <React.Fragment>
+                                    <br/><b>Decryption Key: </b> {props.dec_key_base64}
+                                    </React.Fragment>
+                                )
+                                }
+                            </TableCell>
+                        </TableRow>
+                    ) : (null)}
+                    
                 </TableBody>
             </Table>
     )

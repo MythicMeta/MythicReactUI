@@ -24,7 +24,7 @@ export function Step1SelectOS(props){
     const { loading } = useQuery(GET_Payload_Types, {fetchPolicy: "network-only",
     onCompleted: (data) => {
         const optionsReduced= data.payloadtype.reduce((currentOptions, payloadtype) => {
-            const adds = payloadtype.supported_os.split(",").reduce( (prev, os) => {
+            const adds = payloadtype.supported_os.reduce( (prev, os) => {
                     if(!currentOptions.includes(os)){
                         return [...prev, os];
                     }
@@ -33,20 +33,20 @@ export function Step1SelectOS(props){
             return [...currentOptions, ...adds];
         }, []);
         const sortedOptions = optionsReduced.sort();
-        console.log(props.prevData);
         if(props.prevData !== undefined){
             setOS(props.prevData);
         }
-        else if(os === ""){
+        else if(os === "" && sortedOptions.length > 0){
             setOS(sortedOptions[0]);
+        } else if(sortedOptions.length === 0 ){
+            snackActions.warning("No Wrappers exist within Mythic. Try importing one first via the mythic-cli binary")
+        
         }
         setOSOptions(sortedOptions);
-        if(sortedOptions.length === 0){
-            snackActions.warning("No Wrappers exist within Mythic. Try importing one first via the mythic-cli binary")
-        }
     },
     onError: (data) => {
         console.error(data);
+        snackActions.error(data.message)
     }
     });
 
@@ -57,8 +57,12 @@ export function Step1SelectOS(props){
         if(osOptions.length === 0){
             snackActions.warning("No Wrappers exist within Mythic. Try importing one first via the mythic-cli binary");
             return;
+        } else if (os === ""){
+            snackActions.error("Must select an operating system first");
+        } else {
+            props.finished(os);
         }
-        props.finished(os);
+        
     }
     const canceled = () => {
         props.canceled();

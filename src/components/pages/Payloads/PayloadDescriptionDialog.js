@@ -10,8 +10,8 @@ import { snackActions } from '../../utilities/Snackbar';
 
 const updateDescriptionMutation = gql`
 mutation updateDescription ($payload_id: Int!, $description: String) {
-  update_payload_by_pk(pk_columns: {id: $payload_id}, _set: {tag: $description}) {
-    tag
+  update_payload_by_pk(pk_columns: {id: $payload_id}, _set: {description: $description}) {
+    description
     id
   }
 }
@@ -19,7 +19,7 @@ mutation updateDescription ($payload_id: Int!, $description: String) {
 const getDescriptionQuery = gql`
 query getDescriptionQuery ($payload_id: Int!) {
   payload_by_pk(id: $payload_id) {
-    tag
+    description
     id
   }
 }
@@ -30,7 +30,7 @@ export function PayloadDescriptionDialog(props) {
     const { loading, error } = useQuery(getDescriptionQuery, {
         variables: {payload_id: props.payload_id},
         onCompleted: data => {
-            setDescription(data.payload_by_pk.tag)
+            setDescription(data.payload_by_pk.description)
         },
         fetchPolicy: "network-only"
     });

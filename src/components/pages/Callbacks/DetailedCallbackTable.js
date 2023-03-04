@@ -5,7 +5,7 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableHead from '@mui/material/TableHead';
 import Typography from '@mui/material/Typography';
-import {useQuery, gql} from '@apollo/client';
+import {useQuery, gql, useMutation} from '@apollo/client';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import {useTheme} from '@mui/material/styles';
@@ -14,14 +14,26 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import {ExpandedCallbackSideDetailsTable} from '../ExpandedCallback/ExpandedCallbackSideDetails';
+import { toLocalTime } from '../../utilities/Time';
+import {PayloadsTableRowBuildProcessPerStep} from  '../Payloads/PayloadsTableRowBuildProgress';
+import { meState } from '../../../cache';
+import {useReactiveVar} from '@apollo/client';
+import {b64DecodeUnicode} from './ResponseDisplay';
+import { MythicDialog } from '../../MythicComponents/MythicDialog';
+import {AddRemoveCallbackCommandsDialog} from './AddRemoveCallbackCommandsDialog';
+import { snackActions } from '../../utilities/Snackbar';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
 
 const GET_Payload_Details = gql`
 query GetCallbackDetails($callback_id: Int!) {
   callback_by_pk(id: $callback_id){
     payload {
       uuid
+      id
+      creation_time
       payloadtype{
-          ptype
+          name
           id
       }
       filemetum {
@@ -31,11 +43,26 @@ query GetCallbackDetails($callback_id: Int!) {
         md5
         sha1
       }
-      buildparameterinstances {
-        parameter
+      payload_build_steps(order_by: {step_number: asc}) {
+        step_name
+        step_number
+        step_success
+        step_stdout
+        step_stderr
+        step_description
+        start_time
+        end_time
         id
+      }
+      buildparameterinstances {
+        value
+        id
+        enc_key_base64
+        dec_key_base64
         buildparameter {
           description
+          parameter_type
+          id
         }
       }
       os
@@ -62,6 +89,9 @@ query GetCallbackDetails($callback_id: Int!) {
       }
     }
     architecture
+    enc_key_base64
+    dec_key_base64
+    crypto_type
     description
     domain
     external_ip
@@ -69,6 +99,7 @@ query GetCallbackDetails($callback_id: Int!) {
     id
     integrity_level
     last_checkin
+    current_time
     ip
     locked
     locked_operator {
@@ -87,12 +118,101 @@ query GetCallbackDetails($callback_id: Int!) {
   
 }
 `;
+const AddLoadedCommand = gql`
+mutation addLoadedCommand($command_id: Int!, $callback_id: Int!){
+  insert_loadedcommands_one(object: {callback_id: $callback_id, command_id: $command_id}){
+    id
+    command {
+      cmd
+    }
+  }
+}
+`;
+const RemoveLoadedCommand = gql`
+mutation removeLoadedCommand($id: Int!){
+  delete_loadedcommands_by_pk(id: $id){
+    id
+    command {
+      cmd
+    }
+  }
+}
+`;
 export function DetailedCallbackTable(props){
     const theme = useTheme();
+    const me = useReactiveVar(meState);
+    const [openAddRemoveCommandsDialog, setOpenAddRemoveCommandsDialog] = React.useState(false);
     const [commands, setCommands] = React.useState([]);
     const [buildParameters, setBuildParameters] = React.useState([]);
     const [c2Profiles, setC2Profiles] = React.useState([]);
+    const [openProgressIndicator, setOpenProgressIndicator] = React.useState(false);
+    const [addProgress, setAddProgress] = React.useState(0);
+    const addTotal = React.useRef(0);
+    const [removeProgress, setRemoveProgress] = React.useState(0);
+    const removeTotal = React.useRef(0);
+    const commandMods = React.useRef({"add": 0, 
+                                      "remove": 0,
+                                      "commandsToAdd": [],
+                                      "commandsToRemove": []})
+    const [addLoadedCommands] = useMutation(AddLoadedCommand, {
+      onCompleted: data => {
+        commandMods.current.add += 1;
+        setAddProgress(commandMods.current.add);
+        issueNextMod();
+      },
+      onError: error => {
+        snackActions.error(error.message);
+        commandMods.current.add += 1;
+        issueNextMod();
+      }
+    })
+    const [removeLoadedCommands] = useMutation(RemoveLoadedCommand, {
+      onCompleted: data => {
+        commandMods.current.remove += 1;
+        setRemoveProgress(commandMods.current.remove);
+        issueNextMod();
+      },
+      onError: error => {
+        snackActions.error(error.message);
+        issueNextMod();
+      }
+    })
+    const issueNextMod = () => {
+      if(commandMods.current.add >= addTotal.current){
+        if(commandMods.current.remove >= removeTotal.current) {
+          snackActions.success("Finished adjusting commands");
+        } else {
+          removeLoadedCommands({variables: {id: commandMods.current.commandsToRemove[commandMods.current.remove].id}})
+        }
+      } else {
+        addLoadedCommands({variables: {callback_id: props.callback_id, command_id: commandMods.current.commandsToAdd[commandMods.current.add].id}})
+        }
+    }
+    const addRemoveCommandsSubmit = ({commandsToAdd, commandsToRemove}) => {
+      addTotal.current = commandsToAdd.length;
+      removeTotal.current = commandsToRemove.length;
+      commandMods.current.commandsToAdd = commandsToAdd
+      commandMods.current.commandsToRemove = commandsToRemove
+      if(commandsToAdd.length === 0 && commandsToRemove.length === 0){
+        snackActions.info("Not adding or removing any commands")
+      } else {
+        setOpenProgressIndicator(true);
+        issueNextMod();
+      }
+    }
+    const normalizeAdd = (value) => ((value - 0) * 100) / (Math.max(addTotal.current - 0, 1));
+    const normalizeRemove = (value) => ((value - 0) * 100) / (Math.max(removeTotal.current - 0, 1));
+    const onCloseProgress = () => {
+      setOpenProgressIndicator(false);
+      setAddProgress(0);
+      setRemoveProgress(0);
+      commandMods.current.add = 0;
+      commandMods.current.remove = 0;
+      commandMods.current.commandsToAdd = [];
+      commandMods.current.commandsToRemove = [];
+    }
     const { loading, error, data } = useQuery(GET_Payload_Details, {
+        fetchPolicy: "no-cache",
         variables: {callback_id: props.callback_id},
         onCompleted: data => {
             const commandState = data.callback_by_pk.loadedcommands.map( (c) => 
@@ -102,7 +222,12 @@ export function DetailedCallbackTable(props){
             setCommands(commandState);
             const buildParametersState = data.callback_by_pk.payload.buildparameterinstances.map( (b) =>
             {
-                return {description: b.buildparameter.description, value: b.parameter}
+              return {description: b.buildparameter.description, 
+                value: b.value, 
+                parameter_type: b.buildparameter.parameter_type,
+                enc_key: b.enc_key_base64,
+                dec_key: b.dec_key_base64
+              }
             }).sort((a,b) => (a.description > b.description) ? 1: ((b.description > a.description) ? -1 : 0));
             setBuildParameters(buildParametersState);
             const c2Profiles = data.callback_by_pk.c2profileparametersinstances.reduce( (prev, cur) => {
@@ -135,7 +260,7 @@ export function DetailedCallbackTable(props){
     }
     if (error) {
      console.error(error);
-     return <div>Error!</div>;
+     return <div>Error! {error.message}</div>;
     }
     return (
         <React.Fragment>
@@ -163,7 +288,7 @@ export function DetailedCallbackTable(props){
                 <TableBody>
                     <TableRow hover>
                         <TableCell>Payload Type</TableCell>
-                        <TableCell>{data.callback_by_pk.payload.payloadtype.ptype}</TableCell>
+                        <TableCell>{data.callback_by_pk.payload.payloadtype.name}</TableCell>
                     </TableRow>
                     <TableRow hover>
                         <TableCell>Selected OS</TableCell>
@@ -173,10 +298,14 @@ export function DetailedCallbackTable(props){
                         <TableCell>UUID</TableCell>
                         <TableCell>{data.callback_by_pk.payload.uuid}</TableCell>
                     </TableRow>
+                    <TableRow hover>
+                        <TableCell>Creation Time</TableCell>
+                        <TableCell>{toLocalTime(data.callback_by_pk.payload.creation_time, me.user.view_utc_time)}</TableCell>
+                    </TableRow>
                     { data.callback_by_pk.payload.filemetum ? (
                         <TableRow key={'filename_text'} hover>
                             <TableCell>Filename</TableCell>
-                            <TableCell>{data.callback_by_pk.payload.filemetum.filename_text}</TableCell>
+                            <TableCell>{b64DecodeUnicode(data.callback_by_pk.payload.filemetum.filename_text)}</TableCell>
                         </TableRow>
                     ) : null }
                     <TableRow hover>
@@ -205,12 +334,58 @@ export function DetailedCallbackTable(props){
                     <TableCell>Value</TableCell>
                   </TableRow>
                 </TableHead>
-                <TableBody>
+                <TableBody style={{whiteSpace: "pre"}}>
                   {
                     buildParameters.map( (cmd, i) => (
                         <TableRow key={"buildprop" + i + "for" + data.callback_by_pk.payload.id} hover>
                             <TableCell>{cmd.description}</TableCell>
-                            <TableCell>{cmd.value}</TableCell>
+                            <TableCell>
+                            {
+                                cmd.parameter_type === "Dictionary" ? (
+                                    JSON.stringify(JSON.parse(cmd.value), null, 2)
+                                ) : (
+                                  cmd.parameter_type === "Array" || cmd.parameter_type === "ChooseMultiple" ? (
+                                    JSON.parse(cmd.value).map(c => c + "\n")
+                                  ): (cmd.value)
+                                )
+                              }
+                                  {cmd.enc_key === null ? (null) : (<React.Fragment>
+                                    <br/><b>Encryption Key: </b> {cmd.enc_key}
+                                  </React.Fragment>) }
+                                {cmd.dec_key === null ? (null) : (<React.Fragment>
+                                    <br/><b>Decryption Key: </b> {cmd.dec_key}
+                                </React.Fragment>) }
+                            </TableCell>
+                        </TableRow>
+                    ))
+                    
+                  }
+                </TableBody>
+              </Table>
+              <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
+                <Typography variant="h6" style={{textAlign: "left", display: "inline-block", marginLeft: "20px", color: theme.pageHeaderColor}}>
+                    Build Steps
+                </Typography>
+              </Paper>
+              <Table size="small" aria-label="details" style={{ "overflowWrap": "break-word"}}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell style={{width: "30%"}}>Name</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody style={{whiteSpace: "pre"}}>
+                  {
+                    data.callback_by_pk.payload.payload_build_steps.map( (step, i) => (
+                        <TableRow key={"buildstep" + i}>
+                            <TableCell>{step.step_name}</TableCell>
+                            <TableCell>{step.step_description}</TableCell>
+                            <TableCell>
+                              <PayloadsTableRowBuildProcessPerStep key={'buildstepicon' + i} 
+                                payload_build_steps={data.callback_by_pk.payload.payload_build_steps} 
+                                step_number={step.step_number} />
+                            </TableCell>
                         </TableRow>
                     ))
                     
@@ -237,9 +412,21 @@ export function DetailedCallbackTable(props){
                                     <TableRow key={"c2frag" + data.callback_by_pk.payload.id + c2.c2_profile + j} hover>
                                         <TableCell>{cmd.description}</TableCell>
                                         <TableCell>
-                                          {cmd.parameter_type === "Dictionary" || cmd.parameter_type === "Array" ? (
-                                            JSON.stringify(JSON.parse(cmd.value), null, 2)
-                                            ) : (cmd.value)}
+                                        {
+                                          cmd.parameter_type === "Dictionary" ? (
+                                              JSON.stringify(JSON.parse(cmd.value), null, 2)
+                                          ) : (
+                                            cmd.parameter_type === "Array" || cmd.parameter_type === "ChooseMultiple" ? (
+                                              JSON.parse(cmd.value).map(c => c + "\n")
+                                            ): (cmd.value)
+                                          )
+                                        }
+                                            {cmd.enc_key === null ? (null) : (<React.Fragment>
+                                                <br/><b>Encryption Key: </b> {cmd.enc_key}
+                                              </React.Fragment>) }
+                                            {cmd.dec_key === null ? (null) : (<React.Fragment>
+                                                <br/><b>Decryption Key: </b> {cmd.dec_key}
+                                            </React.Fragment>) }
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -251,7 +438,9 @@ export function DetailedCallbackTable(props){
             <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main,marginBottom: "5px", marginTop: "10px"}} variant={"elevation"}>
               <Typography variant="h6" style={{textAlign: "left", display: "inline-block", marginLeft: "20px", color: theme.pageHeaderColor}}>
                   Loaded Commands
+                  
               </Typography>
+              <Button style={{float: "right"}} variant="contained" size="small" onClick={()=>{setOpenAddRemoveCommandsDialog(true)}} >Add/Remove Commands</Button>
             </Paper>
             <Table size="small" aria-label="details" style={{"overflowWrap": "break-word"}}>
             <TableHead>
@@ -271,12 +460,55 @@ export function DetailedCallbackTable(props){
                         <TableCell>{cmd.payload}</TableCell>
                         <TableCell>
                           <Button variant="contained" color="primary" target="_blank"
-                             href={"/docs/agents/" + data.callback_by_pk.payload.payloadtype.ptype + "/commands/" + cmd.cmd}>Docs</Button> 
+                             href={"/docs/agents/" + data.callback_by_pk.payload.payloadtype.name + "/commands/" + cmd.cmd}>Docs</Button> 
                         </TableCell>
                     </TableRow>
                 ))
                 
               }
+              {openAddRemoveCommandsDialog &&
+                  <MythicDialog fullWidth={true} maxWidth="md" open={openAddRemoveCommandsDialog} 
+                      onClose={()=>{setOpenAddRemoveCommandsDialog(false);}} 
+                      innerDialog={<AddRemoveCallbackCommandsDialog callback_id={props.callback_id}
+                        display_id={props.display_id} onClose={()=>{setOpenAddRemoveCommandsDialog(false);}} onSubmit={addRemoveCommandsSubmit} />}
+                  />
+                }
+                {openProgressIndicator &&
+                    <Dialog
+                      open={openProgressIndicator}
+                      onClose={onCloseProgress}
+                      scroll="paper"
+                      fullWidth={true}
+                      aria-labelledby="scroll-dialog-title"
+                      aria-describedby="scroll-dialog-description"
+                    >
+                        <DialogContent>
+                          {addProgress === addTotal.current ? (
+                            "Adding Commands - Complete!"
+                          ) : (
+                            "Adding Commands..."
+                          )}
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Box sx={{ width: '100%', mr: 1 }}>
+                              <LinearProgress variant="determinate" value={normalizeAdd(addProgress)} valueBuffer={addProgress + 1} />
+                            </Box>
+                              <Typography  style={{width: "5rem"}} variant="body2" color="text.secondary">{addProgress} / {addTotal.current} </Typography>
+                            </Box>
+                          {removeProgress === removeTotal.current ? (
+                            "Removing Commands - Complete!"
+                          ) : (
+                            "Removing Commands..."
+                          )}
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Box sx={{ width: '100%', mr: 1 }}>
+                              <LinearProgress variant="determinate" value={normalizeRemove(removeProgress)} valueBuffer={removeProgress + 1} />
+                            </Box>
+                              <Typography style={{width: "5rem"}} variant="body2" color="text.secondary">{removeProgress} / {removeTotal.current} </Typography>
+                          </Box>
+                        </DialogContent>
+                    </Dialog>
+                    
+                  }
             </TableBody>
           </Table>
           </DialogContent>

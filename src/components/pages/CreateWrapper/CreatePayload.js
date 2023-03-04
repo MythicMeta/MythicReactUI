@@ -6,8 +6,6 @@ import {Step1SelectOS} from './Step1SelectOS';
 import {Step2SelectPayloadType} from './Step2SelectPayloadType';
 import {Step3SelectPayload} from './Step3SelectPayload';
 import {Step5Build} from './Step5Build';
-import { useReactiveVar } from '@apollo/client';
-import { meState } from '../../../cache';
 import { snackActions } from '../../utilities/Snackbar';
 
 function getSteps(){
@@ -15,7 +13,7 @@ function getSteps(){
 }
 
 export function CreatePayloadWrapper(props){
-    const me = useReactiveVar(meState);
+    const me = props.me;
     const noOperation = (me?.user?.current_operation_id || 0) > 0 ? false : true;
     const [payload, setPayload] = React.useState({}); 
     const [activeStep, setActiveStep] = React.useState(0);

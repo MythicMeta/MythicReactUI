@@ -2,15 +2,15 @@ import React from 'react';
 import {useSubscription, gql } from '@apollo/client';
 import {CallbacksTable} from './CallbacksTable';
 import {CallbacksGraph} from './CallbacksGraph';
-import { MeHook } from '../../../cache';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import {useTheme} from '@mui/material/styles';
 
 const SUB_Callbacks = gql`
-subscription CallbacksSubscription ($operation_id: Int!){
+subscription CallbacksSubscription($operation_id: Int!){
   callback(where: {active: {_eq: true}, operation_id: {_eq: $operation_id}}, order_by: {id: desc}) {
     architecture
+    display_id
     description
     domain
     external_ip
@@ -21,6 +21,7 @@ subscription CallbacksSubscription ($operation_id: Int!){
     locked
     locked_operator {
       username
+      id
     }
     extra_info
     sleep_info
@@ -33,30 +34,36 @@ subscription CallbacksSubscription ($operation_id: Int!){
     payload {
       os
       payloadtype {
-        ptype
+        name
         id
       }
-      tag
+      description
       id
     }
   }
 }
  `;
-const SUB_Edges = gql`
+export const SUB_Edges = gql`
 subscription CallbacksSubscription ($operation_id: Int!){
   callbackgraphedge(where: {operation_id: {_eq: $operation_id}}, order_by: {id: desc}) {
     id
     end_timestamp
-    direction
     destination {
       active
       id
+      display_id
       operation_id
       user
       host
+      ip
+      domain
+      os
+      process_name
+      integrity_level
+      extra_info
       payload {
         payloadtype {
-          ptype
+          name
           id
         }
       }
@@ -69,12 +76,19 @@ subscription CallbacksSubscription ($operation_id: Int!){
     source {
       active
       id
-      user
+      display_id
       operation_id
+      user
       host
+      ip
+      domain
+      os
+      process_name
+      integrity_level
+      extra_info
       payload {
         payloadtype {
-          ptype
+          name
           id
         }
       }
@@ -93,24 +107,23 @@ subscription CallbacksSubscription ($operation_id: Int!){
 }
  `;
 export function CallbacksTop(props){
-    const me = MeHook();
+    const me = props.me;
     const theme = useTheme();
     const [callbacks, setCallbacks] = React.useState([]);
     const [callbackEdges, setCallbackEdges] = React.useState([]);
     const mountedRef = React.useRef(true);
-    const {data:callbackData, loading: callbackDataLoading} = useSubscription(SUB_Callbacks, {
-        variables: {operation_id: me?.user?.current_operation_id || 0}, fetchPolicy: "network-only",
-        shouldResubscribe: true,
+    const {} = useSubscription(SUB_Callbacks, {
+        fetchPolicy: "no-cache",
+        variables: {operation_id: me?.user?.current_operation_id || 0},
         onSubscriptionData: ({subscriptionData}) => {
           if(!mountedRef.current){
             return;
           }
           setCallbacks(subscriptionData.data.callback);
-        }
+        },
     });
     useSubscription(SUB_Edges, {
         variables: {operation_id: me?.user?.current_operation_id || 0}, fetchPolicy: "network-only",
-        shouldResubscribe: true,
         onSubscriptionData: ({subscriptionData}) => {
           if(!mountedRef.current){
             return;
@@ -122,10 +135,11 @@ export function CallbacksTop(props){
       for(let i = 0; i < callbacks.length; i++){
         if(callbacks[i]["id"] === callbackID){
           const tabData = {tabID, tabType, callbackID, 
-              payloadtype: callbacks[i]["payload"]["payloadtype"]["ptype"],
+              displayID: callbacks[i]["display_id"],
+              payloadtype: callbacks[i]["payload"]["payloadtype"]["name"],
               payloadtype_id: callbacks[i]["payload"]["payloadtype"]["id"],
               operation_id: callbacks[i]["operation_id"],
-              payloadDescription: callbacks[i]["payload"]["tag"],
+              payloadDescription: callbacks[i]["payload"]["description"],
               callbackDescription: callbacks[i]["description"],
               host: callbacks[i]["host"],
               os: callbacks[i]["payload"]["os"]};

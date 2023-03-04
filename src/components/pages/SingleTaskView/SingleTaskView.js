@@ -8,7 +8,6 @@ import Paper from '@mui/material/Paper';
 import {Button, Grid} from '@mui/material';
 import {IncludeMoreTasksDialog} from './IncludeMoreTasksDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
-import { MeHook } from '../../../cache';
 import {snackActions} from '../../utilities/Snackbar';
 import {copyStringToClipboard} from '../../utilities/Clipboard';
 import Switch from '@mui/material/Switch';
@@ -16,6 +15,7 @@ import {useTheme} from '@mui/material/styles';
 const taskInfoFragment = gql`
 fragment TaskData on task {
     comment
+    display_id
     callback_id
     commentOperator{
         username
@@ -38,6 +38,7 @@ fragment TaskData on task {
         id
         host
         user
+        display_id
         integrity_level
         domain
     }
@@ -51,11 +52,16 @@ fragment TaskData on task {
     opsec_pre_bypassed
     opsec_post_blocked
     opsec_post_bypassed
+    response_count
     tasks {
         id
     }
-    tasktags(order_by: {tag: asc}) {
-        tag
+    tags(order_by: {id: asc}) {
+        tagtype {
+            name
+            color
+            id
+        }
         id
     }
     token {
@@ -65,43 +71,43 @@ fragment TaskData on task {
 `;
 const tasksQuery = gql`
 ${taskInfoFragment}
-query tasksQuery($task_range: [Int!]) {
-    task(where: {id: {_in: $task_range}}, order_by: {id: asc}) {
+query tasksQuery($task_range: [Int!], $operation_id: Int!) {
+    task(where: {display_id: {_in: $task_range}, operation_id: {_eq: $operation_id}}, order_by: {display_id: asc}) {
         ...TaskData
     }
 }`;
 const getTasksAcrossAllCallbacksQuery = gql`
 ${taskInfoFragment}
 query tasksAcrossAllCallbacks($operation_id: Int!, $baseTask: Int!, $beforeCount: Int!, $afterCount: Int!){
-    before: task(where: {callback:{operation_id: {_eq: $operation_id}}, id:{_lt: $baseTask}}, order_by: {id: desc}, limit: $beforeCount) {
+    before: task(where: {operation_id: {_eq: $operation_id}, display_id:{_lt: $baseTask}}, order_by: {display_id: desc}, limit: $beforeCount) {
         ...TaskData
     }
-    after: task(where: {callback:{operation_id: {_eq: $operation_id}}, id:{_gt: $baseTask}}, limit: $afterCount, order_by: {id: asc}) {
+    after: task(where: {operation_id: {_eq: $operation_id}, display_id:{_gt: $baseTask}}, limit: $afterCount, order_by: {display_id: asc}) {
         ...TaskData
     }
 }`;
 const getTasksAcrossACallbackQuery = gql`
 ${taskInfoFragment}
 query tasksAcrossACallbacks($callback_id: Int!, $baseTask: Int!, $beforeCount: Int!, $afterCount: Int!){
-    before: task(where: {callback:{id: {_eq: $operation_id}}, id:{_lt: $baseTask}}, limit: $beforeCount, order_by: {id: desc}) {
+    before: task(where: {operation_id: {_eq: $operation_id}, display_id:{_lt: $baseTask}}, limit: $beforeCount, order_by: {display_id: desc}) {
         ...TaskData
     }
-    after: task(where: {callback:{id: {_eq: $operation_id}}, id:{_gt: $baseTask}}, limit: $afterCount, order_by: {id: asc}) {
+    after: task(where: {operation_id: {_eq: $operation_id}, display_id:{_gt: $baseTask}}, limit: $afterCount, order_by: {display_id: asc}) {
         ...TaskData
     }
 }`;
 const getTasksAcrossAllCallbacksByOperatorQuery = gql`
 ${taskInfoFragment}
 query tasksAcrossAllCallbacksByOperator($operation_id: Int!, $baseTask: Int!, $beforeCount: Int!, $afterCount: Int!, $operator: String!){
-    before: task(where: {callback:{operation_id: {_eq: $operation_id}}, id:{_lt: $baseTask}, operator: {username: {_eq: $operator}}}, limit: $beforeCount, order_by: {id: desc}) {
+    before: task(where: {operation_id: {_eq: $operation_id}, display_id:{_lt: $baseTask}, operator: {username: {_eq: $operator}}}, limit: $beforeCount, order_by: {display_id: desc}) {
         ...TaskData
     }
-    after: task(where: {callback:{operation_id: {_eq: $operation_id}}, id:{_gt: $baseTask}, operator: {username: {_eq: $operator}}}, limit: $afterCount, order_by: {id: asc}) {
+    after: task(where: {operation_id: {_eq: $operation_id}, display_id:{_gt: $baseTask}, operator: {username: {_eq: $operator}}}, limit: $afterCount, order_by: {display_id: asc}) {
         ...TaskData
     }
 }`;
 export function SingleTaskView(props){
-    const me = MeHook();
+    const me = props.me
     const {taskId} = useParams();
     const [taskIDs, setTaskIDs] = React.useState([]);
     const [taskOptions, setTaskOptions] = React.useState([]);
@@ -235,7 +241,7 @@ export function SingleTaskView(props){
     const getShareableLink = () => {
         let ids = [...taskIDs];
         const range = collapse_range(ids);
-        copyStringToClipboard(window.origin + "/new/tasks/by_range?tasks=" + range);
+        copyStringToClipboard("/new/tasks/by_range?tasks=" + range);
         snackActions.success("Copied link to clipboard!");
     }
     const submitIncludeMoreTasks = ({taskSelected, beforeCount, afterCount, search}) => {
@@ -258,12 +264,12 @@ export function SingleTaskView(props){
             if(params.has("tasks")){
                 console.log(params.get("tasks"));
                 let ids = expand_range(params.get("tasks"));
-                getTasks({variables: {task_range: ids}});
+                getTasks({variables: {task_range: ids}, operation_id: me?.user?.current_operation_id || 0});
             }else{
                 snackActions.warning("URL Query missing '?tasks=' with a range of tasks")
             }
         }else{
-            getTasks({variables: {task_range: [parseInt(taskId)]}});
+            getTasks({variables: {task_range: [parseInt(taskId)], operation_id: me?.user?.current_operation_id || 0}});
         }      
     }, [getTasks, taskId]);
   return (
@@ -284,7 +290,7 @@ export function SingleTaskView(props){
             task.type === "task" ? (
                     <Grid container alignItems="stretch" key={"taskdisplay:" + task.id} style={{marginRight: "5px"}}>
                         <Grid item style={{display: "inline-flex", width: removing ? "96%" : "100%"}}>
-                            <TaskDisplay  task={task} command_id={task.command === null ? 0 : task.command.id} />
+                            <TaskDisplay me={me}  task={task} command_id={task.command === null ? 0 : task.command.id} />
                         </Grid>
                         <Grid item  style={{display: "inline-flex"}}>
                         {removing ? (

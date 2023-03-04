@@ -1,39 +1,46 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {gql, useSubscription} from '@apollo/client';
-import { useSnackbar, SnackbarContent } from 'notistack';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
-import Collapse from '@mui/material/Collapse';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {useTheme} from '@mui/material/styles';
 import {snackActions} from '../../utilities/Snackbar';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/theme-xcode';
+import {PayloadsTableRowBuildProgress} from '../Payloads/PayloadsTableRowBuildProgress';
+import { toast } from 'react-toastify';
+import { Link } from '@mui/material';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+import { MythicDialog } from '../../MythicComponents/MythicDialog';
 
 //fromNow must be in ISO format for hasura/postgres stuff
 //new Date().toISOString() will do it
 const subscribe_payloads = gql`
-subscription NewPayloadsSubscription($fromNow: timestamp!) {
-  payload(limit: 1, where: {deleted: {_eq: false}, creation_time: {_gte: $fromNow}}, order_by: {creation_time: desc}) {
+subscription NewPayloadsSubscription($fromNow: timestamp!, $operation_id: Int!) {
+  payload_stream(batch_size: 1, cursor: {initial_value: {timestamp: $fromNow}, ordering: ASC}, where: { operation_id: {_eq: $operation_id}, deleted: {_eq: false}}) {
     build_message
     build_phase
     build_stderr
     build_stdout
     uuid
-    tag
+    description
     id
     filemetum{
         agent_file_id
     }
+    payload_build_steps(order_by: {step_number: asc}) {
+        step_name
+        step_number
+        step_success
+        start_time
+        end_time
+        step_stdout
+        step_stderr
+        id
+      }
   }
 }
  `;
@@ -47,7 +54,7 @@ const useStyles =  makeStyles(theme => ({
         fontWeight: 'bold',
     },
     actionRoot: {
-        padding: '8px 8px 8px 16px',
+        padding: '0px 8px 0px 16px',
     },
     icons: {
         marginLeft: 'auto',
@@ -73,130 +80,120 @@ const useStyles =  makeStyles(theme => ({
     },
 }));
 
-const SnackMessage = React.forwardRef((props, ref) => {
+const SnackMessage = (props) => {
     
     const theme = useTheme();
     const classes = useStyles(theme);
-    
-    const { closeSnackbar } = useSnackbar();
-    const [expanded, setExpanded] = useState(true);
-
-    const handleExpandClick = () => {
-        setExpanded(!expanded);
-    };
-
-    const handleDismiss = () => {
-        closeSnackbar(props.id);
-    };
-
     return (
-        <SnackbarContent ref={ref} className={classes.root}>
-            <Card style={{backgroundColor: theme.palette.success.main, color: "white"}} raised>
-                <CardActions classes={{ root: classes.actionRoot }}>
-                    <Typography variant="subtitle2" className={classes.typography}>Payload successfuly built!</Typography>
-                    <div className={classes.icons}>
-                        <IconButton
-                            aria-label="Show more"
-                            onClick={handleExpandClick}
-                            size="large">
-                            <ExpandMoreIcon />
-                        </IconButton>
-                        <IconButton className={classes.expand} onClick={handleDismiss} size="large">
-                            <CloseIcon />
-                        </IconButton>
-                    </div>
-                </CardActions>
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                    <Paper className={classes.collapse}>
-                        <Typography gutterBottom>Agent ready for download</Typography>
-                        <Button className={classes.button} download href={window.location.origin + "/direct/download/" + props.file_id}>
-                            <CheckCircleIcon className={classes.checkIcon} />
-                            Download now
-                        </Button>
-                    </Paper>
-                </Collapse>
-            </Card>
-        </SnackbarContent>
+        <React.Fragment>                    
+            <Typography variant="subtitle2" className={classes.typography}>
+                    {props.payloadData.build_phase === "success" ? (
+                        "Payload successfuly built!"
+                    ) : (
+                        "Payload Building..."
+                    )}
+                    
+                </Typography>
+                    <PayloadsTableRowBuildProgress {...props.payloadData} />
+                    {props.payloadData.build_phase === "success" && 
+                        <React.Fragment>
+                            <Typography gutterBottom>Agent ready for download</Typography>
+                            
+                            <Link download={true} href={"/direct/download/" + props.file_id} target="_blank">
+                                Download here
+                            </Link>
+                        </React.Fragment>
+                    }
+        </React.Fragment>
+
     );
-});
-const SnackMessageError = React.forwardRef((props, ref) => {
+};
+const SnackMessageError = (props) => {
     
     const theme = useTheme();
-    const classes = useStyles(theme);
-    const { closeSnackbar } = useSnackbar();
-    const [expanded, setExpanded] = useState(false);
-
-    const handleExpandClick = () => {
-        setExpanded(!expanded);
-    };
-
-    const handleDismiss = () => {
-        closeSnackbar(props.id);
-    };
-
     return (
-        <SnackbarContent ref={ref} className={classes.root}>
-            <Card style={{backgroundColor: theme.palette.error.main, width: "calc(80vw)", color: "white"}} raised >
-                <CardActions classes={{ root: classes.actionRoot }}>
-                    <Typography variant="subtitle2" className={classes.typography} style={{color: "white"}}>Payload Failed to build!</Typography>
-                    <div className={classes.icons}>
-                        <IconButton
-                            aria-label="Show more"
-                            onClick={handleExpandClick}
-                            size="large">
-                            <ExpandMoreIcon />
-                        </IconButton>
-                        <IconButton className={classes.expand} onClick={handleDismiss} size="large">
-                            <CloseIcon />
-                        </IconButton>
-                    </div>
-                </CardActions>
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                <AceEditor 
-                    mode="json"
-                    theme={theme.palette.mode === "dark" ? "monokai" : "xcode"}
-                    fontSize={14}
-                    showGutter={true}
-                    highlightActiveLine={true}
-                    value={props.display}
-                    focus={true}
-                    width={"100%"}
-                    setOptions={{
-                        showLineNumbers: true,
-                        tabSize: 4
-                    }}/>
-                </Collapse>
-            </Card>
-        </SnackbarContent>
+        <React.Fragment>
+            <DialogTitle id="form-dialog-title">Payload Failed to Build!!</DialogTitle>
+            <AceEditor 
+                mode="json"
+                theme={theme.palette.mode === "dark" ? "monokai" : "xcode"}
+                fontSize={14}
+                showGutter={true}
+                highlightActiveLine={true}
+                value={"Build Message:\n" + props.payloadData.build_message + "\nStdErr: \n" + props.payloadData.build_stderr + "\nStdOut: \n" + props.payloadData.build_stdout}
+                focus={true}
+                width={"100%"}
+                setOptions={{
+                    showLineNumbers: true,
+                    tabSize: 4
+                }}/>
+        <DialogActions>
+          <Button variant="contained" onClick={props.onClose} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+        </React.Fragment>
     );
-});
+};
+
 export function PayloadSubscriptionNotification(props) {
-    const [fromNow, setFromNow] = React.useState( (new Date().toISOString()));
-    const { loading, error, data } = useSubscription(subscribe_payloads, {variables: {fromNow}});
-
-    useEffect( () => {
-        console.log(data);
-        if(!loading && !error && data && data.payload.length > 0){
-            if(data.payload[0].build_phase === "success"){
-                snackActions.dismiss();
-                snackActions.success(data.payload[0].build_message, {persist: true, content: key => <SnackMessage id={key} file_id={data.payload[0].filemetum.agent_file_id} />});
-            }else if(data.payload[0].build_phase === "building"){
-                
-            }else{
-                snackActions.dismiss();
-                if(data.payload[0].build_stderr !== ""){
-                    snackActions.error(data.payload[0].build_stderr, {persist: true, content: key => <SnackMessageError id={key} display={data.payload[0].build_stderr} />});
-                }else{
-                    snackActions.error(data.payload[0].build_message, {persist: true, content: key => <SnackMessageError id={key} display={data.payload[0].build_message} />});
-                }
-            } 
-        }else if(error){
-            console.log(error);
-            snackActions.error("Mythic encountered an error: " + error.toString());
+    const [payloadData, setPayloadData] = React.useState({});
+    const displayingToast = React.useRef(false);
+    const [displayErrorDialog, setDisplayErrorDialog] = React.useState(false);
+    const dismissedUUIDs = React.useRef([]);
+    const getSnackMessage = () => {
+        return <SnackMessage
+            file_id={payloadData.filemetum.agent_file_id} 
+            payloadData={payloadData}
+            handleDismiss={handleDismiss}
+            />
+    };
+    const handleDismiss = () => {
+        displayingToast.current = false;
+        dismissedUUIDs.current.push(payloadData.uuid);
+    }
+    const handleErrorClose = () => {
+        dismissedUUIDs.current.push(payloadData.uuid);
+        setDisplayErrorDialog(false);
+    }
+    
+    React.useEffect( () => {
+        if(payloadData.uuid === undefined){
+            return;
         }
-    }, [loading, data, error]);
+        if(dismissedUUIDs.current.includes(payloadData.uuid)){
+            return
+        }
+        if(!displayingToast.current){
+            if(payloadData.build_phase === "success" || payloadData.build_phase === "building"){
+                snackActions.info(getSnackMessage(), {toastId: payloadData.uuid, autoClose: false, onClose: handleDismiss, closeOnClick: false});
+            }
+            displayingToast.current = true;
+            return;
+        }
+        if(payloadData.build_phase === "error"){
+            snackActions.dismiss();
+            setDisplayErrorDialog(true);
+        } else {
+            snackActions.update(getSnackMessage(), payloadData.uuid, {
+                type: payloadData.build_phase === "success" ? toast.TYPE.SUCCESS : toast.TYPE.INFO,
+            });
+        }
+        
+    }, [payloadData, getSnackMessage]);
+    const {  } = useSubscription(subscribe_payloads, {variables: {fromNow: props.fromNow, operation_id: props.me?.user?.current_operation_id || 0},
+    onSubscriptionData: ({subscriptionData}) => {
+        if(subscriptionData.data.payload_stream[0].uuid === props.subscriptionID){
+            setPayloadData({...subscriptionData.data.payload_stream[0]});
+        }
+    }
+    });
     return (    
-       null
+        displayErrorDialog &&
+        <MythicDialog fullWidth={true} maxWidth="xl" open={displayErrorDialog} 
+                        onClose={handleErrorClose} 
+                        innerDialog={<SnackMessageError payloadData={payloadData} onClose={handleErrorClose} />}
+                    />
     );
 }
 

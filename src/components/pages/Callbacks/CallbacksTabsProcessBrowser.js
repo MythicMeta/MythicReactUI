@@ -1,96 +1,75 @@
 import {MythicTabPanel, MythicTabLabel} from '../../../components/MythicComponents/MythicTabPanel';
-import React, {useEffect} from 'react';
-import {gql, useLazyQuery, useQuery } from '@apollo/client';
-import {snackActions} from '../../utilities/Snackbar';
+import React, {useEffect, useRef} from 'react';
+import {gql, useQuery, useSubscription } from '@apollo/client';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
-import MythicTextField from '../../MythicComponents/MythicTextField';
-import { useReactiveVar } from '@apollo/client';
-import { meState } from '../../../cache';
 import {useTheme} from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import IconButton from '@mui/material/IconButton';
-import RotateLeftIcon from '@mui/icons-material/RotateLeft';
-import {CallbacksTabsProcessBrowserTree} from './CallbacksTabsProcessBrowserTree';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {CallbacksTabsProcessBrowserTable} from './CallbacksTabsProcessBrowserTable';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
-import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import {MythicModifyStringDialog} from '../../MythicComponents/MythicDialog';
-import LockIcon from '@mui/icons-material/Lock';
 import {TaskFromUIButton} from './TaskFromUIButton';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
 
-const dataFragment = gql`
-fragment objData on process {
-    name
-    process_id
-    parent_process_id
-    architecture
-    bin_path
-    integrity_level
-    id
-    user
-}
-`;
-const taskFragment = gql`
-fragment taskDataProcess on task {
-    id
-    callback {
+const treeFragment = gql`
+fragment treeObjData on mythictree {
+    comment
+    deleted
+    task_id
+    filemeta {
         id
-        host
-        payload {
+    }
+    tags {
+        tagtype {
+            name
+            color
             id
-            os
-            payloadtype{
-                ptype
-            }
         }
+        id
     }
+    host
+    id
+    os
+    can_have_children
+    success
+    full_path_text
+    name_text
+    timestamp
+    parent_path_text
+    tree_type
+    metadata
 }
 `;
-const getNextProcessQuery = gql`
-${dataFragment}
-${taskFragment}
-query getHostProcessesQuery($operation_id: Int!, $host: String!, $task_id: Int!) {
-    process(where: {operation_id: {_eq: $operation_id}, host: {_eq: $host}, task_id: {_gt: $task_id}}, order_by: {task_id: asc}, limit: 1) {
-        task {
-            ...taskDataProcess
-            processes(order_by: {process_id: asc}) {
-                ...objData
-            }
+const treeSubscription = gql`
+    ${treeFragment}
+    subscription liveData($now: timestamp!, $operation_id: Int!) {
+        mythictree_stream(
+            batch_size: 1000,
+            cursor: {initial_value: {timestamp: $now}},
+            where: { operation_id: { _eq: $operation_id }, tree_type: {_eq: "process"} }
+        ) {
+            ...treeObjData
         }
     }
-  }
 `;
-const getPrevProcessQuery = gql`
-${dataFragment}
-${taskFragment}
-query getHostProcessesQuery($operation_id: Int!, $host: String!, $task_id: Int!) {
-    process(where: {operation_id: {_eq: $operation_id}, host: {_eq: $host}, task_id: {_lt: $task_id}}, order_by: {task_id: desc}, limit: 1) {
-        task {
-            ...taskDataProcess
-            processes(order_by: {name: asc}) {
-                ...objData
-            }
+const rootQuery = gql`
+    ${treeFragment}
+    query myRootFolderQuery($operation_id: Int!) {
+        mythictree(where: { operation_id: { _eq: $operation_id }, tree_type: {_eq: "process"} }) {
+            ...treeObjData
         }
     }
-  }
-`;
-const getLatestTaskForHost = gql`
-query getHostsQuery($operation_id: Int!, $host:String!){
-    process_aggregate(where: {operation_id: {_eq: $operation_id}, host: {_eq: $host}}, distinct_on: task_id){
-        aggregate {
-            max {
-              task_id
-            }
-        }
-    }
-}
 `;
 
 export function CallbacksTabsProcessBrowserLabel(props){
-    const [description, setDescription] = React.useState("Processes: " + props.tabInfo.host)
+    const [description, setDescription] = React.useState("Processes: " + props.tabInfo.displayID)
     const [openEditDescriptionDialog, setOpenEditDescriptionDialog] = React.useState(false);
     const contextMenuOptions = props.contextMenuOptions.concat([
         {
@@ -104,7 +83,7 @@ export function CallbacksTabsProcessBrowserLabel(props){
         if(props.tabInfo.customDescription !== "" && props.tabInfo.customDescription !== undefined){
             setDescription(props.tabInfo.customDescription);
         }else{
-            setDescription("Processes: " + props.tabInfo.host);
+            setDescription("Processes: " + props.tabInfo.displayID);
         }
     }, [props.tabInfo.customDescription])
     const editDescriptionSubmit = (description) => {
@@ -123,262 +102,185 @@ export function CallbacksTabsProcessBrowserLabel(props){
         </React.Fragment>  
     )
 }
-export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo}) =>{
-    const me = useReactiveVar(meState);
-    const fileBrowserRoots = React.useRef([]);
-    const [fileBrowserRootsState, setFileBrowserRootsState] = React.useState([]);
-    const [selectedFolder, setSelectedFolder] = React.useState([]);
-    const [taskInfo, setTaskInfo] = React.useState({});
-    const currentCallbackIDSetInTable = React.useRef();
-    const [currentOS, setCurrentOS] = React.useState("");
+export const CallbacksTabsProcessBrowserPanel = ({index, value, tabInfo, me}) =>{
+    const [fromNow, setFromNow] = React.useState((new Date()));
+    const treeRootDataRef = React.useRef({}); // hold all of the actual data
+    const [treeAdjMtx, setTreeAdjMtx] = React.useState({}); // hold the simple adjacency matrix for parent/child relationships
     const [openTaskingButton, setOpenTaskingButton] = React.useState(false);
     const taskingData = React.useRef({"parameters": "", "ui_feature": "process_browser:list"});
-    const buildProcessTree = (originalProcesses) => {
-        // Build a map of each PID to its list index
-        let processes = originalProcesses.map(p => { return {...p, children: []}})
-        let processIdx = {};
-        for (let i = 0; i < processes.length; i += 1) {
-            processIdx[processes[i].process_id] = i;
-        }
-
-        // Check for any parent_process_id values that do not exist
-        for (let i = 0; i < processes.length; i += 1) {
-            if (!processIdx.hasOwnProperty(processes[i].parent_process_id)) {
-                processes[i].parent_process_id = null;
-            }
-        }
-
-        // Push each process into the correct list
-        let dataTree = [];
-        for (let i = 0; i < processes.length; i += 1) {
-            const cur = processes[i];
-            if(cur.parent_process_id === null || cur.parent_process_id <= 0){
-                dataTree.push(cur);
-            }else{
-                processes[processIdx[cur.parent_process_id]].children.push(cur);
-            }
-        }
-
-        return dataTree;
-    }
-    const [getNextProcessDataByHostAndTask] = useLazyQuery(getNextProcessQuery, {
-        onError: data => {
-            console.error(data)
-        },
-        fetchPolicy: "network-only",
+    const mountedRef = React.useRef(true);
+    const [showDeletedFiles, setShowDeletedFiles] = React.useState(false);
+    const [selectedHost, setSelectedHost] = React.useState("");
+    useQuery(rootQuery, {
+        variables: { operation_id: me?.user?.current_operation_id ||0},
         onCompleted: (data) => {
-            if(data.process.length > 0){
-                let dataTree = buildProcessTree(data.process[0].task.processes);
-                setFileBrowserRootsState(dataTree);
-                setSelectedFolder(data.process[0].task.processes);
-                setCurrentOS(data.process[0].task.callback.payload.os);
-                setTaskInfo(data.process[0].task);
-                snackActions.dismiss();
-                snackActions.success("Successfully fetched process data");
-            }else{
-                snackActions.dismiss();
-                snackActions.warning("No Newer Process Sets");
+           // use an adjacency matrix but only for full_path_text -> children, not both directions
+           
+           for(let i = 0; i < data.mythictree.length; i++){
+                if(selectedHost === ""){
+                    setSelectedHost(data.mythictree[i]["host"]);
+                }
+                if( treeRootDataRef.current[data.mythictree[i]["host"]] === undefined) {
+                    // new host discovered 
+                    treeRootDataRef.current[data.mythictree[i]["host"]] = {};
+                }
+                treeRootDataRef.current[data.mythictree[i]["host"]][data.mythictree[i]["full_path_text"]] = {...data.mythictree[i]}
+           }
+           const newMatrix = data.mythictree.reduce( (prev, cur) => {
+                if( prev[cur["host"]] === undefined) {
+                    // the current host isn't tracked in the adjacency matrix, so add it
+                    prev[cur["host"]] = {}
+                }
+                if( prev[cur["host"]][cur["parent_path_text"]] === undefined) {
+                    // the current parent's path isn't tracked, so add it and ourselves as children
+                    prev[cur["host"]][cur["parent_path_text"]] = {};
+                } 
+                prev[cur["host"]][cur["parent_path_text"]][cur["full_path_text"]] = 1;
+                
+                return prev;
+           }, {...treeAdjMtx});
+           setTreeAdjMtx(newMatrix);
+        },
+        fetchPolicy: 'no-cache',
+    });
+    useSubscription(treeSubscription, {
+        variables: {now: fromNow, operation_id: me?.user?.current_operation_id ||0},
+        fetchPolicy: "no-cache",
+        onSubscriptionData: ({subscriptionData}) => {
+            for(let i = 0; i < subscriptionData.data.mythictree_stream.length; i++){
+                if( treeRootDataRef.current[subscriptionData.data.mythictree_stream[i]["host"]] === undefined) {
+                    // new host discovered 
+                    treeRootDataRef.current[subscriptionData.data.mythictree_stream[i]["host"]] = {};
+                }
+                treeRootDataRef.current[subscriptionData.data.mythictree_stream[i]["host"]][subscriptionData.data.mythictree_stream[i]["full_path_text"]] = {...subscriptionData.data.mythictree_stream[i]}
             }
+            const newMatrix = subscriptionData.data.mythictree_stream.reduce( (prev, cur) => {
+                    if( prev[cur["host"]] === undefined) {
+                        // the current host isn't tracked in the adjacency matrix, so add it
+                        prev[cur["host"]] = {}
+                    }
+                    if( prev[cur["host"]][cur["parent_path_text"]] === undefined) {
+                        // the current parent's path isn't tracked, so add it and ourselves as children
+                        prev[cur["host"]][cur["parent_path_text"]] = {};
+                    } 
+                    prev[cur["host"]][cur["parent_path_text"]][cur["full_path_text"]] = 1;
+                    
+                    return prev;
+            }, {...treeAdjMtx});
+            setTreeAdjMtx(newMatrix);
             
         }
-    });
-    
-    const [getPreviousProcessDataByHostAndTask] = useLazyQuery(getPrevProcessQuery, {
-        onError: data => {
-            console.error(data)
-        },
-        fetchPolicy: "network-only",
-        onCompleted: (data) => {
-            if(data.process.length > 0){
-                let dataTree = buildProcessTree(data.process[0].task.processes);
-                setFileBrowserRootsState(dataTree);
-                setSelectedFolder(data.process[0].task.processes);
-                setCurrentOS(data.process[0].task.callback.payload.os);
-                setTaskInfo(data.process[0].task);
-                snackActions.dismiss();
-                snackActions.success("Successfully fetched process data");
-            }else{
-                snackActions.dismiss();
-                snackActions.warning("No Earlier Process Sets");
-            }
-            
-        }
-    });
-    useQuery(getLatestTaskForHost, {
-        variables: {operation_id: me.user.current_operation_id, host: tabInfo.host},
-        onCompleted: (data) => {
-            if(data.process_aggregate.aggregate.max.task_id === null){
-                snackActions.warning("No Process Data for " + tabInfo.host)
-                setTaskInfo({callback: {host: tabInfo.host, id: tabInfo.callbackID}, id: 0})
-            }else{
-                snackActions.info("Fetching latest process data for " + tabInfo.host);
-                getNextProcessDataByHostAndTask({variables: {operation_id: me.user.current_operation_id, 
-                    host: tabInfo.host,
-                    task_id: data.process_aggregate.aggregate.max.task_id - 1
-                }});
-            }
-        }, fetchPolicy: "network-only"
-    });
-    useEffect( () => {
-        fileBrowserRoots.current = fileBrowserRootsState;
-    }, [fileBrowserRootsState])
-
-    const onListFilesButton = ({callbackID}) => {
+    })
+    const onListFilesButton = () => {
         taskingData.current = ({"parameters": "", "ui_feature": "process_browser:list"});
         setOpenTaskingButton(true);
     }
-    const onNextButton = ({task_id}) => {
-        getNextProcessDataByHostAndTask({variables: {operation_id: me.user.current_operation_id, 
-            host: tabInfo.host,
-            task_id: task_id
-        }})
-    }
-    const onPreviousButton = ({task_id}) => {
-        getPreviousProcessDataByHostAndTask({variables: {operation_id: me.user.current_operation_id, 
-            host: tabInfo.host,
-            task_id: task_id
-        }})
-    }
-    const onDiffButton = ({task_id}) => {
-        
-    }
-    const onTaskRowAction = ({process_id, architecture, uifeature}) => {
-        taskingData.current = {"parameters": {"process_id": process_id, "architecture": architecture}, "ui_feature": uifeature, openDialog: true};
+    const onTaskRowAction = ({process_id, architecture, uifeature, openDialog, getConfirmation}) => {
+        taskingData.current = {"parameters": {host: tabInfo.host, process_id, architecture}, "ui_feature": uifeature, openDialog, getConfirmation};
         setOpenTaskingButton(true);
-        console.log(process_id, architecture, uifeature);
     }
-    const onChangeCallbackID = (callbackID) => {
-        currentCallbackIDSetInTable.current = callbackID;
+    const toggleShowDeletedFiles = (showStatus) => {
+        setShowDeletedFiles(showStatus);
+    };
+    const updateSelectedHost = (host) => {
+        setSelectedHost(host);
     }
+    React.useEffect( () => {
+        return() => {
+            mountedRef.current = false;
+        }
+         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     return (
         <MythicTabPanel index={index} value={value} >
             <div style={{display: "flex", flexGrow: 1, overflowY: "auto"}}>
-                <div style={{width: "30%", overflow: "auto", flexGrow: 1}}>
-                    <CallbacksTabsProcessBrowserTree 
-                        treeRoot={fileBrowserRootsState} />
-                </div>
-                <div style={{width: "60%", display: "flex", flexDirection: "column", overflow: "auto", flexGrow: 1}}>
-                    <ProcessBrowserTableTop
-                        onListFilesButton={onListFilesButton} 
-                        onNextButton={onNextButton} 
-                        onPreviousButton={onPreviousButton}
-                        onDiffButton={onDiffButton}  
-                        initialCallbackID={tabInfo.callbackID}
-                        onChangeCallbackID={onChangeCallbackID}
-                        taskInfo={taskInfo}/>
-                    <CallbacksTabsProcessBrowserTable selectedFolder={selectedFolder} onTaskRowAction={onTaskRowAction} os={currentOS}/>
+                <div style={{width: "100%", display: "flex", flexDirection: "column", flexGrow: 1}}>
+                    <ProcessBrowserTableTop 
+                        onListFilesButton={onListFilesButton}
+                        host={selectedHost}
+                        toggleShowDeletedFiles={toggleShowDeletedFiles}
+                        updateSelectedHost={updateSelectedHost}
+                        hostOptions={treeRootDataRef.current}
+                    />
+                    <CallbacksTabsProcessBrowserTable 
+                        showDeletedFiles={showDeletedFiles}
+                        onRowDoubleClick={() => {}}
+                        treeRootData={treeRootDataRef.current}
+                        treeAdjMatrix={treeAdjMtx}
+                        host={selectedHost}
+                        onTaskRowAction={onTaskRowAction}
+                        me={me}/>
+                  
                 </div>
                 {openTaskingButton && 
                     <TaskFromUIButton ui_feature={taskingData.current?.ui_feature || " "} 
-                        callback_id={currentCallbackIDSetInTable.current} 
+                        callback_id={tabInfo.callbackID} 
                         parameters={taskingData.current?.parameters || ""}
                         openDialog={taskingData.current?.openDialog || false}
+                        getConfirmation={taskingData.current?.getConfirmation || false}
                         onTasked={() => setOpenTaskingButton(false)}/>
                     }
             </div>            
         </MythicTabPanel>
     )
 }
-const ProcessBrowserTableTop = ({onListFilesButton, onNextButton, onPreviousButton, initialCallbackID, onDiffButton, onChangeCallbackID, taskInfo}) => {
+const ProcessBrowserTableTop = ({
+    onListFilesButton,
+    updateSelectedHost,
+    toggleShowDeletedFiles,
+    host,
+    hostOptions
+}) => {
     const theme = useTheme();
-    const [hostname, setHostname] = React.useState("");
-    const [callbackID, setCallbackID] = React.useState(initialCallbackID);
-    const [manuallySetCallbackID, setManuallySetCallbackID] = React.useState(true);
-    const [taskID, setTaskID] = React.useState(0);
-    const onChangeID = (name, value, error) => {
-        setManuallySetCallbackID(true);
-        setCallbackID(parseInt(value));
-    }
-    const revertCallbackID = () => {
-        setManuallySetCallbackID(false);
-        if(taskInfo.callback !== undefined){
-            setCallbackID(taskInfo.callback.id);
-        }else{
-            setCallbackID(0);
-        }
-        
-    }
-    useEffect( () => {
-        if(taskInfo.callback !== undefined){
-            setHostname(taskInfo.callback.host);    
-            setTaskID(taskInfo.id);
-        }
-        if(!manuallySetCallbackID){
-            if(taskInfo.callback !== undefined){
-                setCallbackID(taskInfo.callback.id);
-            }else{
-                setCallbackID(0);
-            }
-            
-        }
-    }, [taskInfo, manuallySetCallbackID]);
+    const [showDeletedFiles, setLocalShowDeletedFiles] = React.useState(false);
+    const inputRef = useRef(null); 
     const onLocalListFilesButton = () => {
-        if(callbackID > 0){
-            onListFilesButton({callbackID})
-        }else{
-            snackActions.warning("Must set a callback number to task first");
-        }
+        onListFilesButton()
     }
-    const onLocalNextButton = () => {
-        snackActions.info("Fetching next process data...");
-        onNextButton({task_id: taskInfo.id});
+    const onLocalToggleShowDeletedFiles = () => {
+        setLocalShowDeletedFiles(!showDeletedFiles);
+        toggleShowDeletedFiles(!showDeletedFiles);
+    };
+    const handleChange = (event) => {
+        updateSelectedHost(event.target.value);
     }
-    const onLocalPreviousButton = () => {
-        snackActions.info("Fetching previous process data...");
-        onPreviousButton({task_id: taskInfo.id});
-    }
-    const onLocalDiffButton = () => {
-        if(callbackID > 0){
-            onNextButton({callbackID});
-        }else{
-            snackActions.warning("Must select a callback number first");
-        }
-    }
-    useEffect( () => {
-        onChangeCallbackID(callbackID);
-    }, [callbackID, onChangeCallbackID])
     return (
         <Grid container spacing={0} style={{paddingTop: "10px"}}>
-            <Grid item xs={10}>
-                <MythicTextField placeholder="Host Name" value={hostname} disabled
-                    onChange={() => {}} name="Host Name" InputProps={{
-                        endAdornment: 
-                        <React.Fragment>
-                            <MythicStyledTooltip title="Fetch Previous Saved Process Listing">
-                                <IconButton style={{padding: "3px"}} onClick={onLocalPreviousButton} size="large"><SkipPreviousIcon style={{color: theme.palette.info.main}}/></IconButton>
-                            </MythicStyledTooltip>
-                            <MythicStyledTooltip title="Task Callback to List Processes">
-                                <IconButton style={{padding: "3px"}} onClick={onLocalListFilesButton} size="large"><RefreshIcon style={{color: theme.palette.info.main}}/></IconButton>
-                            </MythicStyledTooltip>
-                            <MythicStyledTooltip title="Fetch Next Saved Process Listing">
-                                <IconButton style={{padding: "3px"}} onClick={onLocalNextButton} size="large"><SkipNextIcon style={{color: theme.palette.info.main}}/></IconButton>
-                            </MythicStyledTooltip>
-                            <MythicStyledTooltip title="Compare Previous Listing">
-                                <IconButton style={{padding: "3px"}} onClick={onLocalDiffButton} size="large"><CompareArrowsIcon style={{color: theme.palette.info.main}}/></IconButton>
-                            </MythicStyledTooltip>
-                        </React.Fragment>
-                    }} />
-            </Grid>
-            <Grid item xs={1}>
-                <MythicTextField type="number" placeholder="Callback" name="Callback"
-                    onChange={onChangeID} value={callbackID} InputProps={{
-                        endAdornment: manuallySetCallbackID ? (
-                            <MythicStyledTooltip title="Change Callback Based on Data Origin">
-                                <IconButton style={{padding: "3px"}} onClick={revertCallbackID} size="large">
-                                    <LockIcon style={{color: theme.palette.info.main}}/>
-                                </IconButton>
-                            </MythicStyledTooltip>
-                        ) : (<MythicStyledTooltip title="Manually Update Callback Number to Prevent Data Origin Tracking">
-                                <IconButton style={{padding: "3px"}} size="large">
-                                    <RotateLeftIcon disabled style={{color: theme.palette.warning.main}}/> 
-                                </IconButton>
-                            </MythicStyledTooltip>),
-                        style: {padding: 0, margin: 0}
-                    }}/>
-            </Grid>
-            <Grid item xs={1}>
-                <MythicTextField type="number" name="Task Data"
-                    disabled value={taskID} onChange={() => {}}/>
+            <Grid item xs={12}>
+                <FormControl style={{width: "100%"}}>
+                  <InputLabel ref={inputRef}>Available Hosts</InputLabel>
+                  <Select
+                    labelId="demo-dialog-select-label"
+                    id="demo-dialog-select"
+                    value={host}
+                    onChange={handleChange}
+                    input={<Input style={{width: "100%"}}/>}
+                    endAdornment={
+<React.Fragment>
+                    <MythicStyledTooltip title="Task Callback to List Processes">
+                        <IconButton style={{padding: "3px"}} onClick={onLocalListFilesButton} size="large"><RefreshIcon style={{color: theme.palette.info.main}}/></IconButton>
+                    </MythicStyledTooltip>
+                    <MythicStyledTooltip title={showDeletedFiles ? 'Hide Deleted Processes' : 'Show Deleted Processes'}>
+                            <IconButton
+                                style={{ padding: '3px' }}
+                                onClick={onLocalToggleShowDeletedFiles}
+                                size="large">
+                                {showDeletedFiles ? (
+                                    <VisibilityIcon color="success" />
+                                ) : (
+                                    <VisibilityOffIcon color="error"  />
+                                )}
+                            </IconButton>
+                        </MythicStyledTooltip>
+                </React.Fragment>
+                    }
+                  >
+                    {Object.keys(hostOptions).map( (opt) => (
+                        <MenuItem value={opt} key={opt}>{opt}</MenuItem>
+                    ) )}
+                  </Select>
+                </FormControl>
+                
             </Grid>
         </Grid>
     );

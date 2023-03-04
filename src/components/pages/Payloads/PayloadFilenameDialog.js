@@ -7,6 +7,7 @@ import MythicTextField from '../../MythicComponents/MythicTextField';
 import {useQuery, gql, useMutation} from '@apollo/client';
 import LinearProgress from '@mui/material/LinearProgress';
 import { snackActions } from '../../utilities/Snackbar';
+import {b64DecodeUnicode} from '../Callbacks/ResponseDisplay';
 
 const updateDescriptionMutation = gql`
 mutation updateDescription ($file_id: Int!, $filename: bytea!) {
@@ -34,7 +35,7 @@ export function PayloadFilenameDialog(props) {
     const { loading, error } = useQuery(getFilenameQuery, {
         variables: {payload_id: props.payload_id},
         onCompleted: data => {
-            setDescription(data.payload_by_pk.filemetum.filename_text);
+            setDescription(b64DecodeUnicode(data.payload_by_pk.filemetum.filename_text));
             setFileId(data.payload_by_pk.filemetum.id);
         },
         fetchPolicy: "network-only"

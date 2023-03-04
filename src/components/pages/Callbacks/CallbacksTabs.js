@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
     },
 }));
-export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, onEditTabDescription, contextMenuOptions }) {
+export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, onEditTabDescription, contextMenuOptions, me}) {
     const classes = useStyles();
     const mountedRef = React.useRef(true);
     const [value, setValue] = React.useState(0);
@@ -67,6 +67,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, o
                                         key={'tablabel' + tab.tabID + tab.tabType}
                                         tabInfo={tab}
                                         index={index}
+                                        me={me}
                                         onDragTab={onDragTab}
                                         contextMenuOptions={contextMenuOptions}
                                     />
@@ -79,6 +80,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, o
                                         key={'tablabel' + tab.tabID + tab.tabType}
                                         tabInfo={tab}
                                         index={index}
+                                        me={me}
                                         onDragTab={onDragTab}
                                         contextMenuOptions={contextMenuOptions}
                                     />
@@ -91,6 +93,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, o
                                         key={'tablabel' + tab.tabID + tab.tabType}
                                         tabInfo={tab}
                                         index={index}
+                                        me={me}
                                         onDragTab={onDragTab}
                                         contextMenuOptions={contextMenuOptions}
                                     />
@@ -118,6 +121,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, o
                                 tabInfo={tab}
                                 value={value}
                                 index={index}
+                                me={me}
                                 parentMountedRef={mountedRef}
                             />
                         );
@@ -135,6 +139,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, o
                                 tabInfo={tab}
                                 value={value}
                                 index={index}
+                                me={me}
                                 parentMountedRef={mountedRef}
                             />
                         );
@@ -152,6 +157,7 @@ export function CallbacksTabs({ onCloseTab, openTabs, onDragTab, clickedTabId, o
                                 tabInfo={tab}
                                 value={value}
                                 index={index}
+                                me={me}
                                 parentMountedRef={mountedRef}
                             />
                         );

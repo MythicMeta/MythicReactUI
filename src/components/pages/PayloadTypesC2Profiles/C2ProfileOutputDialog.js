@@ -27,16 +27,16 @@ export function C2ProfileOutputDialog(props) {
     const { loading, error, data } = useQuery(getProfileOutputQuery, {
         variables: {id: props.profile_id},
         onCompleted: data => {
-            
+          //console.log("completed", data.getProfileOutput.output)
         },
         fetchPolicy: "network-only"
     });
     if (loading) {
-     return <LinearProgress />;;
+     return <LinearProgress />;
     }
     if (error) {
      console.error(error);
-     return <div>Error!</div>;
+     return <div>Error! {error.message}</div>;
     }
   
   return (

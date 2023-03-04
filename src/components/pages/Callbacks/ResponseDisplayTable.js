@@ -402,8 +402,9 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
   const theme = useTheme();
   const rowHeight = 35;
   const headerHeight = 45;
+  const maxHeight = 530;
   const [dataHeight, setDataHeight] = React.useState(530);
-  const maxElements = Math.floor(dataHeight / rowHeight);
+  const maxElements = Math.floor(maxHeight / rowHeight);
   const [allData, setAllData] = React.useState([]);
   const [sortData, setSortData] = React.useState({sortKey: null, sortType: null, sortDirection: "ASC"})
   const sortedData = React.useMemo(() => {
@@ -549,7 +550,7 @@ export const ResponseDisplayTable = ({table, callback_id}) =>{
   
   useEffect( () => {
     setAllData([...table.rows]);
-      setDataHeight((table.rows.length * rowHeight) + headerHeight);
+    setDataHeight(Math.min(maxHeight, (table.rows.length * rowHeight) + headerHeight));
     
   }, [table.rows])
   const sortColumn = table.headers.findIndex((column) => column.plaintext === sortData.sortKey);

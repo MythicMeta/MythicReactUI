@@ -22,7 +22,7 @@ export function PayloadsTableRowBuildStatus(props){
                         variant="contained"
                         target="_blank"
                         color="primary"
-                        href={window.location.origin + "/direct/download/" + props.filemetum.agent_file_id}
+                        href={"/direct/download/" + props.filemetum.agent_file_id}
                         download
                         size="large">
                         <GetAppIcon color="success" />

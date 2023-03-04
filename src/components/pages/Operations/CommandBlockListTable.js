@@ -29,7 +29,7 @@ mutation newBlockListsEntries($entries: [disabledcommandsprofile_insert_input!]!
               id
               cmd
               payloadtype{
-                ptype
+                name
               }
             }
         }
@@ -63,10 +63,10 @@ export function CommandBlockListTable(props){
     const [newBlockListEntries] = useMutation(newBlockListEntry, {
         onCompleted: (data) => {
             const newBlockList = data.insert_disabledcommandsprofile.returning.reduce( (prev, cur) => {
-                if(prev[cur.command.payloadtype.ptype] === undefined){
-                    prev[cur.command.payloadtype.ptype] = [];
+                if(prev[cur.command.payloadtype.name] === undefined){
+                    prev[cur.command.payloadtype.name] = [];
                 }
-                prev[cur.command.payloadtype.ptype].push(cur);
+                prev[cur.command.payloadtype.name].push(cur);
                 return {...prev};
             }, {});
             // check if this is part of a new block list
@@ -221,7 +221,7 @@ function CommandBlockListTableRow(props){
         for(const [key, value] of Object.entries(props.entries)){
             const commandNames = value.map(c => c.command.cmd).sort().join(", ");
             newDisplay.push(
-                {ptype: key, commands: commandNames}
+                {name: key, commands: commandNames}
             )
             entries[key] = value.map(c => c.command);
         }
@@ -255,7 +255,7 @@ function CommandBlockListTableRow(props){
             <TableCell>{props.name}</TableCell>
             <TableCell>
                 {blockedCommandDisplay.map( b => (
-                    <div key={props.name + b.ptype}>{b.ptype} - {b.commands}</div>
+                    <div key={props.name + b.name}>{b.name} - {b.commands}</div>
                     
                 ))}
             </TableCell>

@@ -10,13 +10,13 @@ export function PayloadTypesC2Profiles(props){
       <React.Fragment>
         <Grid container spacing={0}>
           <Grid item xs={6}>
-          <PayloadTypeContainerDisplay />
+          <PayloadTypeContainerDisplay me={props.me} />
           </Grid>
           <Grid item xs={6}>
-          <C2ProfileContainerDisplay />
+          <C2ProfileContainerDisplay me={props.me} />
           </Grid>
           <Grid item xs={12}>
-          <TranslationContainerDisplay />
+          <TranslationContainerDisplay me={props.me} />
           </Grid>
         </Grid>
       </React.Fragment>

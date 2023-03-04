@@ -19,6 +19,7 @@ import { meState } from '../../../cache';
 import {useReactiveVar, useMutation} from '@apollo/client';
 import {hideCallbackMutation} from './CallbackMutations';
 import {snackActions} from '../../utilities/Snackbar';
+import { CardContent } from '@mui/material';
 
 
 const callbacksAndFeaturesQuery = gql`
@@ -141,14 +142,13 @@ export function CallbacksTabsHideMultipleDialog({onClose}) {
       
     }
     const customList = (title, items) => (
-      <Paper className={classes.paper} style={{width:"100%"}}>
-        <Card>
+      <React.Fragment>
           <CardHeader
             className={classes.cardHeader}
             title={title}
           />
           <Divider classes={{root: classes.divider}}/>
-          <div style={{overflow: "auto"}}>
+          <CardContent style={{flexGrow: 1, overflowY: "auto", padding: 0}}>
             <List dense component="div" role="list" style={{padding:0}}>
               {items.map((value) => {
                 const labelId = `transfer-list-item-${value.id}-label`;
@@ -168,19 +168,19 @@ export function CallbacksTabsHideMultipleDialog({onClose}) {
               })}
               <ListItem />
             </List>
-          </div>
-          
-          </Card>
-      </Paper>
+          </CardContent>
+          </React.Fragment>
     );
   return (
     <React.Fragment>
         <DialogTitle id="form-dialog-title">Hide Multiple Callbacks at Once</DialogTitle>
-        <DialogContent dividers={true}>
-        <Grid container spacing={0} justifyContent="center" alignItems="center" className={classes.root}>
-          <Grid item xs={5}>{customList("Visible Callbacks", left)}</Grid>
-          <Grid item xs={1}>
-            <Grid container direction="column" alignItems="center">
+        <DialogContent dividers={true} style={{height: "100%", display: "flex", flexDirection: "column", position: "relative",  maxHeight: "100%"}}>
+        <div style={{display: "flex", flexDirection: "row", overflowY: "auto", flexGrow: 1, minHeight: 0}}>
+          <div  style={{paddingLeft: 0, flexGrow: 1,  marginLeft: 0, marginRight: "10px", position: "relative",  overflowY: "auto", display: "flex", flexDirection: "column" }}>
+            
+            {customList("Visible Callbacks", left)}
+            </div>
+            <div style={{display: "flex", flexDirection: "column", justifyContent: "center"}}>
               <Button
                 variant="outlined"
                 size="small"
@@ -189,7 +189,7 @@ export function CallbacksTabsHideMultipleDialog({onClose}) {
                 disabled={left.length === 0}
                 aria-label="move all right"
               >
-                ≫
+                &gt;&gt;
               </Button>
               <Button
                 variant="outlined"
@@ -219,13 +219,14 @@ export function CallbacksTabsHideMultipleDialog({onClose}) {
                 disabled={right.length === 0}
                 aria-label="move all left"
               >
-                ≪
+                &lt;&lt;
               </Button>
-            </Grid>
-          </Grid>
-          <Grid item xs={5}>{customList("Callbacks To Hide", right)}</Grid>
-          
-        </Grid>
+ 
+          </div>
+          <div  style={{marginLeft: "10px", position: "relative", flexGrow: 1, display: "flex", flexDirection: "column" }}>
+            {customList("Callbacks To Hide", right)}
+            </div>
+        </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} variant="contained" color="primary">

@@ -1,13 +1,9 @@
 import React, {useRef} from 'react';
 import {Button} from '@mui/material';
-import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
-import { toLocalTime } from '../../utilities/Time';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
 import {DetailedPayloadTable} from './DetailedPayloadTable';
 import Grow from '@mui/material/Grow';
 import Popper from '@mui/material/Popper';
@@ -24,12 +20,16 @@ import {PayloadsTableRowBuildStatus} from './PayloadsTableRowBuildStatus';
 import {PayloadConfigCheckDialog} from './PayloadConfigCheckDialog';
 import {PayloadRedirectRulesDialog} from './PayloadRedirectRulesDialog';
 import {useTheme} from '@mui/material/styles';
-import InfoIcon from '@mui/icons-material/Info';
+import InfoIconOutline from '@mui/icons-material/InfoOutlined';
 import {useMutation, gql, useLazyQuery} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
+import {PayloadsTableRowBuildProgress} from './PayloadsTableRowBuildProgress';
+import {b64DecodeUnicode} from '../Callbacks/ResponseDisplay';
+
+import {CreateNewCallbackDialog} from './CreateNewCallbackDialog';
 
 const rebuildPayloadMutation = gql`
 mutation triggerRebuildMutation($uuid: String!) {
@@ -40,6 +40,7 @@ mutation triggerRebuildMutation($uuid: String!) {
   }
 }
 `;
+
 const exportPayloadConfigQuery = gql`
 query exportPayloadConfigQuery($uuid: String!) {
   export_payload_config(uuid: $uuid) {
@@ -60,8 +61,8 @@ export function PayloadsTableRow(props){
     const [openDetailedView, setOpenDetailedView] = React.useState(false);
     const [openConfigCheckDialog, setOpenConfigCheckDialog] = React.useState(false);
     const [openRedirectRulesDialog, setOpenRedirectRulesDialog] = React.useState(false);
+    const [openCreateNewCallbackDialog, setOpenCreateNewCallbackDialog] = React.useState(false);
     const dropdownAnchorRef = useRef(null);
-    const me = useReactiveVar(meState);
     const theme = useTheme();
     const [triggerRebuild] = useMutation(rebuildPayloadMutation, {
       onCompleted: (data) => {
@@ -76,21 +77,23 @@ export function PayloadsTableRow(props){
         snackActions.error("Failed to trigger rebuild: " + data);
       }
     });
+    
     const [exportConfig] = useLazyQuery(exportPayloadConfigQuery, {
       fetchPolicy: "no-cache",
       onCompleted: (data) => {
+        //console.log(data)
         if(data.export_payload_config.status === "success"){
           const dataBlob = new Blob([data.export_payload_config.config], {type: 'text/plain'});
           const ele = document.getElementById("download_config");
           if(ele !== null){
             ele.href = URL.createObjectURL(dataBlob);
-            ele.download = props.filemetum.filename_text + ".json";
+            ele.download = b64DecodeUnicode(props.filemetum.filename_text) + ".json";
             ele.click();
           }else{
             const element = document.createElement("a");
             element.id = "download_config";
             element.href = URL.createObjectURL(dataBlob);
-            element.download = props.filemetum.filename_text + ".json";
+            element.download = b64DecodeUnicode(props.filemetum.filename_text) + ".json";
             document.body.appendChild(element);
             element.click();
           }
@@ -99,7 +102,8 @@ export function PayloadsTableRow(props){
         }
       },
       onError: (data) => {
-        snackActions.error("Failed to export configuration: " + data)
+        console.log(data);
+        snackActions.error("Failed to export configuration: " + data.message)
       }
     })
     const onAlertChanged = () => {
@@ -142,6 +146,9 @@ export function PayloadsTableRow(props){
                     }},
                     {name: 'Check Agent C2 Configuration', click: () => {
                       setOpenConfigCheckDialog(true);
+                    }},
+                    {name: 'Generate Callback', click: () => {
+                      setOpenCreateNewCallbackDialog(true);
                     }}
                      ]
     ;
@@ -151,6 +158,7 @@ export function PayloadsTableRow(props){
         }
         setOpenUpdateDialog(false);
       };
+    
     const shouldDisplay = React.useMemo(() => {
       if(!props.deleted && !props.auto_generated){
         return true;
@@ -189,7 +197,6 @@ export function PayloadsTableRow(props){
                   )}
                   
                 </MythicStyledTableCell>
-                <MythicStyledTableCell>{toLocalTime(props.creation_time, me.user.view_utc_time)}</MythicStyledTableCell>
                 <MythicStyledTableCell><Button ref={dropdownAnchorRef} size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="primary" variant="contained">Actions</Button>
                 <Popper open={openUpdate} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal style={{zIndex: 4}}>
                   {({ TransitionProps, placement }) => (
@@ -216,48 +223,66 @@ export function PayloadsTableRow(props){
                     </Grow>
                   )}
                 </Popper>
-                {openDescription ? (
+                {openDescription &&
                     <MythicDialog fullWidth={true} maxWidth="md" open={openDescription} 
                         onClose={()=>{setOpenDescriptionDialog(false);}} 
                         innerDialog={<PayloadDescriptionDialog payload_id={props.id} onClose={()=>{setOpenDescriptionDialog(false);}} />}
                     />
-                ): (null) }
-                {openFilename ? (
+                }
+                {openFilename &&
                     <MythicDialog fullWidth={true} maxWidth="md" open={openFilename} 
                         onClose={()=>{setOpenFilenameDialog(false);}} 
                         innerDialog={<PayloadFilenameDialog payload_id={props.id} onClose={()=>{setOpenFilenameDialog(false);}} />}
                     />
-                ): (null) }
-                {openBuildMessage ? (
+                }
+                {openBuildMessage &&
                     <MythicDialog fullWidth={true} maxWidth="lg" open={openBuildMessage} 
                         onClose={()=>{setOpenBuildMessageDialog(false);}} 
                         innerDialog={<PayloadBuildMessageDialog payload_id={props.id} viewError={viewError} onClose={()=>{setOpenBuildMessageDialog(false);}} />}
                     />
-                ): (null) }
-                {openConfigCheckDialog ? (
+                }
+                {openConfigCheckDialog &&
                     <MythicDialog fullWidth={true} maxWidth="md" open={openConfigCheckDialog} 
                         onClose={()=>{setOpenConfigCheckDialog(false);}} 
                         innerDialog={<PayloadConfigCheckDialog uuid={props.uuid} onClose={()=>{setOpenConfigCheckDialog(false);}} />}
                     />
-                ): (null) }
-                {openRedirectRulesDialog ? (
+                }
+                {openRedirectRulesDialog &&
                     <MythicDialog fullWidth={true} maxWidth="md" open={openRedirectRulesDialog} 
                         onClose={()=>{setOpenRedirectRulesDialog(false);}} 
                         innerDialog={<PayloadRedirectRulesDialog uuid={props.uuid} onClose={()=>{setOpenRedirectRulesDialog(false);}} />}
                     />
-                ): (null) }
+                }
+                
+                {openCreateNewCallbackDialog &&
+                  <MythicDialog fullWidth={true} maxWidth="md" open={openCreateNewCallbackDialog} 
+                      onClose={()=>{setOpenCreateNewCallbackDialog(false);}} 
+                      innerDialog={<CreateNewCallbackDialog uuid={props.uuid} onClose={()=>{setOpenCreateNewCallbackDialog(false);}} />}
+                  />
+                }
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
+                  <PayloadsTableRowBuildProgress {...props} />
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>
                     <PayloadsTableRowBuildStatus {...props} />
                 </MythicStyledTableCell>
-                <MythicStyledTableCell>{props.filemetum.filename_text}</MythicStyledTableCell>
-                <MythicStyledTableCell>{props.tag}</MythicStyledTableCell>
+                <MythicStyledTableCell>{b64DecodeUnicode(props.filemetum.filename_text)}</MythicStyledTableCell>
+                <MythicStyledTableCell>{props.description}</MythicStyledTableCell>
                 <MythicStyledTableCell>
                     <PayloadsTableRowC2Status payloadc2profiles={props.payloadc2profiles} uuid={props.uuid} />
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>
+                  <MythicStyledTooltip title={props.payloadtype.name}>
+                      <img
+                          style={{width: "35px", height: "35px"}}
+                          src={"/static/" + props.payloadtype.name + ".svg"}
+                      />
+                  </MythicStyledTooltip>
+                </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     <IconButton size="small" color="info" onClick={() => setOpenDetailedView(true)}>
-                        <InfoIcon />
+                        <InfoIconOutline />
                     </IconButton>
                 </MythicStyledTableCell>
             </TableRow>

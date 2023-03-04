@@ -76,4 +76,7 @@ tspan {
     color: #F8F8F0;
     background-color: #52524d;
 }
+.ace_gutter, .ace_scrollbar {
+    z-index: 0 !important
+}
 `

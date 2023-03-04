@@ -1,7 +1,7 @@
 import React from 'react';
 import { SettingsOperatorTable } from './SettingsOperatorTable';
 import {useMutation, useQuery, gql} from '@apollo/client';
-import { MeHook, meState } from '../../../cache';
+import { meState } from '../../../cache';
 import { snackActions } from '../../utilities/Snackbar';
 
 const GET_Operator = gql`
@@ -106,14 +106,14 @@ mutation deleteAPIToken($id: Int!){
   }
 }
 `;
-export function Settings(props){
-    const me = MeHook();
+export function Settings({me}){
     const [operators, setOperators] = React.useState([]);
     useQuery(GET_Operator, {fetchPolicy: "no-cache",
       onCompleted: (data) => {
         setOperators(data.operator);
       }
     });
+    //console.log(me.user);
     const [updateUTC] = useMutation(operatorsUpdateViewUTCTime, {
         onCompleted: (result) => {
           if(result.update_operator_by_pk === null){
@@ -128,9 +128,8 @@ export function Settings(props){
             }
           })
           if(result.update_operator_by_pk.id === me.user.id){
-              const state = meState();
-              state.user.view_utc_time = result.update_operator_by_pk.view_utc_time;
-              meState(state);
+              meState({...meState(), user: {...meState().user, view_utc_time: result.update_operator_by_pk.view_utc_time}});
+              localStorage.setItem("user", JSON.stringify(meState().user));
           }
           setOperators(updatedOperators);
           snackActions.success("Successfully updated");
@@ -303,8 +302,9 @@ export function Settings(props){
       deleteAPIToken({variables: {id}})
     }
     return (
-    <div style={{height: "calc(94vh)", marginTop: "10px", marginRight: "5px"}}>
+      <div style={{display: "flex", flexGrow: 1, flexDirection: "column"}}>
         <SettingsOperatorTable 
+            me={me}
             onViewUTCChanged={onViewUTCChanged}
             onAdminChanged={onAdminChanged}
             onActiveChanged={onActiveChanged}

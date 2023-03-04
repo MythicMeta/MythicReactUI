@@ -6,6 +6,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Select from '@mui/material/Select';
 import { CreatePayloadNavigationButtons} from './CreatePayloadNavigationButtons';
 import Typography from '@mui/material/Typography';
+import { snackActions } from '../../utilities/Snackbar';
 
 
 const GET_Payload_Types = gql`
@@ -23,7 +24,7 @@ export function Step1SelectOS(props){
     const { loading } = useQuery(GET_Payload_Types, {fetchPolicy: "network-only",
     onCompleted: (data) => {
         const optionsReduced= data.payloadtype.reduce((currentOptions, payloadtype) => {
-            const adds = payloadtype.supported_os.split(",").reduce( (prev, os) => {
+            const adds = payloadtype.supported_os.reduce( (prev, os) => {
                     if(!currentOptions.includes(os)){
                         return [...prev, os];
                     }
@@ -35,13 +36,16 @@ export function Step1SelectOS(props){
         if(props.prevData !== undefined){
             setOS(props.prevData);
         }
-        else if(os === ""){
+        else if(os === "" && sortedOptions.length > 0){
             setOS(sortedOptions[0]);
+        } else if(sortedOptions.length === 0){
+            snackActions.error("No Payload Types installed");
         }
         setOSOptions(sortedOptions);
     },
     onError: (data) => {
         console.error(data);
+        snackActions.error(data.message)
     }
     });
 
@@ -49,7 +53,13 @@ export function Step1SelectOS(props){
      return <div><CircularProgress /></div>;
     }
     const finished = () => {
-        props.finished(os);
+        if(os === ""){
+            snackActions.error("Must select an operating system first");
+            return;
+        } else {
+            props.finished(os);
+        }
+        
     }
     const canceled = () => {
         props.canceled();

@@ -16,7 +16,7 @@ import {useTheme} from '@mui/material/styles';
 import { snackActions } from '../../utilities/Snackbar';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
-import * as RandExp from 'randexp';
+import {getDefaultValueForType, getDefaultChoices} from '../CreatePayload/Step2SelectPayloadType';
 
 const getProfileConfigQuery = gql`
 query getProfileParameters($id: Int!, $operation_id: Int!) {
@@ -31,9 +31,11 @@ query getProfileParameters($id: Int!, $operation_id: Int!) {
       randomize
       required
       verifier_regex
+      choices
     }
     c2profileparametersinstances(where: {instance_name: {_is_null: false}, operation_id: {_eq: $operation_id}}, distinct_on: instance_name, order_by: {instance_name: asc}){
       instance_name
+      id
     }
   }
 }
@@ -51,6 +53,7 @@ query getProfileInstanceQuery($name: String!, $operation_id: Int!) {
       randomize
       required
       verifier_regex
+      choices
     }
     id
     value
@@ -82,41 +85,22 @@ export function C2ProfileSavedInstancesDialog(props) {
     const [baseParameters, setBaseParameters] = useState([]);
     const [currentParameters, setCurrentParameters] = useState([]);
     const { loading } = useQuery(getProfileConfigQuery, {
-        variables: {id: props.id, operation_id: me.user.current_operation_id},
+        variables: {id: props.id, operation_id: me?.user?.current_operation_id || 0},
         onCompleted: data => {
             const parameters = data.c2profile_by_pk.c2profileparameters.map( (param) => {
-              if(param.format_string !== ""){
-                  const random = new RandExp(param.format_string).gen();
-                  return {...param, default_value: random, value: random}
-              }else if(param.default_value !== ""){
-                  if(param.parameter_type === "ChooseOne"){
-                      return {...param, value: param.default_value.split("\n")[0]}
-                  }else if(param.parameter_type === "Dictionary"){
-                      let tmp = JSON.parse(param.default_value);
-                      let initial = tmp.reduce( (prev, op) => {
-                        return [...prev, {...op, value: op.default_value, key: op.name === "*" ? "": op.name, default_show: op.default_show} ];
-                      }, [] );
-                      return {...param, value: initial}
-                  }else if(param.parameter_type === "Date"){
-                    let tmpDate = new Date();
-                    if(param.default_value !== ""){
-                      tmpDate.setDate(tmpDate.getDate() + parseInt(param.default_value));
-                    }
-                    return {...param, value: tmpDate.toISOString().slice(0,10)}
-                  }else{
-                      return {...param, value: param.default_value}
-                  }
-              }else{
-                return {...param, error: param.required, value: param.default_value}
-              }
-          });
+              const initialValue = getDefaultValueForType(param);
+              return {...param, error: false, value: initialValue, 
+                  trackedValue: initialValue, 
+                  initialValue: initialValue, 
+                  choices: getDefaultChoices(param)};
+            });
           parameters.sort((a,b) => -b.description.localeCompare(a.description));
           setBaseParameters([...parameters]);
           setCurrentParameters([...parameters]);
           setCreatedInstances(data.c2profile_by_pk.c2profileparametersinstances);
         },
         onError: data => {
-          
+          console.log(data);
         },
         fetchPolicy: "network-only"
     });
@@ -124,33 +108,42 @@ export function C2ProfileSavedInstancesDialog(props) {
       onCompleted: (data) => {
         const updates = data.c2profileparametersinstance.map( (cur) => {
           let inst = {...cur, ...cur.c2profileparameter};
-          if(inst.parameter_type === "Dictionary" || inst.parameter_type === "Array"){
+          if(inst.parameter_type === "Array" || inst.parameter_type === "ChooseMultiple"){
             inst["value"] = JSON.parse(inst["value"]);
-            // now need to reconcile inst["value"] being the final array
-            // and needing to add back in the 'max' and 'default_show' values
-            const original = JSON.parse(inst.default_value);
-            const fixedArray = inst.value.map( (p) => {
-                // p looks like {"name": "something", "key": "something", "value": "something", "custom": true/false}
-                // we're missing the "max" limiter from the original that we need to add back in
-                const originalPiece = original.find( o => o["name"] === p["name"]);
-                if(originalPiece !== undefined){
-                    return {...originalPiece, ...p, "default_show": p.value === "" ? false : true}
+            inst["trackedValue"] = JSON.parse(inst["value"]);
+            inst["choices"] = getDefaultChoices(inst);
+            inst["initialValue"] = getDefaultValueForType(inst);
+          } else if(inst.parameter_type === "Dictionary"){
+            // 
+            let defaultValue = getDefaultValueForType(inst);
+            let finalDict = JSON.parse(inst["value"]); // this is a dictionary instead of an array, so fix it back
+            let finalDictKeys = Object.keys(finalDict);
+            let finalArray = [];
+            let choices = getDefaultChoices(inst);
+            for(let i = 0; i < finalDictKeys.length; i++){
+              let newDict = {
+                name: finalDictKeys[i],
+                value: finalDict[finalDictKeys[i]],
+                default_show: true
+              };
+              for(let j = 0; j < choices.length; j++){
+                if(choices[j].name === finalDictKeys[i]){
+                    newDict["default_value"] = choices[j]["default_value"]
                 }
-                return {...p, "default_show": false}
-            });
-            // now that we've added in the `max` value for each of the keys we had, we need to add back in the original possibilities that we didn't select
-            const final = original.reduce( (prev, current) => {
-                //console.log("looking for", cur, "in", prev)
-                if(prev.findIndex( o => o["name"] === current["name"]) > -1 ){
-                    return [...prev]
-                }
-                return [...prev, {...current, default_show: false, "key": current.name === "*" ? "": current.name, value: current.default_value}]
-            }, [...fixedArray])
-            return {...inst, value: final};
+            }
+              finalArray.push(newDict);
+            }
+            
+            choices = choices.map(c => {return {...c, default_show: false}});
+            return {...inst, value: finalArray, choices: choices, trackedValue: finalArray, default_value:defaultValue, initialValue:defaultValue};
+          } else {
+            inst["choices"] = getDefaultChoices(inst);
+            inst["trackedValue"] = inst["value"];
+            inst["initialValue"] = getDefaultValueForType(inst);
           }
           return inst;
         })
-        updates.sort( (a, b) => a.name < b.name ? -1 : 1);
+        updates.sort( (a, b) => a.description < b.description ? -1 : 1);
         setCurrentParameters(updates);
       },
       onError: (data) => {
@@ -194,10 +187,21 @@ export function C2ProfileSavedInstancesDialog(props) {
         snackActions.warning("Must supply an instance name");
         return;
       }
-        const config = currentParameters.reduce( (prev, cur) => {
-          return {...prev, [cur.name]: cur.value}
+        const config = currentParameters.reduce( (paramPrev, param) => {
+          //return {...prev, [cur.name]: cur.value}
+          if(param.parameter_type === "Dictionary"){
+            const newDict = param.value.reduce( (prev, cur) => {
+                if(cur.default_show){
+                    return {...prev, [cur.name]: cur.value};
+                }
+                return {...prev}
+            }, {});
+            return {...paramPrev, [param.name]: newDict};
+          } else {
+              return {...paramPrev, [param.name]: param.value};
+          }
         }, {});
-        createInstance({variables: {operation_id: me.user.current_operation_id, instance_name: instanceName, c2profile_id: props.id, c2_instance: JSON.stringify(config)}})
+        createInstance({variables: {operation_id: me?.user?.current_operation_id||0, instance_name: instanceName, c2profile_id: props.id, c2_instance: JSON.stringify(config)}})
     }
     const onChange = (name, value, error) => {
       setInstanceName(value);

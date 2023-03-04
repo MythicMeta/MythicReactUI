@@ -1,12 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { EventFeedTableEvents } from './EventFeedTableEvents';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import {useTheme} from '@mui/material/styles';
-import { EventFeedTableInput } from './EventFeedTableInput';
 import {Button} from '@mui/material';
-import {VariableSizeList } from 'react-window';
-import Autosizer from 'react-virtualized-auto-sizer';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Grow from '@mui/material/Grow';
@@ -15,71 +12,25 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 
-const Row = ({data, index, style}) => {
-    const op = data[data.length - index - 1];
-    return (
-        <div style={style}>
-            <EventFeedTableEvents
-                {...op}
-            />
-        </div> 
-    )
-};
 
 const EventList = ({onUpdateDeleted, onUpdateLevel, onUpdateResolution, getSurroundingEvents, operationeventlog}) => {
-    const listRef = React.createRef();
-    const getItemSize = (index) => {
-        const op = operationeventlog[operationeventlog.length - index - 1];
-        const rows = (op["message"].match(/\n/g) || []).length;
-        if(rows > 1){
-            return 90 + (24 * rows);
-        } else {
-            return 90;
-        }
-        
-    }
-    const eventlogWithFunctions = operationeventlog.map( (oplog) => {
-        return {onUpdateDeleted, onUpdateLevel, onUpdateResolution, getSurroundingEvents, ...oplog}
-    });
-    useEffect( () => {
-        if(listRef.current){
-            listRef.current.resetAfterIndex(0);
-        }
-    }, [operationeventlog])
-    return (
-        <Autosizer>
-            {({height, width}) => (
-                <VariableSizeList
-                    ref={listRef}
-                    height={height-50}
-                    itemData={eventlogWithFunctions}
-                    itemCount={operationeventlog.length}
-                    width={width}
-                    itemSize={getItemSize}
-                    overscanCount={20}
-                    >
-                        {Row}
-                </VariableSizeList>
-            )}
-        </Autosizer>
-    )
+   return (
+    <div style={{overflowY: "auto", flexGrow: 1}}>
+        {operationeventlog.map( o => <EventFeedTableEvents {...o} 
+            key={o.id}
+            onUpdateDeleted={onUpdateDeleted}
+            onUpdateLevel={onUpdateLevel}
+            onUpdateResolution={onUpdateResolution}
+            getSurroundingEvents={getSurroundingEvents}
+            />)}
+    </div>
+   )
 };
 
 export function EventFeedTable(props){
-    const messagesEndRef = useRef(null);
     const theme = useTheme();
     const dropdownAnchorRef = React.useRef(null);
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
-    
-    const onSubmitMessage = (message) => {
-        if(message && message.length > 0){
-            props.onSubmitMessage({level:"info", message});
-            scrollToBottom();
-        }
-    } 
-    const scrollToBottom = () => {
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-    }
     const dropDownOptions = [
         {
             name: "Load More Events",
@@ -97,6 +48,10 @@ export function EventFeedTable(props){
             name: "Resolve All Errors",
             click: props.resolveAllErrors
         },
+        {
+            name: props.sortDirection === "asc" ? "Change to newest at botom" : "Change to newest at top",
+            click: props.changeSortDirection
+        }
     ]
     const handleMenuItemClick = (event, index) => {
         dropDownOptions[index].click();
@@ -142,17 +97,18 @@ export function EventFeedTable(props){
                 )}
                 </Popper>
             </Paper>
+            <div style={{display: "flex", flexDirection: "column", width: "100%", overflowY: "auto"}}>
+                <Paper elevation={5} style={{position: "relative", flexGrow: 1, overflowY: "scroll", backgroundColor: theme.body, paddingBottom: "20px"}} variant={"elevation"}>
+                    <EventList 
+                        onUpdateResolution={props.onUpdateResolution}
+                        onUpdateLevel={props.onUpdateLevel}
+                        onUpdateDeleted={props.onUpdateDeleted}
+                        getSurroundingEvents={props.getSurroundingEvents}
+                        operationeventlog={props.operationeventlog}/>
+                </Paper>
+                
+            </div>
             
-            <Paper elevation={5} style={{position: "relative", flexGrow: 1, backgroundColor: theme.body, marginBottom: "20px"}} variant={"elevation"}>
-                <EventList 
-                    onUpdateResolution={props.onUpdateResolution}
-                    onUpdateLevel={props.onUpdateLevel}
-                    onUpdateDeleted={props.onUpdateDeleted}
-                    getSurroundingEvents={props.getSurroundingEvents}
-                    operationeventlog={props.operationeventlog}/>
-                <div ref={messagesEndRef} />
-                <EventFeedTableInput onSubmitMessage={onSubmitMessage} />
-            </Paper>
         </div>
     )
 }

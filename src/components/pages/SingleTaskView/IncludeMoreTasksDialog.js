@@ -93,7 +93,7 @@ export function IncludeMoreTasksDialog(props) {
           <Button onClick={props.onClose} variant="contained" color="primary">
             Close
           </Button>
-          <Button onClick={onRequestSubmit} variant="contained" color="secondary">Fetch Tasks</Button>          
+          <Button onClick={onRequestSubmit} variant="contained" color="success">Fetch Tasks</Button>          
         </DialogActions>
   </React.Fragment>
   );

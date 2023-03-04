@@ -15,8 +15,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Tooltip from '@mui/material/Tooltip';
 
 const stopSocks = gql`
-mutation StopSocksMutation($callback_id: Int!){
-    stop_socks(callback_id: $callback_id){
+mutation StopSocksMutation($callback_id: Int!, $port: Int!, $port_type: String!){
+    stop_socks(callback_id: $callback_id, port: $port, port_type: $port_type){
         status
         error
     }
@@ -41,17 +41,17 @@ export function SocksSearchTable(props){
     }
 
     return (
-        <TableContainer component={Paper} className="mythicElement" style={{height: "calc(78vh)"}}>
+        <TableContainer component={Paper} className="mythicElement" style={{overflowY: "auto", flexGrow: 1, marginTop: "5px"}}>
             <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
                         <TableCell style={{width: "5rem"}}>Stop</TableCell>
                         <TableCell >User</TableCell>
-                        <TableCell >Domain</TableCell>
                         <TableCell >Host</TableCell>
                         <TableCell >Description</TableCell>
                         <TableCell >Callback</TableCell>
                         <TableCell >Port</TableCell>
+                        <TableCell >Proxy Type</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -75,7 +75,7 @@ function CallbackSearchTableRow(props){
 
     const [updateDeleted] = useMutation(stopSocks, {
         onCompleted: (data) => {
-            snackActions.success("Stopped Socks on that Port");
+            snackActions.success("Stopped proxy on that Port");
             props.onEditDeleted({id: props.id});
         },
         onError: (data) => {
@@ -83,36 +83,36 @@ function CallbackSearchTableRow(props){
         }
     });
     const onAcceptDelete = () => {
-        updateDeleted({variables: {callback_id: props.id}})
+        updateDeleted({variables: {callback_id: props.callback.id, port: props.port, port_type: props.port_type}})
     }
     return (
         <React.Fragment>
             <TableRow hover>
-                <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDeleteDialog} acceptText={"Stop Socks"}/>
+                <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} open={openDeleteDialog} acceptText={"Stop Proxy"}/>
                 
                 <TableCell>{props.port ? (
-                    <Tooltip title="Stop Socks Port on Mythic Server">
+                    <Tooltip title="Stop Proxy Port on Mythic Server">
                         <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
                     </Tooltip>
                 ) : ( null )} </TableCell>
                 <TableCell>
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.user}</Typography>
-                </TableCell>
-                <TableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.domain}</Typography>
+                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.callback.user}</Typography>
                 </TableCell>
                 <TableCell>{props.host}</TableCell>
                 <TableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.description}</Typography>
+                    <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.callback.description}</Typography>
                 </TableCell>
                 <TableCell>
                 <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" 
-                        href={"/new/callbacks/" + props.id}>
-                            {props.id}
+                        href={"/new/callbacks/" + props.callback.display_id}>
+                            {props.callback.display_id}
                     </Link>
                 </TableCell>
                 <TableCell>
                 <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.port}</Typography>
+                </TableCell>
+                <TableCell>
+                <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.port_type}</Typography>
                 </TableCell>
             </TableRow>
         </React.Fragment>

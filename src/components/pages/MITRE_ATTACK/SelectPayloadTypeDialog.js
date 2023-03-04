@@ -12,8 +12,8 @@ import makeStyles from '@mui/styles/makeStyles';
 
 const getPayloadTypes = gql`
 query getAllPayloadTypes{
-  payloadtype(where: {wrapper: {_eq: false}}, order_by: {ptype: asc}) {
-    ptype
+  payloadtype(where: {wrapper: {_eq: false}}, order_by: {name: asc}) {
+    name
   }
 }
 `;
@@ -41,7 +41,7 @@ export function SelectPayloadTypeDialog(props) {
     }
     const { loading, error } = useQuery(getPayloadTypes, {
         onCompleted: data => {
-            const options = data.payloadtype.map( p => p.ptype);
+            const options = data.payloadtype.map( p => p.name);
             if(options.length > 0){
               setSelectedPayloadType(options[0]);
             }

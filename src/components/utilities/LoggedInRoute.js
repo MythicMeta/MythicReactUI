@@ -10,7 +10,7 @@ export function LoggedInRoute({component, ...rest}){
         <Route {...rest} render={(props) => (
             me.loggedIn && me.user ? (
                 //logged in
-                React.createElement(component, props)
+                React.createElement(component, {...props, me: me})
             ) : (
                 //not logged in
                 <Redirect to={{ 

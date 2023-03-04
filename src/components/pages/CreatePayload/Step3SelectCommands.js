@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
 
 const GET_Payload_Types = gql`
 query getCommands($payloadType: String!) {
-  command(where: {payloadtype: {ptype: {_eq: $payloadType}}, deleted: {_eq: false}}, order_by: {cmd: asc}) {
+  command(where: {payloadtype: {name: {_eq: $payloadType}}, deleted: {_eq: false}}, order_by: {cmd: asc}) {
     cmd
     attributes
     id
@@ -65,7 +65,7 @@ export function Step3SelectCommands(props){
           }else{
             const allCommands = data.command.reduce( (prev, cur) => {
               try{
-                const attributes = JSON.parse(cur.attributes);
+                const attributes = cur.attributes;
                 if(attributes["supported_os"].length === 0 || attributes["supported_os"].includes(props.buildOptions["os"])){
                   if(attributes["builtin"] !== undefined && attributes["builtin"]){
                     return [...prev, {...cur, disabled: true, selected: true, reason: "This command is builtin and must be included"}];
@@ -106,6 +106,7 @@ export function Step3SelectCommands(props){
                 }
                 return [...prev, {...cur, disabled: true, selected: false, reason: "This command isn't supported by the selected OS"}];
               }catch(error){
+                console.log(error);
                 return [...prev, {...cur, disabled: false, selected: false, reason: "Failed to parse command attributes"}];
               }
             }, []);
@@ -324,7 +325,7 @@ return (
               disabled={left.length === 0}
               aria-label="move all right"
             >
-              ≫
+              &gt;&gt;
             </Button>
             <Button
               variant="outlined"
@@ -354,7 +355,7 @@ return (
               disabled={right.length === 0}
               aria-label="move all left"
             >
-              ≪
+              &lt;&lt;
             </Button>
           </Grid>
         </Grid>

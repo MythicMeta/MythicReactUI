@@ -7,8 +7,58 @@ import {createTaskingMutation} from './CallbacksTabsTasking';
 import {TaskParametersDialog} from './TaskParametersDialog';
 import { MythicConfirmDialog } from '../../MythicComponents/MythicConfirmDialog';
 
+const getLoadedCommandsBasedOnInput = ({cmd, ui_feature}) => {
+    let filter_string = "";
+    if(cmd !== undefined && cmd !== ""){
+        filter_string = "{command: {cmd: {_eq: $cmd}}}"
+    } else if(ui_feature !== undefined && ui_feature !== ""){
+        filter_string = "{command: {supported_ui_features: {_contains: $ui_feature}}}";
+    } else {
+        console.log("invalid command and ui_feature", "cmd", cmd, "ui_feature", ui_feature)
+        filter_string = "{command: {id: {_eq: 0}}}"
+    }
+    return gql`
+    query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: jsonb, $cmd: String) {
+        callback_by_pk(id: $callback_id){
+            operation_id
+            active
+            payload {
+                payloadtype {
+                    id
+                }
+            }
+            loadedcommands(where: ${filter_string}) {
+                id
+                command {
+                  cmd
+                  help_cmd
+                  description
+                  id
+                  needs_admin
+                  payload_type_id
+                  attributes
+                  commandparameters {
+                    id
+                    type 
+                  }
+                  supported_ui_features
+                }
+            }
+            callbacktokens(where: {deleted: {_eq: false}}) {
+                token {
+                  token_id
+                  id
+                  user
+                  description
+                }
+                id
+            }
+        }
+    }
+    `;
+}
 const getLoadedCommandsQuery = gql`
-query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: String!) {
+query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: jsonb, $cmd: String) {
     callback_by_pk(id: $callback_id){
         operation_id
         active
@@ -17,7 +67,7 @@ query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: String!) {
                 id
             }
         }
-        loadedcommands(where: {command: {supported_ui_features: {_ilike: $ui_feature}}}) {
+        loadedcommands(where: {command: {supported_ui_features: {_contains: $ui_feature}}}) {
             id
             command {
               cmd
@@ -36,9 +86,9 @@ query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: String!) {
         }
         callbacktokens(where: {deleted: {_eq: false}}) {
             token {
-              TokenId
+              token_id
               id
-              User
+              user
               description
             }
             id
@@ -47,7 +97,7 @@ query GetLoadedCommandsQuery($callback_id: Int!, $ui_feature: String!) {
 }
 `;
 
-export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked, tasking_location, getConfirmation, openDialog, acceptText}) =>{
+export const TaskFromUIButton = ({callback_id, cmd, ui_feature, parameters, onTasked, tasking_location, getConfirmation, openDialog, acceptText, dontShowSuccessDialog}) =>{
     const [fileBrowserCommands, setFileBrowserCommands] = React.useState([]);
     const [openSelectCommandDialog, setOpenSelectCommandDialog] = React.useState(false);
     const [openParametersDialog, setOpenParametersDialog] = React.useState(false);
@@ -63,7 +113,9 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked,
             if(data.createTask.status === "error"){
                 snackActions.error(data.createTask.error);
                 onTasked({tasked: false});
-            }else{
+            }else if(dontShowSuccessDialog){
+                onTasked({tasked: true, variables: savedFinalVariables.current});
+            }else {
                 snackActions.success("Issued \"" + selectedCommand["cmd"] + "\" to Callback " + callback_id);
                 onTasked({tasked: true, variables: savedFinalVariables.current});
             }
@@ -73,8 +125,8 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked,
             onTasked({tasked: false});
         }
     });
-    const {data: callbackData} = useQuery(getLoadedCommandsQuery, {
-        variables: {callback_id: callback_id, ui_feature: "%" + ui_feature + "%"},
+    const {data: callbackData} = useQuery(getLoadedCommandsBasedOnInput({cmd, ui_feature}), {
+        variables: {callback_id: callback_id, ui_feature: ui_feature, cmd: cmd },
         onCompleted: (data) => {
             if(data.callback_by_pk === null){
                 snackActions.warning("Unknown callback");
@@ -95,12 +147,18 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked,
                 
             }, []);
             const availableTokens = data.callback_by_pk.callbacktokens.reduce( (prev, cur) => {
-                return [...prev, {...cur.token, "display": cur.token.User === null ? cur.token.TokenId + " - " + cur.token.description : cur.token.User + " - " + cur.token.description}]
+                return [...prev, {...cur.token, "display": cur.token.user === null ? cur.token.token_id + " - " + cur.token.description : cur.token.user + " - " + cur.token.description}]
             }, []);
             setCallbackTokenOptions(availableTokens);
             setFileBrowserCommands(availableCommands);
             if(availableCommands.length === 0){
-                snackActions.warning("No commands currently loaded that support the " + ui_feature + " feature");
+                if(ui_feature !== undefined){
+                    snackActions.warning("No commands currently loaded that support the " + ui_feature + " feature");
+                } else {
+                    snackActions.warning("No commands currently loaded that by the name " + cmd);
+                }
+                
+                onTasked({tasked: false});
             }else if(availableCommands.length === 1){
                 setSelectedCommand({...availableCommands[0]});
             }else{
@@ -129,7 +187,12 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked,
     }
     const submitParametersDialog = (cmd, parameters, files) => {
         setOpenParametersDialog(false);
-        savedFinalVariables.current = parameters;
+        try{
+            savedFinalVariables.current = JSON.parse(parameters);
+        }catch(error){
+            savedFinalVariables.current = parameters;
+        }
+        
         onSubmitTasking({variables: {callback_id: callback_id, command: cmd, params: parameters, files, tasking_location: "modal"}});
     }
     const onSubmitSelectedToken = (token) => {
@@ -151,8 +214,8 @@ export const TaskFromUIButton = ({callback_id, ui_feature, parameters, onTasked,
             // we selected the default token to use
             createTask({variables: taskingVariables});
         }
-        if(selectedCallbackToken.TokenId){
-            createTask({variables: {...taskingVariables, token_id: selectedCallbackToken.TokenId}});
+        if(selectedCallbackToken.token_id){
+            createTask({variables: {...taskingVariables, token_id: selectedCallbackToken.token_id}});
         }else{
             return;
         }

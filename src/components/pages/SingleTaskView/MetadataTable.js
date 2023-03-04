@@ -5,6 +5,7 @@ import {TaskMITREATTACKTable} from './TaskMITREATTACKTable';
 import {TaskFilesTable} from './TaskFilesTable';
 import {TaskCredentialsTable} from './TaskCredentialsTable';
 
+
 const MetadataQuery = gql`
 query taskMetadataQuery($task_range: [Int!]) {
     task(where: {id: {_in: $task_range}}) {
@@ -39,17 +40,14 @@ query taskMetadataQuery($task_range: [Int!]) {
         }
       }
       taskartifacts {
-        artifact_instance_text
+        artifact_text
         host
         task_id
-        artifact{
-            id
-            name
-        }
+        base_artifact
         id
       }
       tokens {
-        TokenId
+        token_id
         id
         host
       }

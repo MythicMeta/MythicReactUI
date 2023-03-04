@@ -16,6 +16,10 @@ import {SettingsOperatorDialog} from '../Settings/SettingsOperatorDialog';
 import {snackActions} from '../../utilities/Snackbar';
 import {useMutation, gql} from '@apollo/client';
 import {MythicModifyStringDialog} from '../../MythicComponents/MythicDialog';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
+import { IconButton } from '@mui/material';
 
 const newOperatorMutation = gql`
 mutation NewOperator($username: String!, $password: String!) {
@@ -27,8 +31,8 @@ mutation NewOperator($username: String!, $password: String!) {
 }
 `;
 const Update_Operation = gql`
-mutation MyMutation($operation_id: Int!, $channel: String!, $complete: Boolean!, $display_name: String!, $icon_emoji: String!, $icon_url: String!, $name: String!, $webhook: String!, $webhook_message: String!) {
-  update_operation_by_pk(pk_columns: {id: $operation_id}, _set: {channel: $channel, complete: $complete, display_name: $display_name, icon_emoji: $icon_emoji, icon_url: $icon_url, name: $name, webhook: $webhook, webhook_message: $webhook_message}) {
+mutation MyMutation($operation_id: Int!, $channel: String!, $complete: Boolean!, $name: String!, $webhook: String!) {
+  update_operation_by_pk(pk_columns: {id: $operation_id}, _set: {channel: $channel, complete: $complete, name: $name, webhook: $webhook}) {
     id
     name
     complete
@@ -40,14 +44,8 @@ mutation newOperationMutation($name: String){
     createOperation(name: $name){
         status
         error
-        operation{
-            name
-            id
-            admin {
-                id
-                username
-            }
-        }
+        operation_id
+        operation_name
         
     }
 }
@@ -57,6 +55,7 @@ export function OperationTable(props){
     const theme = useTheme();
     const [openNewOperator, setOpenNewOperatorDialog] = React.useState(false);
     const [openNewOperation, setOpenNewOperationDialog] = React.useState(false);
+    const [showDeleted, setShowDeleted] = React.useState(false);
     const [newOperator] = useMutation(newOperatorMutation, {
         update: (cache, {data}) => {
             if(data.createOperator.status === "success"){
@@ -85,7 +84,7 @@ export function OperationTable(props){
             console.log(data);
             if(data.createOperation.status === "success"){
                 snackActions.success("Successfully created operation!");
-                props.onNewOperation(data.createOperation.operation);
+                props.onNewOperation({name: data.createOperation.operation_name, id: data.createOperation.operation_name});
             }else{
                 snackActions.error(data.createOperation.error);
             }
@@ -129,9 +128,19 @@ export function OperationTable(props){
             <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
                 Operations
             </Typography>
+            {showDeleted ? (
+                <MythicStyledTooltip title={"Hide Deleted Operations"} style={{float: "right"}}>
+                    <IconButton size="small" style={{float: "right", marginTop: "5px"}} variant="contained" onClick={() => setShowDeleted(!showDeleted)}><VisibilityIcon /></IconButton>
+                </MythicStyledTooltip>
+                
+              ) : (
+                <MythicStyledTooltip title={"Show Deleted Operations"} style={{float: "right"}}>
+                  <IconButton size="small" style={{float: "right",  marginTop: "5px"}} variant="contained" onClick={() => setShowDeleted(!showDeleted)} ><VisibilityOffIcon /></IconButton>
+                </MythicStyledTooltip>
+              )}
             <Button size="small" onClick={() => {setOpenNewOperationDialog(true);}} style={{marginRight: "20px", float: "right", marginTop: "10px"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="success" variant="contained">New Operation</Button>
-            
             <Button size="small" onClick={()=>{setOpenNewOperatorDialog(true);}} style={{marginRight: "20px", float: "right", marginTop: "10px"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="success" variant="contained">New Operator</Button>
+            
             {openNewOperator &&
                 <MythicDialog open={openNewOperator} 
                     onClose={()=>{setOpenNewOperatorDialog(false);}} 
@@ -159,6 +168,7 @@ export function OperationTable(props){
             <Table  size="small" style={{"tableLayout": "fixed", "maxWidth": "calc(100vw)", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
+                        <TableCell style={{width: "8rem"}}></TableCell>
                         <TableCell style={{width: "8rem"}}>Configure</TableCell>
                         <TableCell style={{width: "8rem"}}>Operators</TableCell>
                         <TableCell>Operation Name</TableCell>
@@ -170,10 +180,14 @@ export function OperationTable(props){
                 <TableBody>
                 
                 {props.operations.map( (op) => (
-                    <OperationTableRow
-                        key={"operation" + op.id} onUpdateOperation={onUpdateOperation}
-                        {...op} operator={props.operator}
-                    />
+                    showDeleted || !op.deleted ? (
+                        <OperationTableRow
+                            me={props.me}
+                            key={"operation" + op.id} onUpdateOperation={onUpdateOperation}
+                            updateDeleted={props.updateDeleted}
+                            {...op} operator={props.operator}
+                        />
+                    ) : (null)
                 ))}
                 </TableBody>
             </Table>

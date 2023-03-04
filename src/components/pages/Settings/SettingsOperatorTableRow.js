@@ -19,19 +19,19 @@ import { SettingsOperatorDialog } from './SettingsOperatorDialog';
 import { SettingsOperatorDeleteDialog } from './SettingsOperatorDeleteDialog';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { toLocalTime } from '../../utilities/Time';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
 import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
+import {useTheme} from '@mui/material/styles';
+import {SettingsOperatorUIConfigDialog} from './SettingsOperatorUIConfigDialog';
+import SettingsIcon from '@mui/icons-material/Settings';
 
-export function SettingsOperatorRow(props){
+export function SettingsOperatorTableRow(props){
+    const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     const [openUpdate, setOpenUpdateDialog] = React.useState(false);
     const [openDelete, setOpenDeleteDialog] = React.useState(false);
-    const me = useReactiveVar(meState);
+    const [openUIConfig, setOpenUIConfig] = React.useState(false);
+    const me = props.me;
     const isMe = ( me?.user?.user_id || 0 ) === props.id;
-    const localStorageInitialHideUsernameValue = localStorage.getItem(`${me?.user?.user_id || 0}-hideUsernames`);
-    const initialHideUsernameValue = localStorageInitialHideUsernameValue === null ? false : (localStorageInitialHideUsernameValue.toLowerCase() === "false" ? false : true);
-    const [hideUsernames, setHideUsernames] = React.useState(initialHideUsernameValue);
     const onViewUTCChanged = (evt) => {
         const {id} = props;
         props.onViewUTCChanged(id, !props[evt.target.name]);
@@ -57,26 +57,35 @@ export function SettingsOperatorRow(props){
         props.onDeleteOperator(id);
         setOpenDeleteDialog(false);
     }
-    const onHideUsernamesChanged = (evt) => {
-      localStorage.setItem(`${me?.user?.user_id || 0}-hideUsernames`, !hideUsernames);
-      console.log("old hideUsernames", hideUsernames, "new value", !hideUsernames);
-      setHideUsernames(!hideUsernames);
+    const onAcceptUIChange = ({fontSize, fontFamily, topColor, hideUsernames}) => {
+      localStorage.setItem(`${me?.user?.user_id || 0}-hideUsernames`, hideUsernames);
+      localStorage.setItem(`${me?.user?.user_id || 0}-fontSize`, fontSize);
+      localStorage.setItem(`${me?.user?.user_id || 0}-fontFamily`, fontFamily);
+      localStorage.setItem(`${me?.user?.user_id || 0}-topColor`, topColor);
+      window.location.reload();
     }
     return (
         <React.Fragment>
             <TableRow key={props.id}>
-                <MythicStyledTableCell><Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} startIcon={<DeleteIcon/>} color="error" variant="contained">Delete</Button>
-                    <MythicDialog open={openDelete} 
-                        onClose={()=>{setOpenDeleteDialog(false);}} 
-                        innerDialog={<SettingsOperatorDeleteDialog onClose={()=>{setOpenDeleteDialog(false);}}  onAccept={onAcceptDelete} {...props} />}
-                     />
+                <MythicStyledTableCell>
+                  <IconButton size="small" onClick={()=>{setOpenDeleteDialog(true);}} style={{color: theme.palette.error.main}} variant="contained"><DeleteIcon/></IconButton>
+                  {openDelete && 
+                      <MythicDialog open={openDelete} 
+                      onClose={()=>{setOpenDeleteDialog(false);}} 
+                      innerDialog={<SettingsOperatorDeleteDialog onClose={()=>{setOpenDeleteDialog(false);}}  onAccept={onAcceptDelete} {...props} />}
+                  />
+                  }
+                  
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>{props.username}</MythicStyledTableCell>
-                <MythicStyledTableCell><Button size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="info" variant="contained">Update</Button>
+                <MythicStyledTableCell><IconButton size="small" onClick={()=>{setOpenUpdateDialog(true);}} color="info" variant="contained"><SettingsIcon color="warning" /></IconButton>
+                  {openUpdate &&
                     <MythicDialog open={openUpdate} 
-                        onClose={()=>{setOpenUpdateDialog(false);}} 
-                        innerDialog={<SettingsOperatorDialog onAccept={onAccept} handleClose={()=>{setOpenUpdateDialog(false);}} title="Update Operator"  {...props}/>}
-                     />
+                     onClose={()=>{setOpenUpdateDialog(false);}} 
+                    innerDialog={<SettingsOperatorDialog onAccept={onAccept} handleClose={()=>{setOpenUpdateDialog(false);}} title="Update Operator"  {...props}/>}
+                />
+                  }
+                    
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>
                     <Switch
@@ -89,13 +98,14 @@ export function SettingsOperatorRow(props){
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>
                   {isMe && 
-                  <Switch
-                    checked={hideUsernames}
-                    onChange={onHideUsernamesChanged}
-                    color="primary"
-                    inputProps={{ 'aria-label': 'primary checkbox' }}
-                    name="hide_usernames"
-                  />
+                  <>
+                    <IconButton size="small" onClick={()=>{setOpenUIConfig(true);}} color="info" variant='contained'><SettingsIcon /></IconButton>
+                    {openUIConfig &&
+                      <MythicDialog open={openUIConfig} onClose={()=>{setOpenUIConfig(false)}} width={"60%"} fullWidth
+                      innerDialog={<SettingsOperatorUIConfigDialog onAccept={onAcceptUIChange} onClose={()=>{setOpenUIConfig(false);}} {...props} />} 
+                      />
+                    }
+                  </>
                   }
                   
                 </MythicStyledTableCell>
@@ -107,8 +117,8 @@ export function SettingsOperatorRow(props){
                         name="active"
                       />
                 </MythicStyledTableCell>
-                <MythicStyledTableCell>{toLocalTime(props.last_login, me.user.view_utc_time)}</MythicStyledTableCell>
-                <MythicStyledTableCell>{toLocalTime(props.creation_time, me.user.view_utc_time)}</MythicStyledTableCell>
+                <MythicStyledTableCell>{toLocalTime(props.last_login, me?.user?.view_utc_time )}</MythicStyledTableCell>
+                <MythicStyledTableCell>{toLocalTime(props.creation_time, me?.user?.view_utc_time )}</MythicStyledTableCell>
                 <MythicStyledTableCell>
                     <Switch
                         checked={props.admin}
@@ -128,7 +138,7 @@ export function SettingsOperatorRow(props){
             </TableRow>
             <TableRow>
               {props.id === me.user.id &&
-                <MythicStyledTableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+                <MythicStyledTableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
                   <Collapse in={open} timeout="auto" unmountOnExit>
                     <Box margin={1}>
                       <Typography variant="h6" gutterBottom component="div" style={{display: "inline-block"}}>

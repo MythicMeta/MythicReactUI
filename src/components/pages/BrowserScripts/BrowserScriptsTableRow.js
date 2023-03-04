@@ -57,7 +57,7 @@ export function BrowserScriptsTableRow(props){
                         name="Active"
                       />
                 </TableCell>
-                <TableCell>{props.payloadtype.ptype}</TableCell>
+                <TableCell>{props.payloadtype.name}</TableCell>
                 <TableCell>{props.command.cmd}</TableCell>
                 <TableCell>{props.author}</TableCell>
                 <TableCell>{props.user_modified ? "User Modified" : "" } </TableCell>

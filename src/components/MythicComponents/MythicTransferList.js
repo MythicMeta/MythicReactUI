@@ -157,7 +157,7 @@ export function MythicTransferListDialog(props) {
     <React.Fragment>
         <DialogTitle id="form-dialog-title">{props.dialogTitle}</DialogTitle>
         <DialogContent dividers={true}>
-        <Grid container spacing={2} justifyContent="center" alignItems="center" className={classes.root}>
+        <Grid container spacing={0} justifyContent="center" alignItems="center" className={classes.root}>
           <Grid item xs={5} style={{paddingLeft: 0, marginLeft: 0}}>{customList(leftTitle, left)}</Grid>
           <Grid item>
             <Grid container direction="column" alignItems="center">
@@ -169,7 +169,7 @@ export function MythicTransferListDialog(props) {
                 disabled={left.length === 0}
                 aria-label="move all right"
               >
-                ≫
+                &gt;&gt;
               </Button>
               <Button
                 variant="outlined"
@@ -199,7 +199,7 @@ export function MythicTransferListDialog(props) {
                 disabled={right.length === 0}
                 aria-label="move all left"
               >
-                ≪
+                &lt;&lt;
               </Button>
             </Grid>
           </Grid>

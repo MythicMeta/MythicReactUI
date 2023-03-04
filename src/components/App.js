@@ -12,32 +12,49 @@ import { Home } from './pages/Home/Home';
 import { LoggedInRoute } from './utilities/LoggedInRoute';
 import { Callbacks } from './pages/Callbacks/Callbacks';
 import { Search } from './pages/Search/Search';
+import { ConsumingServices } from './pages/ConsumingServices/ConsumingServices';
 import React from 'react';
 import { TopAppBar } from './TopAppBar';
 import { useReactiveVar } from '@apollo/client';
 import { useDarkMode } from './utilities/useDarkMode';
-import { SnackbarProvider } from 'notistack';
 import { SingleTaskView } from './pages/SingleTaskView/SingleTaskView';
 import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { GlobalStyles } from '../themes/GlobalStyles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { SnackbarUtilsConfigurator } from './utilities/Snackbar';
 import { FailedRefresh, meState } from '../cache';
 import { Reporting } from './pages/Reporting/Reporting';
 import { MitreAttack } from './pages/MITRE_ATTACK/MitreAttack';
+import {Tags} from './pages/Tags/Tags';
 //background-color: #282c34;
 import { Route, Switch } from 'react-router-dom';
-import { IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import { useInterval } from './utilities/Time';
 import { JWTTimeLeft, isJWTValid } from '..';
 import { RefreshTokenDialog } from './RefreshTokenDialog';
 import { MythicDialog } from './MythicComponents/MythicDialog';
+import { ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 
 export function App(props) {
     const me = useReactiveVar(meState);
     const [themeMode, themeToggler] = useDarkMode();
+    const localStorageFontSize = localStorage.getItem(`${me?.user?.user_id || 0}-fontSize`);
+    const initialLocalStorageFontSizeValue = localStorageFontSize === null ? 12 : parseInt(localStorageFontSize);
+    const localStorageFontFamily = localStorage.getItem(`${me?.user?.user_id || 0}-fontFamily`);
+    const initialLocalStorageFontFamilyValue = localStorageFontFamily === null ? [
+        '-apple-system',
+        'BlinkMacSystemFont',
+        '"Segoe UI"',
+        'Roboto',
+        '"Helvetica Neue"',
+        'Arial',
+        'sans-serif',
+        '"Apple Color Emoji"',
+        '"Segoe UI Emoji"',
+        '"Segoe UI Symbol"',
+      ].join(',') : localStorageFontFamily;
+    const localStorageTopColor = localStorage.getItem(`${me?.user?.user_id || 0}-topColor`);
+    const initialLocalStorageTopColorValue = localStorageTopColor === null ? "#7f93c0" : localStorageTopColor;
     const theme = React.useMemo(
         () =>
             createTheme({
@@ -68,13 +85,14 @@ export function App(props) {
                 pageHeaderText: {
                     main: 'white',
                 },
+                topAppBarColor: initialLocalStorageTopColorValue,
+                typography: {
+                    fontSize: initialLocalStorageFontSizeValue,
+                    fontFamily: initialLocalStorageFontFamilyValue
+                },
             }),
         [themeMode]
     );
-    const notistackRef = React.createRef();
-    const onClickDismissSnack = key => () => {
-        notistackRef.current.closeSnackbar(key);
-    }
     const mountedRef = React.useRef(true);
     const [openRefreshDialog, setOpenRefreshDialog] = React.useState(false);
     useInterval( () => {
@@ -95,21 +113,11 @@ export function App(props) {
             <ThemeProvider theme={theme}>
                 <GlobalStyles theme={theme} />
                 <CssBaseline />
-                <SnackbarProvider
-                    maxSnack={5}
-                    ref={notistackRef}
-                    action={(key) => (
-                        <IconButton onClick={onClickDismissSnack(key)} ><CloseIcon /></IconButton>
-                    )}
-                    anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'center',
-                    }}>
-                    <SnackbarUtilsConfigurator />
+                <ToastContainer limit={5} autoClose={3000} hideProgressBar={true} newestOnTop={true} theme={themeMode} style={{maxWidth: "100%"}} />
                     <div style={{ maxHeight: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ minHeight: '56px', flexGrow: 0 }}>
                             {me.loggedIn && me.user !== undefined && me.user !== null ? (
-                                <TopAppBar theme={themeMode} toggleTheme={themeToggler} />
+                                <TopAppBar me={me} theme={themeMode} toggleTheme={themeToggler} />
                             ) : null}
                         </div>
                         {openRefreshDialog && 
@@ -140,10 +148,12 @@ export function App(props) {
                                 <LoggedInRoute exact path='/new/callbacks/:callbackId' component={ExpandedCallback} />
                                 <LoggedInRoute exact path='/new/reporting' component={Reporting} />
                                 <LoggedInRoute exact path='/new/mitre' component={MitreAttack} />
+                                <LoggedInRoute exact path='/new/tagtypes' component={Tags} />
+                                <LoggedInRoute exact path='/new/consuming_services' component={ConsumingServices} />
                             </Switch>
                         </div>
                     </div>
-                </SnackbarProvider>
+                
             </ThemeProvider>
         </StyledEngineProvider>
     );

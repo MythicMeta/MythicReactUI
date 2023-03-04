@@ -16,14 +16,13 @@ query meHookQuery{
     }
 }
 `;
-
 export const MeHook = () => {
     const {data} = useQuery(meHookQuery, {fetchPolicy: "no-cache"});
     React.useEffect( () => {
         console.log("MeHook mounted")
     }, [])
     if(data) {
-        //console.log(data);
+        console.log(data);
         if(data.meHook.status === "success"){
             try{
                 if(data.meHook.current_operation_id !== meState().user.current_operation_id || data.meHook.current_operation !== meState().user.current_operation){

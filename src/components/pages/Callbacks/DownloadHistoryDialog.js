@@ -9,7 +9,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import GetAppIcon from '@mui/icons-material/GetApp';
 import IconButton from '@mui/material/IconButton';
@@ -24,8 +23,7 @@ export function DownloadHistoryDialog(props){
   return (
     <React.Fragment>
       <DialogTitle id="form-dialog-title">{props.title}</DialogTitle>
-        <DialogContent dividers={true}>
-          <Paper elevation={5} style={{position: "relative", backgroundColor: theme.body}} variant={"elevation"}>
+        
           <TableContainer component={Paper} className="mythicElement">
             <Table  size="small" style={{"tableLayout": "fixed", "maxWidth": "calc(100vw)", "overflow": "scroll"}}>
                   <TableHead>
@@ -53,8 +51,7 @@ export function DownloadHistoryDialog(props){
                   </TableBody>
               </Table>
             </TableContainer>
-          </Paper>
-        </DialogContent>
+          
         <DialogActions>
           <Button onClick={props.onClose} variant="contained" color="primary">
             Close

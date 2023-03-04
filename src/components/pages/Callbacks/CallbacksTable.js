@@ -5,6 +5,7 @@ import {
   unlockCallbackMutation, 
   lockCallbackMutation, 
   updateDescriptionCallbackMutation, 
+  updateIPsCallbackMutation,
   updateSleepInfoCallbackMutation} from './CallbackMutations';
 import {snackActions} from '../../utilities/Snackbar';
 import {useMutation } from '@apollo/client';
@@ -15,7 +16,8 @@ import {
   CallbacksTablePayloadTypeCell,
   CallbacksTableC2Cell,
   CallbacksTableOSCell,
-  CallbacksTableSleepCell
+  CallbacksTableSleepCell,
+  CallbacksTableIPCell
 } from './CallbacksTableRow';
 import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
 import {TableFilterDialog} from './TableFilterDialog';
@@ -84,6 +86,20 @@ function CallbacksTablePreMemo(props){
           snackActions.warning(data);
       }
     });
+    const [updateIPs] = useMutation(updateIPsCallbackMutation, {
+      update: (cache, {data}) => {
+        if(data.updateCallback.status === "success"){
+          snackActions.success("Updated Callback");
+        } else {
+          snackActions.warning(data.updateCallback.error);
+        }
+        
+      },
+      onError: data => {
+        console.log(data)
+        snackActions.warning(data);
+      }
+    })
     const onSubmitAdjustColumns = ({left, right}) => {
       setColumnVisibility({visible: right, hidden: left});
       localStorage.setItem("callbacks_table_columns", JSON.stringify(right));
@@ -201,11 +217,13 @@ function CallbacksTablePreMemo(props){
     const updateSleepInfo = React.useCallback( ({id, sleep_info}) => {
       updateSleep({variables: {callback_id: id, sleep_info}})
     }, [])
-
+    const updateIPsInfo = React.useCallback( ({callback_id, ips}) => {
+      updateIPs({variables: {callback_id, ips}})
+    })
     const filterRow = (row) => {
       for(const [key,value] of Object.entries(filterOptions)){
           if(key === "agent"){
-            if(!String(row.payload.payloadtype.ptype).toLowerCase().includes(value)){
+            if(!String(row.payload.payloadtype.name).toLowerCase().includes(value)){
               return true;
             }
           }else{
@@ -249,33 +267,33 @@ function CallbacksTablePreMemo(props){
                                 updateDescription={updateDescriptionSubmit}
                                 />;
                           case "IP":
-                              return <CallbacksTableStringCell cellData={row.ip} />;
+                              return <CallbacksTableIPCell cellData={row.ip} rowData={row} callback_id={row.id} updateIPs={updateIPsInfo} />;
                           case "External IP":
-                            return <CallbacksTableStringCell cellData={row.external_ip} />;
+                            return <CallbacksTableStringCell cellData={row.external_ip} rowData={row} />;
                           case "Host":
-                              return <CallbacksTableStringCell cellData={row.host} />;
+                              return <CallbacksTableStringCell cellData={row.host} rowData={row} />;
                           case "User":
-                              return <CallbacksTableStringCell cellData={row.user} />;
+                              return <CallbacksTableStringCell cellData={row.user} rowData={row} />;
                           case "Domain":
-                              return <CallbacksTableStringCell cellData={row.domain} />;
+                              return <CallbacksTableStringCell cellData={row.domain} rowData={row} />;
                           case "OS":
                               return <CallbacksTableOSCell rowData={row} cellData={row.os} />;
                           case "Arch":
                               return <CallbacksTableStringCell rowData={row} cellData={row.architecture} />;
                           case "PID":
-                            return <CallbacksTableStringCell cellData={row.pid} />;
+                            return <CallbacksTableStringCell cellData={row.pid} rowData={row} />;
                           case "Last Checkin":
                             return <CallbacksTableLastCheckinCell rowData={row} cellData={row.last_checkin} parentMountedRef={props.parentMountedRef}/>;
                           case "Description":
-                            return <CallbacksTableStringCell cellData={row.description} />;
+                            return <CallbacksTableStringCell cellData={row.description} rowData={row} />;
                           case "Sleep":
                             return <CallbacksTableSleepCell rowData={row} cellData={row.sleep_info} updateSleepInfo={updateSleepInfo} />;
                           case "Agent":
-                            return <CallbacksTablePayloadTypeCell rowData={row} cellData={row.payload.payloadtype.ptype}/>;
+                            return <CallbacksTablePayloadTypeCell rowData={row} cellData={row.payload.payloadtype.name}/>;
                           case "C2":
-                            return <CallbacksTableC2Cell cellData={row.id} initialCallbackGraphEdges={props.callbackgraphedges} />;
+                            return <CallbacksTableC2Cell rowData={row} initialCallbackGraphEdges={props.callbackgraphedges} />;
                           case "Process Name":
-                            return <CallbacksTableStringCell cellData={row.process_name} />;
+                            return <CallbacksTableStringCell cellData={row.process_name} rowData={row} />;
                       }
                   })];
               }

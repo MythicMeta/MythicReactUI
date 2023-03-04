@@ -6,7 +6,7 @@ import {ResponseDisplay} from './ResponseDisplay';
 import RateReviewOutlinedIcon from '@mui/icons-material/RateReviewOutlined';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import {TaskCommentDialog} from './TaskCommentDialog';
-import {TaskTagDialog} from './TaskTagDialog';
+import {ViewEditTagsDialog} from '../../MythicComponents/MythicTag';
 import {useTheme} from '@mui/material/styles';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -23,7 +23,7 @@ import Grid from '@mui/material/Grid';
 import ReplayIcon from '@mui/icons-material/Replay';
 import {gql, useMutation, useLazyQuery } from '@apollo/client';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faBook} from '@fortawesome/free-solid-svg-icons';
+import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import { faExternalLinkAlt, faExpandArrowsAlt } from '@fortawesome/free-solid-svg-icons';
 import SearchIcon from '@mui/icons-material/Search';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -31,6 +31,7 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import makeStyles from '@mui/styles/makeStyles';
 import { Backdrop } from '@mui/material';
+import {downloadFileFromMemory} from '../../utilities/Clipboard';
 
 const ReissueTaskMutationGQL = gql`
 mutation reissueTaskMutation($task_id: Int!){
@@ -84,7 +85,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export const TaskDisplayContainer = ({task}) => {
+export const TaskDisplayContainer = ({task, me}) => {
     const [viewBrowserScript, setViewBrowserScript] = React.useState(true);
     const [commandID, setCommandID] = React.useState(0);
     const [searchOutput, setSearchOutput] = React.useState(false);
@@ -109,10 +110,12 @@ export const TaskDisplayContainer = ({task}) => {
               toggleSelectAllOutput={toggleSelectAllOutput} 
               toggleOpenSearch={toggleOpenSearch} 
               taskData={task} 
+              me={me}
               viewAllOutput={selectAllOutput}/>
             <Grid item xs={12}>
               <ResponseDisplay 
                 task={task} 
+                me={me}
                 command_id={commandID} 
                 viewBrowserScript={viewBrowserScript} 
                 searchOutput={searchOutput} 
@@ -131,17 +134,14 @@ function b64DecodeUnicode(str) {
   // Going backwards: from bytestream, to percent-encoding, to original string.
   //console.log("decoding", str);
   try{
-    return decodeURIComponent(atob(str).split('').map(function(c) {
-      //console.log('%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2));
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+    return decodeURIComponent(window.atob(str));
   }catch(error){
     //console.log("Failed to base64 decode response", error)
     return atob(str);
   }
   
 }
-const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggleOpenSearch, taskData, viewAllOutput}) => {
+const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggleOpenSearch, taskData, viewAllOutput, me}) => {
   const tooltipPlacement = "top";
   const theme = useTheme();
   const classes = useStyles();
@@ -152,13 +152,15 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
   const [openParametersDialog, setOpenParametersDialog] = React.useState(false);
   const [openTokenDialog, setOpenTokenDialog] = React.useState(false);
   const [openStdoutStderrDialog, setOpenStdoutStderrDialog] = React.useState(false);
-  const [openOpsecDialog, setOpenOpsecDialog] = React.useState(false);
+  const [openOpsecDialog, setOpenOpsecDialog] = React.useState({open: false, view: "pre"});
   const [downloadResponses] = useLazyQuery(getAllResponsesLazyQuery, {
     fetchPolicy: "network-only",
     onCompleted: (data) => {
         const output = data.response.reduce( (prev, cur) => {
           return prev + b64DecodeUnicode(cur.response);
         }, b64DecodeUnicode(""));
+        downloadFileFromMemory(output, "task_" + task.id + ".txt");
+        /*
         const dataBlob = new Blob([output], {type: 'application/octet-stream'});
         const ele = document.getElementById("download_config");
         if(ele !== null){
@@ -173,6 +175,7 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
           document.body.appendChild(element);
           element.click();
         }
+        */
     },
     onError: (data) => {
 
@@ -234,7 +237,7 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
       {openTaskTagDialog ?
         (<MythicDialog fullWidth={true} maxWidth="md" open={openTaskTagDialog} 
           onClose={()=>{setOpenTaskTagDialog(false);}} 
-          innerDialog={<TaskTagDialog task_id={task.id} onClose={()=>{setOpenTaskTagDialog(false);}} />}
+          innerDialog={<ViewEditTagsDialog me={me} target_object={"task_id"} target_object_id={task.id} onClose={()=>{setOpenTaskTagDialog(false);}} />}
       />) : (null)}
       {openCommentDialog ?
         (<MythicDialog fullWidth={true} maxWidth="md" open={openCommentDialog} 
@@ -254,10 +257,10 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
           innerDialog={<TaskTokenDialog token_id={task.token === undefined ? 0 : task.token.id} onClose={()=>{setOpenTokenDialog(false);}} />}
       />) : (null)
       }
-      {openOpsecDialog ?
-        (<MythicDialog fullWidth={true} maxWidth="md" open={openOpsecDialog} 
-          onClose={()=>{setOpenOpsecDialog(false);}} 
-          innerDialog={<TaskOpsecDialog task_id={task.id} onClose={()=>{setOpenOpsecDialog(false);}} />}
+      {openOpsecDialog.open ?
+        (<MythicDialog fullWidth={true} maxWidth="md" open={openOpsecDialog.open} 
+          onClose={()=>{setOpenOpsecDialog({...openOpsecDialog, open: false});}} 
+          innerDialog={<TaskOpsecDialog task_id={task.id} view={openOpsecDialog.view} onClose={()=>{setOpenOpsecDialog({...openOpsecDialog, open: false});}} />}
       />) : (null)
       }
       
@@ -349,7 +352,7 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
           onClick={()=>{setOpenParametersDialog(true);setOpenSpeedDial(false);}}
         />
         <SpeedDialAction
-          icon={<FontAwesomeIcon icon={faBook} size="lg" />}
+          icon={<FontAwesomeIcon style={{color: theme.palette.error.main}} icon={faExclamationTriangle} size="lg" />}
           arrow
           TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
           tooltipPlacement={tooltipPlacement}
@@ -365,7 +368,7 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
                   TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                   tooltipPlacement={tooltipPlacement}
                   tooltipTitle={"Submit OPSEC PreCheck Bypass Request"}
-                  onClick={()=>{setOpenOpsecDialog(true);setOpenSpeedDial(false);}}
+                  onClick={()=>{setOpenOpsecDialog({open: true, view: "pre"});setOpenSpeedDial(false);}}
                 />
                 ): (
                   <SpeedDialAction
@@ -374,7 +377,7 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
                   TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                   tooltipPlacement={tooltipPlacement}
                   tooltipTitle={"View OPSEC PreCheck Data"}
-                  onClick={()=>{setOpenOpsecDialog(true);setOpenSpeedDial(false);}}
+                  onClick={()=>{setOpenOpsecDialog({open: true, view: "pre"});setOpenSpeedDial(false);}}
                 />
                 )             
           ) 
@@ -388,7 +391,7 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
                   TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                   tooltipPlacement={tooltipPlacement}
                   tooltipTitle={"Submit OPSEC PostCheck Bypass Request"}
-                  onClick={()=>{setOpenOpsecDialog(true);setOpenSpeedDial(false);}}
+                  onClick={()=>{setOpenOpsecDialog({open: true, view: "post"});setOpenSpeedDial(false);}}
                 />
                 ): (
                   <SpeedDialAction
@@ -397,7 +400,7 @@ const SpeedDialDisplay = ({toggleViewBrowserScript, toggleSelectAllOutput, toggl
                     TooltipClasses={{tooltip: classes.tooltip, arrow: classes.arrow}}
                     tooltipPlacement={tooltipPlacement}
                     tooltipTitle={"View OPSEC PostCheck Data"}
-                    onClick={()=>{setOpenOpsecDialog(true);setOpenSpeedDial(false);}}
+                    onClick={()=>{setOpenOpsecDialog({open: true, view: "post"});setOpenSpeedDial(false);}}
                   />
                 )             
           ) 

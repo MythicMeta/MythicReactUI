@@ -38,9 +38,9 @@ const subscriptionCallbackTokens = gql`
 subscription subscriptionCallbackTokens ($callback_id: Int!){
   callbacktoken(where: {deleted: {_eq: false}, callback_id: {_eq: $callback_id}}) {
     token {
-      TokenId
+      token_id
       id
-      User
+      user
       description
     }
     id
@@ -135,7 +135,6 @@ export function CallbacksTabsTaskingInputPreMemo(props){
             }
             const cmds = subscriptionData.data.loadedcommands.map( c => {
                 let cmdData = {...c.command};
-                cmdData.attributes = JSON.parse(cmdData.attributes);
                 return cmdData;
             })
             cmds.push({cmd: "help", description: "Get help for a command or info about loaded commands", commandparameters: [], attributes: {supported_os: []}});

@@ -7,7 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import AccountCircle from '@mui/icons-material/AccountCircle';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import Menu from '@mui/material/Menu';
 import { Link } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
@@ -24,7 +24,6 @@ import { meState, menuOpen, FailedRefresh } from '../cache';
 import Switch from '@mui/material/Switch';
 import { TopAppBarNotifications } from './TopAppBarNotifications';
 import { EventFeedNotifications } from './EventFeedNotifications';
-import {Redirect} from 'react-router-dom';
 import WifiIcon from '@mui/icons-material/Wifi';
 import HelpIcon from '@mui/icons-material/Help';
 import PhoneCallbackIcon from '@mui/icons-material/PhoneCallback';
@@ -53,6 +52,12 @@ import {faCamera} from '@fortawesome/free-solid-svg-icons';
 import {mythicVersion, mythicUIVersion} from '../index';
 import {MythicStyledTooltip} from '../components/MythicComponents/MythicStyledTooltip';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
+import { MythicDialog } from '../components/MythicComponents/MythicDialog';
+import {MythicFeedbackDialog} from '../components/MythicComponents/MythicFeedbackDialog';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import StorageIcon from '@mui/icons-material/Storage';
+import PublicIcon from '@mui/icons-material/Public';
 
 
 const drawerWidth = 240;
@@ -84,7 +89,7 @@ const useStyles = makeStyles((theme) => ({
   },
   appBar: {
     width: "100%",
-    backgroundColor: "#7f93c0",
+    backgroundColor: theme.topAppBarColor,
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -107,17 +112,18 @@ const useStyles = makeStyles((theme) => ({
 export function TopAppBar(props) {
   const theme = useTheme();
   const classes = useStyles(theme);
-  
+  const feedbackRef = React.useRef(null);
   const settingsRef = React.useRef(null);
   const documentationRef = React.useRef(null);
   const [anchorEl, setAnchorEl] = React.useState(false);
   const [documentationAnchorEl, setDocumentationAnchorEl] = React.useState(false);
-  const me = useReactiveVar(meState);
+  const me = props.me;
   const isOpen = useReactiveVar(menuOpen);
   const [openGlobal, setOpenGlobal] = React.useState(false);
   const [openCreate, setOpenCreate] = React.useState(false);
   const [openOperations, setOpenOperations] = React.useState(false);
   const [openData, setOpenData] = React.useState(false);
+  const [openFeedbackForm, setOpenFeedbackForm] = React.useState(false);
   const handleDrawerOpen = () => {
     menuOpen(true);
   };
@@ -209,7 +215,7 @@ export function TopAppBar(props) {
                     <FingerprintIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
-                <MythicStyledTooltip title="SOCKS">
+                <MythicStyledTooltip title="Proxies">
                   <IconButton component={Link} to='/new/search?tab=socks' color="inherit" size="medium">
                       <FontAwesomeIcon icon={faSocks} />
                   </IconButton>
@@ -247,6 +253,11 @@ export function TopAppBar(props) {
                     <TableChartIcon className="mythicElement"/>
                   </IconButton>
                 </MythicStyledTooltip>
+                <MythicStyledTooltip title="Operation Tags" >
+                  <IconButton component={Link} to='/new/tagtypes' color="inherit" size="medium">
+                    <LocalOfferIcon className="mythicElement"/>
+                  </IconButton>
+                </MythicStyledTooltip>
                 <Link style={{display: "inline-flex", alignItems: "center", paddingRight: "10px", color: "white", textDecoration: "none"}} to="/new/operations">
                         {me?.user?.current_operation || "No Operation Set"}
                 </Link>
@@ -269,12 +280,32 @@ export function TopAppBar(props) {
                 >
                     <MenuItem divider={true} style={{display: "block"}} component={Link} to="/new/settings" onClick={handleClose} name="settings"> 
                       <Typography paragraph={true} variant="caption" style={{marginBottom: "0", color: "white"}}>Signed in as:</Typography>
-                      <Typography paragraph={true} variant="body1"  style={{marginBottom: "0", fontWeight: 600, color: "white"}}> {me?.user?.username } </Typography>
+                      <Typography paragraph={true} variant="body1"  style={{marginBottom: "0", fontWeight: 600, color: "white"}}> {me?.user?.username || "" } </Typography>
                     </MenuItem>
                     <MenuItem component={Link} to="/new/login" onClick={handleLogout}>Logout</MenuItem>
                 </Menu>
                 <div style={{display: "inline-flex", justifyContent: "flex-end", float: "right"}}>
-                
+                <IconButton
+                  aria-label="feedback"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={() => setOpenFeedbackForm(true)}
+                  ref={feedbackRef}
+                  color="inherit"
+                  style={{float: "right", }}
+                  size="large">
+                  <MythicStyledTooltip title="Send Support Feedback">
+                    <ThumbDownOffAltIcon className="mythicElement" />
+                  </MythicStyledTooltip>
+                </IconButton>
+                {openFeedbackForm && 
+                  <MythicDialog fullWidth={true} maxWidth="md" open={openFeedbackForm} 
+                      onClose={()=>{setOpenFeedbackForm(false);}} 
+                      innerDialog={<MythicFeedbackDialog 
+                        title={"Submit Feedback via Webhook"}
+                        onClose={()=>{setOpenFeedbackForm(false);}} />}
+                  />
+                }
                 <IconButton
                   aria-label="documentation links"
                   aria-controls="menu-appbar"
@@ -284,8 +315,8 @@ export function TopAppBar(props) {
                   color="inherit"
                   style={{float:"right"}}
                   size="large">
-                  <MythicStyledTooltip title="Help Documentation">
-                    <HelpIcon />  
+                  <MythicStyledTooltip title="Help">
+                    <HelpIcon className="mythicElement"/>  
                   </MythicStyledTooltip>
                 </IconButton>
                 <Menu
@@ -318,10 +349,10 @@ export function TopAppBar(props) {
                   onClick={handleMenu}
                   ref={settingsRef}
                   color="inherit"
-                  style={{float: "right"}}
+                  style={{float: "right", }}
                   size="large">
                   <MythicStyledTooltip title="Settings or Logout">
-                    <AccountCircle />
+                    <ManageAccountsIcon className="mythicElement" />
                   </MythicStyledTooltip>
                 </IconButton>
                 
@@ -342,11 +373,11 @@ export function TopAppBar(props) {
             onClose={handleDrawerClose}
           >
         <div className={classes.drawerHeader} role="presentation">
-          <ReactLogo style={{width: "90%"}}/>
-          v{mythicVersion}
-          <IconButton onClick={handleDrawerClose} size="large">
-            {theme.direction === 'ltr' ? <ChevronLeftIcon className="mythicElement"/> : <ChevronRightIcon className="mythicElement"/>}
-          </IconButton>
+          <ReactLogo style={{width: "80%", display: "inline-block"}}/>
+          
+            <IconButton onClick={handleDrawerClose} size="large">
+              {theme.direction === 'ltr' ? <ChevronLeftIcon className="mythicElement"/> : <ChevronRightIcon className="mythicElement"/>}
+            </IconButton>
         </div>
         <Divider />
         <List
@@ -355,6 +386,11 @@ export function TopAppBar(props) {
             Home
           </ListSubheader>
         }>
+            <div style={{marginLeft: "15px"}}>
+            <b>Mythic Version:</b> v{mythicVersion}<br/>
+            <b>UI Version:</b> v{mythicUIVersion}<br/>
+            </div>
+            
             <ListItem button component={Link} to='/new' key={"home"} onClick={handleDrawerClose}>
               <ListItemIcon ><HomeIcon className="mythicElement" /></ListItemIcon>
               <ListItemText primary={"Home"} />
@@ -374,13 +410,18 @@ export function TopAppBar(props) {
               </ListItem>
               <Collapse in={openGlobal} unmountOnExit>
                 <List component="div" disablePadding>
-                  <ListItem button className={classes.nested} component={Link} to='/new/payloadtypes' key={"payloadtypes"} onClick={handleDrawerClose}>
-                    <ListItemIcon><InboxIcon className="mythicElement"/></ListItemIcon>
-                    <ListItemText primary={"Payload Types"} />
+                  
+                  <ListItem button className={classes.nested} target="_blank" component={Link} to='/jupyter' key={"jupyter"} onClick={handleDrawerClose}>
+                    <ListItemIcon><CodeIcon className="mythicElement"/></ListItemIcon>
+                    <ListItemText primary={"Jupyter Notebooks"} />
                   </ListItem>
-                  <ListItem button className={classes.nested} component={Link} to='/new/c2profiles' key={"c2profiles"} onClick={handleDrawerClose}>
-                    <ListItemIcon><WifiIcon className="mythicElement"/></ListItemIcon>
-                    <ListItemText primary={"C2 Profiles"} />
+                  <ListItem button className={classes.nested} target="_blank" component={Link} to='/console' key={"console"} onClick={handleDrawerClose}>
+                    <ListItemIcon><StorageIcon className="mythicElement"/></ListItemIcon>
+                    <ListItemText primary={"GraphQL Console"} />
+                  </ListItem>
+                  <ListItem button className={classes.nested} component={Link} to='/new/consuming_services' key={"consuming"} onClick={handleDrawerClose}>
+                    <ListItemIcon><PublicIcon className="mythicElement"/></ListItemIcon>
+                    <ListItemText primary={"Consuming Services"} />
                   </ListItem>
                 </List>
               </Collapse>
@@ -397,17 +438,21 @@ export function TopAppBar(props) {
                     </ListItem>
                     <ListItem button className={classes.nested} component={Link} to='/new/createwrapper' key={"createwrapper"} onClick={handleDrawerClose}>
                       <ListItemIcon><PostAddIcon className="mythicElement"/></ListItemIcon>
-                      <ListItemText primary={"Create Wrapped Payload"} />
+                      <ListItemText primary={"Create Wrapper"} />
                     </ListItem>
                   </List>
                 </Collapse>
               <ListItem button onClick={handleToggleOperations}>
                 <ListItemIcon><SupervisorAccountIcon /></ListItemIcon>
-                <ListItemText>Operations</ListItemText>
+                <ListItemText>Operation Config</ListItemText>
                 {openOperations ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
               <Collapse in={openOperations} unmountOnExit>
                 <List component="div" disablePadding>
+                  <ListItem button className={classes.nested} component={Link} to='/new/payloadtypes' key={"payloadtypes"} onClick={handleDrawerClose}>
+                    <ListItemIcon><InboxIcon className="mythicElement"/></ListItemIcon>
+                    <ListItemText primary={"Agents & C2"} />
+                  </ListItem>
                     <ListItem button className={classes.nested} component={Link} to='/new/operations' key={"modifyoperations"} onClick={handleDrawerClose}>
                       <ListItemIcon><EditIcon className="mythicElement"/></ListItemIcon>
                       <ListItemText primary={"Modify Operations"} />
@@ -448,19 +493,25 @@ export function TopAppBar(props) {
                   <ListItemText primary={"Active Callbacks"} />
                 </ListItem>
             </List>
-        <ListItem>
-        <Switch
+        <Divider />
+        <List
+            subheader={
+              <ListSubheader component="div" id="nested-list-subheader">
+                Optional Configurations
+              </ListSubheader>
+            }>
+              <ListItem>
+              <Switch
             checked={props.theme === 'dark'}
             onChange={props.toggleTheme}
             color="primary"
             inputProps={{ 'aria-label': 'primary checkbox' }}
             name="darkMode"
           />
-        <div style={{display: "inline-block"}}> Enable Dark Mode </div>
-        </ListItem>
-        <ListItem>
-          UI Version: {mythicUIVersion}
-        </ListItem>
+          <div style={{display: "inline-block"}}> Enable Dark Mode </div>
+              </ListItem>
+              </List>
+        
       </Drawer>
     </React.Fragment>
   );

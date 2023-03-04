@@ -1,27 +1,36 @@
 import React from 'react';
 import { PayloadsTable } from './PayloadsTable';
-import {useMutation, useQuery, gql, useSubscription} from '@apollo/client';
-import { MeHook } from '../../../cache';
+import {useMutation, gql, useSubscription} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
+
 const payloadFragment = gql`
 fragment payloadData on payload {
   build_message
   build_phase
   build_stderr
   callback_alert
-  creation_time
   id
   operator {
     id
     username
   }
   uuid
-  tag
+  description
   deleted
   auto_generated
   payloadtype {
     id
-    ptype
+    name
+  }
+  payload_build_steps(order_by: {step_number: asc}) {
+    step_name
+    step_number
+    step_success
+    start_time
+    end_time
+    step_stdout
+    step_stderr
+    id
   }
   filemetum {
     agent_file_id
@@ -38,18 +47,13 @@ fragment payloadData on payload {
   }
 }
 `;
+// payload(where: { operation_id: {_eq: $operation_id}}, order_by: {id: asc}) {
+// /payload_stream(batch_size: 50, cursor: {initial_value: {updated_at: "1970-01-01"}, ordering: ASC}, where: { operation_id: {_eq: $operation_id}}) {
+  // downside for the stream is related stuff (build steps) isn't updated
 const SUB_Payloads = gql`
 ${payloadFragment}
 subscription SubPayloadsQuery($operation_id: Int!) {
-  payload(where: { operation_id: {_eq: $operation_id}}, order_by: {id: desc}) {
-    ...payloadData
-  }
-}
-`;
-const Get_Payloads = gql`
-${payloadFragment}
-query GetPayloadsQuery($operation_id: Int!) {
-  payload(where: { operation_id: {_eq: $operation_id}}, order_by: {id: desc}, limit: 20) {
+  payload_stream(batch_size: 50, cursor: {initial_value: {timestamp: "1970-01-01"}, ordering: ASC}, where: { operation_id: {_eq: $operation_id}}) {
     ...payloadData
   }
 }
@@ -82,17 +86,18 @@ mutation RestorePayloadToUndeleted($id: Int!){
 `;
 
 export function Payloads(props){
-    const me = MeHook();
+    const me = props.me;
     const [payloads, setPayloads] = React.useState([]);
     const mountedRef = React.useRef(true);
-    useQuery(Get_Payloads, {
+    const {loading} = useSubscription(SUB_Payloads, {
       variables: {operation_id: me?.user?.current_operation_id || 0},
       fetchPolicy: "no-cache",
-      onCompleted: (data) => {
+      onSubscriptionData: ({subscriptionData}) => {
+        console.log("got data")
         if(!mountedRef.current){
-          return null;
+          return  null;
         }
-        const updated = data.payload.reduce( (prev, cur) => {
+        const updated = subscriptionData.data.payload_stream.reduce( (prev, cur) => {
           const index = prev.findIndex( (p) => p.id === cur.id );
           if(index > -1){
             prev[index] = {...cur};
@@ -104,25 +109,8 @@ export function Payloads(props){
         updated.sort( (a,b) => a.id > b.id ? -1 : 1);
         setPayloads(updated);
       },
-    })
-    useSubscription(SUB_Payloads, {
-      variables: {operation_id: me?.user?.current_operation_id || 0},
-      fetchPolicy: "no-cache",
-      onSubscriptionData: ({subscriptionData}) => {
-        if(!mountedRef.current){
-          return  null;
-        }
-        const updated = subscriptionData.data.payload.reduce( (prev, cur) => {
-          const index = prev.findIndex( (p) => p.id === cur.id );
-          if(index > -1){
-            prev[index] = {...cur};
-            return [...prev];
-          }else{
-            return [cur, ...prev];
-          }
-        }, [...payloads])
-        updated.sort( (a,b) => a.id > b.id ? -1 : 1);
-        setPayloads(updated);
+      onCompleted: (data) => {
+        console.log("completed")
       },
       onError: (data) => {
         snackActions.warning("Failed to get payloads");
@@ -213,8 +201,8 @@ export function Payloads(props){
        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     return (
-      <div style={{display: "flex", flexGrow: 1, flexDirection: "column", marginTop:"10px"}}>
-        <PayloadsTable onDeletePayload={onDeletePayload} onUpdateCallbackAlert={onUpdateCallbackAlert} payload={payloads} onRestorePayload={onRestorePayload}/>
+      <div style={{display: "flex", flexGrow: 1, flexDirection: "column"}}>
+        <PayloadsTable loading={loading} me={props.me} onDeletePayload={onDeletePayload} onUpdateCallbackAlert={onUpdateCallbackAlert} payload={payloads} onRestorePayload={onRestorePayload}/>
       </div>
     );
 } 

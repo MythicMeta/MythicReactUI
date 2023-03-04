@@ -11,6 +11,8 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableHead from '@mui/material/TableHead';
 import LinearProgress from '@mui/material/LinearProgress';
+import { getDefaultChoices } from '../CreatePayload/Step2SelectPayloadType';
+import { getDefaultValueForType } from '../CreatePayload/Step2SelectPayloadType';
 
 const GET_C2_Details = gql`
 query GetPC2Details($payload_name: String!) {
@@ -25,6 +27,7 @@ query GetPC2Details($payload_name: String!) {
       randomize
       required
       verifier_regex
+      choices
     }
   }
 }
@@ -36,16 +39,37 @@ export function C2ProfileBuildDialog(props) {
         variables: {payload_name: props.payload_name},
         onCompleted: data => {
             const buildParams = data.c2profile[0].c2profileparameters.map((param) => {
-              switch(param.parameter_type){
-                case "ChooseOne":
-                  return {...param, defaultParameter: param.default_value.split("\n")[0], options: param.default_value.split("\n").join(", ")};
-                case "Date":
-                  return {...param, defaultParameter: "Today with an offset of " + param.default_value + " days"}
-                case "Dictionary":
-                  return {...param, defaultParameter: JSON.stringify(JSON.parse(param.default_value), null, 2)};
-                default:
-                  return {...param, defaultParameter: param.default_value};
+              let choices = getDefaultChoices(param);
+              if(choices.length > 0){
+                if(param.parameter_type === "Dictionary"){
+                  choices = choices.reduce( (prev, cur) => {
+                    return {...prev, [cur.name]: cur.default_value};
+                  }, {});
+                  choices = JSON.stringify(choices, null, 2);
+                } else {
+                  choices = choices.join(", ")
+                }
+                
+              } else {
+                choices = "";
               }
+              let default_value = getDefaultValueForType(param);
+              if(param.parameter_type === "Array" || param.parameter_type === "ChooseMultiple"){
+                default_value = default_value.join(", ")
+              } else if(param.parameter_type === "Boolean"){
+                default_value = default_value ? "True" : "False"
+              } else if(param.parameter_type === "Dictionary"){
+                let defaultChoices = getDefaultChoices(param);
+                defaultChoices = defaultChoices.reduce( (prev, cur) => {
+                  if(cur.default_show){
+                    return {...prev, [cur.name]: cur.default_value};
+                  }else{
+                    return {...prev};
+                  }
+                }, {});
+                default_value = JSON.stringify(defaultChoices, null, 2);
+              }
+              return {...param, choices: choices, default_value: default_value}
             });
             setBuildParams(buildParams);
         }
@@ -55,7 +79,7 @@ export function C2ProfileBuildDialog(props) {
     }
     if (error) {
      console.error(error);
-     return <div>Error!</div>;
+     return <div>Error! {error.message}</div>;
     }
   
   return (
@@ -78,23 +102,22 @@ export function C2ProfileBuildDialog(props) {
                         <TableRow key={"buildprop" + param.id} hover>
                             <TableCell>{param.description}</TableCell>
                             <TableCell>
-                              <b>Scripting/Building Name: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.name}</pre><br/>
-                              <b>Parameter Type: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.parameter_type}</pre><br/>
-                              <b>Default Parameter: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.defaultParameter}</pre><br/>
-                              {param.parameter_type === "ChooseOne" ? (
+                            <b>Scripting/Building Name: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.name}</pre><br/>
+                            <b>Parameter Type: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.parameter_type}</pre><br/>
+                            <b>Default Value: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.default_value}</pre><br/>
+                            {param.choices.length > 0 ? (
                               <React.Fragment>
-                                <b>Parameter Options: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.options}</pre><br/>
+                                <b>Parameter Options: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.choices}</pre><br/>
                               </React.Fragment>
                             ) : (null)}
-                              <b>Required? </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.required ? "Yes": "No"}</pre><br/>
-                              {param.verifier_regex === "" ? (null) : (<React.Fragment>
-                                <b>Verifier Regex: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.verifier_regex}</pre><br/>
-                              </React.Fragment>)}
-                              <b>Randomize value?: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.randomize ? "Yes" : "No" }</pre><br/>
-                              {param.format_string === "" ? (null) : (<React.Fragment>
-                                <b>Random Format String: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.format_string}</pre><br/>
-                              </React.Fragment>)}
-                              
+                            <b>Required? </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.required ? "Yes": "No"}</pre><br/>
+                            <b>Verifier Regex: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.verifier_regex}</pre><br/>
+                            <b>Randomized: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.randomize ? "Yes": "No"}</pre><br/>
+                            {param.randomize ? (
+                              <React.Fragment>
+                                <b>Format String: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.format_string}</pre><br/>
+                              </React.Fragment>
+                            ) : (null)}
                             </TableCell>
                         </TableRow>
                     ))

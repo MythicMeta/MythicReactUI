@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import { gql, useMutation} from '@apollo/client';
 import { CreatePayloadNavigationButtons} from './CreatePayloadNavigationButtons';
 import Typography from '@mui/material/Typography';
-import {PayloadSubscriptionNotification} from './PayloadSubscriptionNotification';
+import {PayloadSubscriptionNotification} from '../CreatePayload/PayloadSubscriptionNotification';
 import MythicTextField from '../../MythicComponents/MythicTextField';
 import {snackActions} from '../../utilities/Snackbar';
 
@@ -51,7 +51,7 @@ export function Step5Build(props){
             "selected_os": props.buildOptions[0],
             "payload_type": props.buildOptions[1]["payload_type"],
             "filename": filename,
-            "tag": description,
+            "description": description,
             "commands": [],
             "build_parameters": buildParameters,
             "c2_profiles": [],

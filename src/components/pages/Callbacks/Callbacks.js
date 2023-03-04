@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
         color: theme.palette.background.contrast,
     },
 }));
-export function Callbacks() {
+export function Callbacks({me}) {
     const [topDisplay, setTopDisplay] = React.useState('table');
     const [openTabs, setOpenTabs] = React.useState([]);
     const [clickedTabId, setClickedTabId] = React.useState('');
@@ -174,7 +174,7 @@ export function Callbacks() {
             <React.Fragment>
                 <SpeedDialWrapper setTopDisplay={setTopDisplay} heights={heights} onSubmitHeights={onSubmitHeights} />
                 <div style={{flexGrow: 1, flexBasis: heights.top, height: heights.top }}>
-                    <CallbacksTop topDisplay={topDisplay} onOpenTab={onOpenTab.current} heights={heights} />
+                    <CallbacksTop topDisplay={topDisplay} onOpenTab={onOpenTab.current} heights={heights} me={me}/>
                 </div>
                 <div style={{ flexGrow: 1, flexBasis: heights.bottom, height: heights.bottom }}>
                     <CallbacksTabs
@@ -186,6 +186,7 @@ export function Callbacks() {
                         clickedTabId={clickedTabId}
                         openTabs={openTabs}
                         onDragTab={onDragTab}
+                        me={me}
                         contextMenuOptions={contextMenuOptions}
                     />
                 </div>

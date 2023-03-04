@@ -46,9 +46,9 @@ export function TaskArtifactsTable(props){
                   {artifacts.map( (artifact) => (
                     <TableRow key={"artifact" + artifact.id} hover>
                       <TableCell>{artifact.task_id}</TableCell>
-                      <TableCell>{artifact.artifact.name}</TableCell>
+                      <TableCell>{artifact.base_artifact}</TableCell>
                       <TableCell>{artifact.host}</TableCell>
-                      <TableCell>{artifact.artifact_instance_text}</TableCell>
+                      <TableCell>{artifact.artifact_text}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

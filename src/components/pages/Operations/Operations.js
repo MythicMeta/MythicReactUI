@@ -10,6 +10,7 @@ query GetOperations {
     complete
     name
     id
+    deleted
     admin {
       username
       id
@@ -38,7 +39,7 @@ query getBlockLists {
       id
       cmd
       payloadtype{
-        ptype
+        name
       }
     }
   }
@@ -61,10 +62,10 @@ export function Operations(props){
           if(prev[cur.name] === undefined){
             prev[cur.name] = {};
           }
-          if(prev[cur.name][cur.command.payloadtype.ptype] === undefined){
-            prev[cur.name][cur.command.payloadtype.ptype] = [];
+          if(prev[cur.name][cur.command.payloadtype.name] === undefined){
+            prev[cur.name][cur.command.payloadtype.name] = [];
           }
-          prev[cur.name][cur.command.payloadtype.ptype].push(cur);
+          prev[cur.name][cur.command.payloadtype.name].push(cur);
           return {...prev};
         }, {});
         // now break out into array
@@ -87,12 +88,22 @@ export function Operations(props){
       })
       setOperations(updatedOperations);
     }
-    const onNewOperation = ({id, name, admin}) => {
-      setOperations([...operations, {id, name, admin}])
+    const onNewOperation = ({id, name}) => {
+      setOperations([...operations, {id, name, admin: {id: props.me.user.user_id, username: props.me.user.username}}])
+    }
+    const updateDeleted = ({id, deleted}) => {
+      const updatedOps = operations.map( o => {
+        if (o.id === id){
+          return {...o, deleted: deleted}
+        } else {
+          return {...o}
+        }
+      });
+      setOperations(updatedOps);
     }
     return (
       <div style={{  height: "100%", display: "flex", flexDirection: "column"}}>
-        <OperationTable operations={operations} onUpdateOperation={onUpdateOperation} onNewOperation={onNewOperation}/>
+        <OperationTable operations={operations} onUpdateOperation={onUpdateOperation} onNewOperation={onNewOperation} me={props.me} updateDeleted={updateDeleted}/>
         <CommandBlockListTable blockLists={blockLists} />
       </div>
     );

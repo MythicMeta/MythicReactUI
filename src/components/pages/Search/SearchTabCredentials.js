@@ -8,7 +8,6 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery, useMutation} from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Button, Typography } from '@mui/material';
 import {CredentialTable} from './CredentialTable';
@@ -30,6 +29,14 @@ fragment credentialData on credential{
     deleted
     operator {
         username
+    }
+    tags {
+        tagtype {
+            name
+            color
+            id
+        }
+        id
     }
 }
 `;
@@ -219,7 +226,7 @@ export const SearchTabCredentialsPanel = (props) =>{
     const [totalCount, setTotalCount] = React.useState(0);
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Account");
-    const me = MeHook();
+    const me = props.me;
     const addCredential = (credential) => {
         setCredentialData([credential, ...credentialaData]);
     }
@@ -357,12 +364,12 @@ export const SearchTabCredentialsPanel = (props) =>{
     }
     return (
         <MythicTabPanel {...props} >
-            <SearchTabCredentialsSearchPanel onChangeSearchField={onChangeSearchField} onAccountSearch={onAccountSearch} value={props.value} index={props.index}
+            <SearchTabCredentialsSearchPanel me={me} onChangeSearchField={onChangeSearchField} onAccountSearch={onAccountSearch} value={props.value} index={props.index}
                 onRealmSearch={onRealmSearch} onCredentialSearch={onCredentialSearch} onCommentSearch={onCommentSearch} changeSearchParam={props.changeSearchParam}
                 onAddCredential={addCredential}/>
             <div style={{overflowY: "auto", flexGrow: 1}}>
                 {credentialaData.length > 0 ? (
-                    <CredentialTable credentials={credentialaData} />) : (
+                    <CredentialTable me={me} credentials={credentialaData} />) : (
                     <div style={{display: "flex", justifyContent: "center", alignItems: "center", position: "absolute", left: "50%", top: "50%"}}>No Search Results</div>
                 )}
             </div>

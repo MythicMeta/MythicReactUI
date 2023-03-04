@@ -49,10 +49,10 @@ function ArtifactTableRow(props){
         <React.Fragment>
             <TableRow hover>
                 <MythicStyledTableCell>
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.artifact.name}</Typography>
+                    <Typography variant="body2" >{props.base_artifact}</Typography>
                 </MythicStyledTableCell>
                 <MythicStyledTableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.task.command.cmd}</Typography>
+                    <Typography variant="body2" >{props.task.command.cmd}</Typography>
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>
                     <Link style={{wordBreak: "break-all"}} color="textPrimary" underline="always" target="_blank" 
@@ -67,13 +67,13 @@ function ArtifactTableRow(props){
                     </Link>
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>
-                <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props?.task?.operator?.username || null}</Typography>
+                <Typography variant="body2" style={{ display: "inline-block"}}>{props?.task?.operator?.username || null}</Typography>
                 </MythicStyledTableCell>
                 <MythicStyledTableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.host}</Typography>
+                    <Typography variant="body2" style={{ display: "inline-block"}}>{props.host}</Typography>
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>
-                <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.artifact_instance_text}</Typography>
+                <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.artifact_text}</Typography>
                 </MythicStyledTableCell>
               
             </TableRow>

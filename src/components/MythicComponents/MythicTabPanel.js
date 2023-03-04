@@ -137,7 +137,7 @@ export function MythicTabLabel(props) {
             draggable={onDragTab ? true : false}
             onDragStart={drag}
             label={
-                <span onContextMenu={handleContextClick} style={{ display: 'inline-block', zIndex: 1 }} ref={dropdownAnchorRef}>
+                <span onContextMenu={handleContextClick} style={{ display: 'inline-block', zIndex: 1}} ref={dropdownAnchorRef}>
                     {label}
                     <IconButton component='div' size='small' onClick={onClick} {...other}>
                         <CloseIcon />
@@ -172,6 +172,7 @@ export function MythicTabLabel(props) {
             
             {...a11yProps(index)}
             {...other}
+            style={{padding: "0px 5px 0px 5px"}}
         />
     );
 }

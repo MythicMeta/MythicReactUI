@@ -9,13 +9,13 @@ import {useTheme} from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery } from '@apollo/client';
 import { snackActions } from '../../utilities/Snackbar';
-import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Button, Typography } from '@mui/material';
 import {FileMetaDownloadTable, FileMetaUploadTable, FileMetaScreenshotTable} from './FileMetaTable';
 import {FileBrowserTable} from './FileBrowserTable';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import {UploadTaskFile} from '../../MythicComponents/MythicFileUpload';
 
 const fileMetaFragment = gql`
 fragment filemetaData on filemeta{
@@ -40,6 +40,14 @@ fragment filemetaData on filemeta{
     sha1
     timestamp
     total_chunks
+    tags {
+        tagtype {
+            name
+            color
+            id
+          }
+        id
+    }
     task {
         id
         comment
@@ -53,17 +61,23 @@ fragment filemetaData on filemeta{
     }
 }
 `;
-const fileBrowserFragment = gql`
-fragment filebrowserData on filebrowserobj{
+const mythictreeFragment = gql`
+fragment mythictreeData on mythictree{
     comment
     deleted
     full_path_text
     host
     id
-    is_file
-    modify_time
-    permissions
-    size
+    metadata
+    can_have_children
+    tags {
+        tagtype {
+            name
+            color
+            id
+          }
+        id
+    }
     filemeta {
         id
         agent_file_id
@@ -85,12 +99,12 @@ const fetchLimit = 20;
 const filenameFileMetaUploadSearch = gql`
 ${fileMetaFragment}
 query filenameFileMetaUploadQuery($operation_id: Int!, $filename: String!, $host: String!, $offset: Int!, $fetchLimit: Int!) {
-    filemeta_aggregate(distinct_on: id, where: {host: {_ilike: $host}, _and: [{_or: [{filename_text: {_ilike: $filename}}, {full_remote_path_text: {_ilike: $filename}}]}, {_or: [{task_id: {_is_null: false}}, {is_payload: {_eq: false}}]}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: false}, is_screenshot: {_eq: false},task_id: {_is_null: false}}) {
+    filemeta_aggregate(distinct_on: id, where: {host: {_ilike: $host}, _and: [{_or: [{filename_utf8: {_ilike: $filename}}, {full_remote_path_utf8: {_ilike: $filename}}]}, {_or: [{task_id: {_is_null: false}}, {is_payload: {_eq: false}}]}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: false}, is_screenshot: {_eq: false},task_id: {_is_null: false}}) {
       aggregate {
         count
       }
     }
-    filemeta(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, _and: [{_or: [{filename_text: {_ilike: $filename}}, {full_remote_path_text: {_ilike: $filename}}]}, {_or: [{task_id: {_is_null: false}}, {is_payload: {_eq: false}}]}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: false}, is_screenshot: {_eq: false}}) {
+    filemeta(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, _and: [{_or: [{filename_utf8: {_ilike: $filename}}, {full_remote_path_utf8: {_ilike: $filename}}]}, {_or: [{task_id: {_is_null: false}}, {is_payload: {_eq: false}}]}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: false}, is_screenshot: {_eq: false}}) {
       ...filemetaData
     }
   }
@@ -98,26 +112,26 @@ query filenameFileMetaUploadQuery($operation_id: Int!, $filename: String!, $host
 const filenameFileMetaDownloadSearch = gql`
 ${fileMetaFragment}
 query filenameFileMetaDownloadQuery($operation_id: Int!, $filename: String!, $host: String!, $offset: Int!, $fetchLimit: Int!) {
-    filemeta_aggregate(distinct_on: id, where: {host: {_ilike: $host}, _or: [{filename_text: {_ilike: $filename}}, {full_remote_path_text: {_ilike: $filename}}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: true}, is_screenshot: {_eq: false}}) {
+    filemeta_aggregate(distinct_on: id, where: {host: {_ilike: $host}, _or: [{filename_utf8: {_ilike: $filename}}, {full_remote_path_utf8: {_ilike: $filename}}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: true}, is_screenshot: {_eq: false}}) {
       aggregate {
         count
       }
     }
-    filemeta(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, _or: [{filename_text: {_ilike: $filename}}, {full_remote_path_text: {_ilike: $filename}}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: true}, is_screenshot: {_eq: false}}) {
+    filemeta(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, _or: [{filename_utf8: {_ilike: $filename}}, {full_remote_path_utf8: {_ilike: $filename}}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: true}, is_screenshot: {_eq: false}}) {
       ...filemetaData
     }
   }
 `;
 const filenameFileBrowserSearch = gql`
-${fileBrowserFragment}
+${mythictreeFragment}
 query filenameFileBrowserQuery($operation_id: Int!, $filename: String!, $host: String!, $offset: Int!, $fetchLimit: Int!) {
-    filebrowserobj_aggregate(distinct_on: id, where: {full_path_text: {_ilike: $filename}, host: {_ilike: $host}, operation_id: {_eq: $operation_id}}) {
+    mythictree_aggregate(distinct_on: id, where: {full_path_text: {_ilike: $filename}, host: {_ilike: $host}, operation_id: {_eq: $operation_id}, tree_type: {_eq: "file"}}) {
       aggregate {
         count
       }
     }
-    filebrowserobj(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, full_path_text: {_ilike: $filename}, operation_id: {_eq: $operation_id}}) {
-      ...filebrowserData
+    mythictree(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, full_path_text: {_ilike: $filename}, operation_id: {_eq: $operation_id}, tree_type: {_eq: "file"}}) {
+      ...mythictreeData
     }
   }
 `;
@@ -174,27 +188,27 @@ query hashFileMetaDownloadQuery($operation_id: Int!, $comment: String!, $host: S
   }
 `;
 const commentFileBrowserSearch = gql`
-${fileBrowserFragment}
+${mythictreeFragment}
 query filenameFileBrowserQuery($operation_id: Int!, $comment: String!, $host: String!, $offset: Int!, $fetchLimit: Int!) {
-    filebrowserobj_aggregate(distinct_on: id, where: {comment: {_ilike: $comment}, host: {_ilike: $host}, operation_id: {_eq: $operation_id}}) {
+    mythictree_aggregate(distinct_on: id, where: {comment: {_ilike: $comment}, host: {_ilike: $host}, operation_id: {_eq: $operation_id}, tree_type: {_eq: "file"}}) {
       aggregate {
         count
       }
     }
-    filebrowserobj(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, comment: {_ilike: $comment}, operation_id: {_eq: $operation_id}}) {
-      ...filebrowserData
+    mythictree(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, comment: {_ilike: $comment}, operation_id: {_eq: $operation_id}, tree_type: {_eq: "file"}}) {
+      ...mythictreeData
     }
   }
 `;
 const filenameFileMetaScreenshotSearch = gql`
 ${fileMetaFragment}
 query filenameFileMetaScreenshotQuery($operation_id: Int!, $filename: String!, $host: String!, $offset: Int!, $fetchLimit: Int!) {
-    filemeta_aggregate(distinct_on: id, where: {host: {_ilike: $host}, _and: [{_or: [{filename_text: {_ilike: $filename}}, {full_remote_path_text: {_ilike: $filename}}]}, {_or: [{task_id: {_is_null: false}}, {is_payload: {_eq: false}}]}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: true}, is_screenshot: {_eq: true},task_id: {_is_null: false}}) {
+    filemeta_aggregate(distinct_on: id, where: {host: {_ilike: $host}, _and: [{_or: [{filename_utf8: {_ilike: $filename}}, {full_remote_path_utf8: {_ilike: $filename}}]}, {_or: [{task_id: {_is_null: false}}, {is_payload: {_eq: false}}]}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: true}, is_screenshot: {_eq: true},task_id: {_is_null: false}}) {
       aggregate {
         count
       }
     }
-    filemeta(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, _and: [{_or: [{filename_text: {_ilike: $filename}}, {full_remote_path_text: {_ilike: $filename}}]}, {_or: [{task_id: {_is_null: false}}, {is_payload: {_eq: false}}]}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: true}, is_screenshot: {_eq: true}}) {
+    filemeta(limit: $fetchLimit, distinct_on: id, offset: $offset, order_by: {id: desc}, where: {host: {_ilike: $host}, _and: [{_or: [{filename_utf8: {_ilike: $filename}}, {full_remote_path_utf8: {_ilike: $filename}}]}, {_or: [{task_id: {_is_null: false}}, {is_payload: {_eq: false}}]}], operation_id: {_eq: $operation_id}, is_download_from_agent: {_eq: true}, is_screenshot: {_eq: true}}) {
       ...filemetaData
     }
   }
@@ -277,46 +291,11 @@ const SearchTabFilesSearchPanel = (props) => {
                 break;
         }
     }
-    const uploadFile = (file) => {
-        try {
-            let xhr = new XMLHttpRequest();
-            let fd = new FormData();
-            xhr.open("POST", window.location.origin + "/api/v1.4/files/manual", true);
-            //xhr.withCredentials = true;
-            xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("access_token"));
-            //xhr.setRequestHeader("refresh_token", localStorage.getItem("refresh_token"));
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try{
-                        let response = JSON.parse(xhr.responseText);
-                        if(response["status"] === "success"){
-                            snackActions.success("Successfuly hosted file! Now searchable on the 'Uploads' search");
-                        }else{
-                            snackActions.error("Failed to host file! " + response["error"]);
-                        }
-                    }catch(error){
-                        snackActions.error("Failed to process response from upload: " + error);
-                        console.log(error);
-                    }
-                } else if (xhr.readyState === 4 && (xhr.status === 302 || xhr.status === 405)) {
-                    // either got redirected or try to post/put to a bad path
-                    console.log("httpGetAsync was 302 or 405 from url ");
-                    snackActions.error("Got HTTP 302 or 405 when trying to host file");
-                } else if (xhr.readyState === 4) {
-                    console.log("httpGetAsync Error with data: " + fd);
-                    snackActions.error("Mythic hit an error trying to hos the file: " + xhr.status + ": " + xhr.statusText);
-                }
-            };
-            fd.append("upload_file", file);
-            xhr.send(fd);
-        } catch (error) {
-            snackActions.error("HTTP Browser error trying to upload file: " + error.toString());
-            console.error("HTTP Browser error: " + error.toString());
+    const onFileChange = async (evt) => {  
+        let newUUID = await UploadTaskFile(evt.target.files[0], "Manually uploaded");
+        if(newUUID !== ""){
+            snackActions.success("Successfully uploaded file. It's available in 'uploads'")
         }
-    
-    }
-    const onFileChange = (evt) => {  
-        uploadFile(evt.target.files[0]);
     }
     React.useEffect(() => {
         if(props.value === props.index){
@@ -403,14 +382,16 @@ const SearchTabFilesSearchPanel = (props) => {
 }
 
 export const SearchTabFilesPanel = (props) =>{
-    const [fileMetaData, setFileMetaData] = React.useState([]);
+    const [fileMetaUploadData, setFileMetaUploadData] = React.useState([]);
+    const [fileMetaDownloadData, setFileMetaDownloadData] = React.useState([]);
+    const [fileMetaScreenshotData, setFileMetaScreenshotData] = React.useState([]);
     const [fileBrowserData, setFileBrowserData] = React.useState([]);
     const [totalCount, setTotalCount] = React.useState(0);
     const [search, setSearch] = React.useState("");
     const [searchHost, setSearchHost] = React.useState("");
     const [searchField, setSearchField] = React.useState("Filename");
     const [searchLocation, setSearchLocation] = React.useState("Downloads");
-    const me = MeHook();
+    const me = props.me;
     const onChangeSearchField = (field) => {
         setSearchField(field);
         switch(field){
@@ -443,17 +424,37 @@ export const SearchTabFilesPanel = (props) =>{
                 break;
         }
     }
-    const handleFileMetaSearchResults = (data) => {
+    const handleFileMetaDownloadSearchResults = (data) => {
         snackActions.dismiss();
         setTotalCount(data.filemeta_aggregate.aggregate.count);
         setFileBrowserData([]);
-        setFileMetaData(data.filemeta);
+        setFileMetaUploadData([]);
+        setFileMetaScreenshotData([]);
+        setFileMetaDownloadData(data.filemeta);
+    }
+    const handleFileMetaUploadSearchResults = (data) => {
+        snackActions.dismiss();
+        setTotalCount(data.filemeta_aggregate.aggregate.count);
+        setFileBrowserData([]);
+        setFileMetaDownloadData([]);
+        setFileMetaScreenshotData([]);
+        setFileMetaUploadData(data.filemeta);
+    }
+    const handleFileMetaScrenshotSearchResults = (data) => {
+        snackActions.dismiss();
+        setTotalCount(data.filemeta_aggregate.aggregate.count);
+        setFileBrowserData([]);
+        setFileMetaDownloadData([]);
+        setFileMetaUploadData([]);
+        setFileMetaScreenshotData(data.filemeta);
     }
     const handleFileBrowserSearchResults = (data) => {
         snackActions.dismiss();
-        setTotalCount(data.filebrowserobj_aggregate.aggregate.count);
-        setFileBrowserData(data.filebrowserobj);
-        setFileMetaData([]);
+        setTotalCount(data.mythictree_aggregate.aggregate.count);
+        setFileBrowserData(data.mythictree);
+        setFileMetaUploadData([]);
+        setFileMetaDownloadData([]);
+        setFileMetaScreenshotData([]);
     }
     const handleCallbackSearchFailure = (data) => {
         snackActions.dismiss();
@@ -462,12 +463,12 @@ export const SearchTabFilesPanel = (props) =>{
     }
     const [getfilenameFileMetaUploadSearch] = useLazyQuery(filenameFileMetaUploadSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaUploadSearchResults,
         onError: handleCallbackSearchFailure
     })
     const [getfilenameFileMetaDownloadSearch] = useLazyQuery(filenameFileMetaDownloadSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaDownloadSearchResults,
         onError: handleCallbackSearchFailure
     })
     const [getfilenameFileBrowserSearch] = useLazyQuery(filenameFileBrowserSearch, {
@@ -477,32 +478,32 @@ export const SearchTabFilesPanel = (props) =>{
     })
     const [getfilenameFileMetaScreenshotSearch] = useLazyQuery(filenameFileMetaScreenshotSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaScrenshotSearchResults,
         onError: handleCallbackSearchFailure
     })
     const [gethashFileMetaUploadSearch] = useLazyQuery(hashFileMetaUploadSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaUploadSearchResults,
         onError: handleCallbackSearchFailure
     })
     const [gethashFileMetaDownloadSearch] = useLazyQuery(hashFileMetaDownloadSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaDownloadSearchResults,
         onError: handleCallbackSearchFailure
     })
     const [gethashFileMetaScreenshotSearch] = useLazyQuery(hashFileMetaScreenshotSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaScrenshotSearchResults,
         onError: handleCallbackSearchFailure
     })
     const [getcommentFileMetaUploadSearch] = useLazyQuery(commentFileMetaUploadSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaUploadSearchResults,
         onError: handleCallbackSearchFailure
     })
     const [getcommentFileMetaDownloadSearch] = useLazyQuery(commentFileMetaDownloadSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaDownloadSearchResults,
         onError: handleCallbackSearchFailure
     })
     const [getcommentFileBrowserSearch] = useLazyQuery(commentFileBrowserSearch, {
@@ -512,7 +513,7 @@ export const SearchTabFilesPanel = (props) =>{
     })
     const [getcommentFileMetaScreenshotSearch] = useLazyQuery(commentFileMetaScreenshotSearch, {
         fetchPolicy: "no-cache",
-        onCompleted: handleFileMetaSearchResults,
+        onCompleted: handleFileMetaScrenshotSearchResults,
         onError: handleCallbackSearchFailure
     })
     const onFilenameSearch = ({search, searchHost, offset, adjustedSearchLocation}) => {
@@ -562,7 +563,9 @@ export const SearchTabFilesPanel = (props) =>{
             snackActions.warning("FileBrowser doesn't currently track file hashes");
             setTotalCount(0);
             setFileBrowserData([]);
-            setFileMetaData([]);
+            setFileMetaUploadData([]);
+            setFileMetaScreenshotData([]);
+            setFileMetaDownloadData([]);
         }else if(adjustedSearchLocation === "Uploads"){
             gethashFileMetaUploadSearch({variables:{
                 operation_id: me?.user?.current_operation_id || 0,
@@ -653,11 +656,10 @@ export const SearchTabFilesPanel = (props) =>{
             <SearchTabFilesSearchPanel onChangeSearchField={onChangeSearchField} onFilenameSearch={onFilenameSearch} value={props.value} index={props.index} queryParams={props.queryParams}
                 onHashSearch={onHashSearch} onCommentSearch={onCommentSearch} onChangeSearchLocation={onChangeSearchLocation} changeSearchParam={props.changeSearchParam}/>
             <div style={{overflowY: "auto", flexGrow: 1}}>
-                {fileMetaData.length > 0 ? (
-                    searchLocation === "Uploads" ? (<FileMetaUploadTable files={fileMetaData} />) : (searchLocation === "Downloads" ? (<FileMetaDownloadTable files={fileMetaData} />) : (<FileMetaScreenshotTable files={fileMetaData} />))
-                ) : (fileBrowserData.length > 0 ? (<FileBrowserTable files={fileBrowserData} />) : (
-                    <div style={{display: "flex", justifyContent: "center", alignItems: "center", position: "absolute", left: "50%", top: "50%"}}>No Search Results</div>
-                ))}
+                {searchLocation === "Uploads" ? ( <FileMetaUploadTable me={me} files={fileMetaUploadData} /> ) : (null)}
+                {searchLocation === "Downloads" ? ( <FileMetaDownloadTable me={me} files={fileMetaDownloadData} /> ) : (null) }
+                {searchLocation === "Screenshots" ? (<FileMetaScreenshotTable me={me} files={fileMetaScreenshotData} />) : (null)}
+                {searchLocation === "FileBrowser" ? (<FileBrowserTable me={me} files={fileBrowserData} />) :(null)}
             </div>
             <div style={{background: "transparent", display: "flex", justifyContent: "center", alignItems: "center"}}>
             <Pagination count={Math.ceil(totalCount / fetchLimit)} variant="outlined" color="primary" boundaryCount={1}

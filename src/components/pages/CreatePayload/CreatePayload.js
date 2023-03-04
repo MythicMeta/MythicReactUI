@@ -7,8 +7,6 @@ import {Step2SelectPayloadType} from './Step2SelectPayloadType';
 import {Step3SelectCommands} from './Step3SelectCommands';
 import {Step4C2Profiles} from './Step4C2Profiles';
 import {Step5Build} from './Step5Build';
-import { useReactiveVar } from '@apollo/client';
-import { meState } from '../../../cache';
 import { snackActions } from '../../utilities/Snackbar';
 
 function getSteps(){
@@ -16,7 +14,7 @@ function getSteps(){
 }
 
 export function CreatePayload(props){
-    const me = useReactiveVar(meState);
+    const me = props.me;
     const noOperation = (me?.user?.current_operation_id || 0) > 0 ? false : true;
     const [payload, setPayload] = React.useState({}); 
     const [activeStep, setActiveStep] = React.useState(0);
@@ -31,7 +29,7 @@ export function CreatePayload(props){
             case 3:
               return <Step4C2Profiles buildOptions={payload[1]} prevData={payload[3]} finished={handleStepData} canceled={cancelStep} first={false} last={false} />;
             case 4:
-              return <Step5Build buildOptions={payload} canceled={cancelStep} first={false} last={true} startOver={startOver} />;
+              return <Step5Build me={me} buildOptions={payload} canceled={cancelStep} first={false} last={true} startOver={startOver} />;
             default:
               return 'Unknown step';
           }

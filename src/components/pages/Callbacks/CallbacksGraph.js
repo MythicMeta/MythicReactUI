@@ -20,6 +20,32 @@ import {snackActions} from '../../utilities/Snackbar';
 import {TaskParametersDialog} from './TaskParametersDialog';
 import {createTaskingMutation} from './CallbacksTabsTasking';
 import {useTheme} from '@mui/material/styles';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+function getStyles(name, selectedOptions, theme) {
+    return {
+      fontWeight:
+      selectedOptions.indexOf(name) === -1
+          ? theme.typography.fontWeightRegular
+          : theme.typography.fontWeightMedium,
+    };
+  }
 
 export const loadedLinkCommandsQuery = gql`
 query loadedLinkCommandsQuery ($callback_id: Int!){
@@ -51,6 +77,10 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
     const [manuallyAddEdgeDialogOpen, setManuallyAddEdgeDialogOpen] = useState(false);
     const [edgeOptions, setEdgeOptions] = useState([]); // used for manuallyRemoveEdgeDialog
     const [addEdgeSource, setAddEdgeSource] = useState(null); // used for manuallyAddEdgeDialog
+    const labelComponentOptions = ["id", "user", "host", "ip", "domain", "os", "process_name"];
+    const [selectedComponentOptions, setSelectedComponentOptions] = React.useState(["id", "user"]);
+    const [selectedGroupBy, setSelectedGroupBy] = React.useState("host");
+    const groupByOptions = ["host", "user", "ip", "domain", "os", "process_name", "extra_info"];
     const [getLinkCommands] = useLazyQuery(loadedLinkCommandsQuery, {fetchPolicy: "network-only",
         onCompleted: data => {            
             if(data.loadedcommands.length === 1){
@@ -88,11 +118,30 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
     }
     const [viewConfig, setViewConfig] = React.useState({
         rankDir: "BT",
-        label_components: ["id", "user"],
+        label_components: selectedComponentOptions,
         packet_flow_view: true,
         include_disconnected: true,
-        show_all_nodes: false
+        show_all_nodes: false,
+        group_by: selectedGroupBy
     });
+    const handleChange = (event) => {
+        const {
+          target: { value },
+        } = event;
+        setSelectedComponentOptions(
+          // On autofill we get a stringified value.
+          typeof value === 'string' ? value.split(',') : value,
+        );
+      };
+    const handleGroupByChange = (event) => {
+        setSelectedGroupBy(event.target.value);
+    }
+    useEffect( () => {
+        setViewConfig({...viewConfig, label_components: selectedComponentOptions})
+    }, [selectedComponentOptions])
+    useEffect( () => {
+        setViewConfig({...viewConfig, group_by: selectedGroupBy});
+    }, [selectedGroupBy])
     const [hideCallback] = useMutation(hideCallbackMutation, {
         update: (cache, {data}) => {
             //console.log(data);
@@ -113,15 +162,14 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
             snackActions.warning("No edge selected");
             return;
         }
-        manuallyRemoveEdge({variables: {edge_id: edge.edge_id, end_timestamp: (new Date()).toISOString()}});
+        manuallyRemoveEdge({variables: {edge_id: edge.edge_id}});
     }
     const onSubmitManuallyAddEdge = (source_id, profile, destination) => {
         if(profile === "" || destination === ""){
             snackActions.warning("Profile or Destination Callback not provided");
             return;
         }
-        manuallyAddEdge({variables: {source_id: source_id, profile_id: profile.id, destination_id: destination.id}});
-        //console.log("want to submit: ", source_id, profile, destination);
+        manuallyAddEdge({variables: {source_id: source_id, c2profile: profile.name, destination_id: destination.id}});
     }
     const node_events = useMemo(() => {return {
         "mouseover": (parent, node, d) => {return},
@@ -241,20 +289,65 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
       };
     useEffect( () => {
         const allEdges = [...callbackgraphedges];
-        drawC2PathElements(allEdges, dagreRef, reZoom, viewConfig, node_events, theme);
+        drawC2PathElements(allEdges, dagreRef, true, viewConfig, node_events, theme);
         setReZoom(false);
     }, [callbackgraphedges, reZoom, viewConfig, theme]) // eslint-disable-line react-hooks/exhaustive-deps
     return (
-        <div style={{maxWidth: "100%", "overflow": "auto", height: "100%"}}>
-            <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" style={{marginTop: "10px"}} color="primary">
-                <Button size="small" color="primary" aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
-                    aria-expanded={dropdownOpen ? 'true' : undefined}
-                    aria-haspopup="menu"
-                    onClick={handleDropdownToggle}>
-                        Actions <ArrowDropDownIcon />
-                </Button>
-            </ButtonGroup>
-            {getConfigString()}
+        <div style={{maxWidth: "100%", "overflow": "auto", height: "100%"}}> 
+            <div style={{display: "flex"}} >
+                <ButtonGroup variant="contained" ref={dropdownAnchorRef} aria-label="split button" style={{marginTop: "10px"}} color="primary">
+                    <Button size="small" color="primary" aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
+                        aria-expanded={dropdownOpen ? 'true' : undefined}
+                        aria-haspopup="menu"
+                        onClick={handleDropdownToggle}>
+                            Actions <ArrowDropDownIcon />
+                    </Button>
+                </ButtonGroup>
+                <FormControl sx={{ width: 200,  marginTop: "10px" }}>
+                    <InputLabel id="demo-chip-label">Group Callbacks By</InputLabel>
+                    <Select
+                    labelId="demo-chip-label"
+                    id="demo-chip"
+                    
+                    value={selectedGroupBy}
+                    onChange={handleGroupByChange}
+                    input={<OutlinedInput id="select-chip" label="Group Callbacks By" />}
+                    >
+                    {groupByOptions.map((name) => (
+                        <MenuItem
+                        key={name}
+                        value={name}
+                        >
+                        {name}
+                        </MenuItem>
+                    ))}
+                    </Select>
+                </FormControl>
+                <FormControl sx={{minWidth: 300, marginTop: "10px"}}>
+                    <InputLabel id="demo-multiple-chip-label">Display Properties per Callback</InputLabel>
+                    <Select
+                    labelId="demo-multiple-chip-label"
+                    id="demo-multiple-chip"
+                    multiple
+                    value={selectedComponentOptions}
+                    onChange={handleChange}
+                    input={<OutlinedInput id="select-multiple-chip" label="Display Properties per Callback" />}
+                    MenuProps={MenuProps}
+                    >
+                    {labelComponentOptions.map((name) => (
+                        <MenuItem
+                            key={name}
+                            value={name}
+                            style={getStyles(name, selectedComponentOptions, theme)}
+                            >
+                        {name}
+                        </MenuItem>
+                    ))}
+                    </Select>
+                </FormControl>
+                
+            </div>
+            
             <Popper open={dropdownOpen} anchorEl={dropdownAnchorRef.current} role={undefined} transition style={{zIndex: 200}}>
               {({ TransitionProps, placement }) => (
                 <Grow
@@ -310,7 +403,7 @@ export function CallbacksGraph({onOpenTab, callbackgraphedges}){
             }
             
             
-                <svg id="callbacksgraph" ref={dagreRef} width="100%" height="90%"></svg> 
+                <svg id="callbacksgraph" ref={dagreRef} width="100%" height="100%"></svg> 
             </div>
     );
 }

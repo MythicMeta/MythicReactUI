@@ -6,12 +6,15 @@ import EditIcon from '@mui/icons-material/Edit';
 import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { OperationTableRowUpdateOperatorsDialog } from './OperationTableRowUpdateOperatorsDialog';
 import { meState } from '../../../cache';
-import {useReactiveVar, useMutation, gql} from '@apollo/client';
+import {useMutation, gql} from '@apollo/client';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import {OperationTableRowNotificationsDialog} from './OperationTableRowNotificationsDialog';
 import { snackActions } from '../../utilities/Snackbar';
+import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreFromTrashOutlinedIcon from '@mui/icons-material/RestoreFromTrashOutlined';
 
 const updateCurrentOpertionMutation = gql`
 mutation updateCurrentOpertionMutation($operator_id: Int!, $operation_id: Int!) {
@@ -22,10 +25,18 @@ mutation updateCurrentOpertionMutation($operator_id: Int!, $operation_id: Int!) 
   }
 }
 `;
+const toggleDeleteStatus = gql`
+mutation toggleOperationDeleted($operation_id: Int!, $deleted: Boolean!){
+  update_operation_by_pk(pk_columns: {id: $operation_id}, _set: {deleted: $deleted}) {
+    id
+  }
+}
+`;
 export function OperationTableRow(props){
     const [openUpdateNotifications, setOpenUpdateNotifications] = React.useState(false);
     const [openUpdateOperators, setOpenUpdateOperators] = React.useState(false);
-    const me = useReactiveVar(meState);
+    const [openDelete, setOpenDeleteDialog] = React.useState(false);
+    const me = props.me;
     const [updateCurrentOperation] = useMutation(updateCurrentOpertionMutation, {
       onCompleted: (data) => {
         if(data.updateCurrentOperation.status === "success"){
@@ -44,9 +55,44 @@ export function OperationTableRow(props){
     const makeCurrentOperation = () => {
       updateCurrentOperation({variables: {operator_id: me.user.user_id, operation_id: props.id}})
     }
+    const [updateDeleted] = useMutation(toggleDeleteStatus, {
+      onCompleted: data => {
+        if(props.deleted){
+          snackActions.success("Successfully restored operation");
+        } else {
+          snackActions.success("Successfully deleted operation");
+        }
+        props.updateDeleted({id: props.id, deleted: !props.deleted});
+      },
+      onError: error => {
+        if(props.deleted){
+          snackActions.error("Failed to restore operation");
+        } else {
+          snackActions.error("Failed to mark operation as deleted");
+        }
+        
+      }
+    });
+    const onAcceptDelete = () => {
+      updateDeleted({variables: {operation_id: props.id, deleted: !props.deleted}})
+      setOpenDeleteDialog(false);
+    }
     return (
         <React.Fragment>
             <TableRow key={props.id} hover>
+                <TableCell>
+                {props.deleted ? (
+                  <Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} color="success" variant="contained"><RestoreFromTrashOutlinedIcon/> Restore</Button>
+                ) : (
+                  <Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} color="error" variant="contained"><DeleteIcon/> Delete</Button>
+                )}
+                {openDelete && 
+                    <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} 
+                      open={openDelete} 
+                      acceptText={props.deleted ? "Restore" : "Remove"} 
+                      acceptColor={props.deleted ? "success": "error"} />
+                  }
+                </TableCell>
                 <TableCell><Button size="small" onClick={()=>{setOpenUpdateNotifications(true);}} startIcon={<EditIcon/>} color={props.complete ? "success" : "primary"} variant="contained">Edit</Button>
                 {openUpdateNotifications && 
                     <MythicDialog open={openUpdateNotifications} fullWidth maxWidth={"lg"}

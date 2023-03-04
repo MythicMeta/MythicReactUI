@@ -19,9 +19,9 @@ import MythicTextField from '../../MythicComponents/MythicTextField';
 
 const getCommandsAndPayloadTypesQuery = gql`
 query getCommandsAndPayloadTypes{
-  payloadtype(order_by: {ptype: asc}){
+  payloadtype(order_by: {name: asc}){
     id
-    ptype
+    name
     commands(order_by: {cmd: asc}){
       id
       cmd
@@ -76,7 +76,8 @@ export function EditScriptDialog(props) {
     useEffect( () => {
         if(props.script !== undefined){
           try{
-            setScript(atob(props.script));
+            //setScript(atob(props.script));
+            setScript(decodeURIComponent(window.atob(props.script)));
           }catch(error){
             setScript(props.script);
           }
@@ -86,7 +87,8 @@ export function EditScriptDialog(props) {
         setScript(value);
     }
     const onSubmit = () => {
-        props.onSubmitEdit({script: btoa(script), command_id: selectedCommand, payload_type_id: selectedPayloadType, author});
+        let newScript = window.btoa(encodeURIComponent(script));
+        props.onSubmitEdit({script: newScript, command_id: selectedCommand, payload_type_id: selectedPayloadType, author});
         props.onClose();
     }
     const onRevert = () => {
@@ -121,7 +123,7 @@ export function EditScriptDialog(props) {
               input={<Input style={{width: "100%"}}/>}
             >
               {payloadTypeCmdOptions.map( (opt) => (
-                  <MenuItem value={opt.id} key={"payloadtype" + opt.id}>{opt.ptype}</MenuItem>
+                  <MenuItem value={opt.id} key={"payloadtype" + opt.id}>{opt.name}</MenuItem>
               ) )}
             </Select>
           </FormControl>

@@ -1,6 +1,5 @@
 import React  from 'react';
 import { gql, useMutation, useSubscription } from '@apollo/client';
-import { MeHook } from '../../../cache';
 import {BrowserScriptsTable} from './BrowserScriptsTable';
 import {BrowserScriptsOperationsTable} from './BrowserScriptsOperationsTable';
 import {snackActions} from '../../utilities/Snackbar';
@@ -10,16 +9,15 @@ import {CircularProgress} from '@mui/material';
 
 const SUB_BrowserScripts = gql`
 subscription SubscribeBrowserScripts($operator_id: Int!) {
-  browserscript(where: {operator_id: {_eq: $operator_id}, for_new_ui: {_eq: true}}, order_by: {payloadtype: {ptype: asc}}) {
+  browserscript(where: {operator_id: {_eq: $operator_id}, for_new_ui: {_eq: true}}, order_by: {payloadtype: {name: asc}}) {
     active
     author
     user_modified
     script
     payloadtype {
-      ptype
+      name
       id
     }
-    name
     id
     creation_time
     container_version_author
@@ -44,10 +42,9 @@ subscription SubscribeOperationBrowserScripts($operation_id: Int!) {
         user_modified
         script
         payloadtype {
-          ptype
+          name
           id
         }
-        name
         id
         creation_time
         container_version_author
@@ -102,21 +99,20 @@ mutation deleteBrowserScriptMutation($browserscript_id: Int!){
 `;
 
 
-export function BrowserScripts(props){
-    const me = MeHook();
+export function BrowserScripts({me}){
     const [browserScripts, setBrowserScripts] = React.useState([]);
     const [operationBrowserScripts, setOperationBrowserScripts] = React.useState({"browserscriptoperation": []});
     const mountedRef = React.useRef(true);
     const [backdropOpen, setBackdropOpen] = React.useState(true);
     useSubscription(SUB_BrowserScripts, {
-      variables: {operator_id: me.user.id}, fetchPolicy: "no-cache",
+      variables: {operator_id: me?.user?.id || 0}, fetchPolicy: "no-cache",
       shouldResubscribe: true,
       onSubscriptionData: ({subscriptionData}) => {
         //console.log(subscriptionData)
         if(!mountedRef.current){return}
         let scripts = [...subscriptionData.data.browserscript];
         scripts.sort((a,b) => {
-          if(a.payloadtype.ptype === b.payloadtype.ptype){
+          if(a.payloadtype.name === b.payloadtype.name){
             return a.command.cmd.localeCompare(b.command.cmd);
           }else{
             return 0;

@@ -11,7 +11,6 @@ import IconButton from '@mui/material/IconButton';
 import { gql, useLazyQuery } from '@apollo/client';
 import {taskingDataFragment} from '../Callbacks/CallbacksTabsTasking'
 import { snackActions } from '../../utilities/Snackbar';
-import { MeHook } from '../../../cache';
 import Pagination from '@mui/material/Pagination';
 import { Typography } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
@@ -185,7 +184,7 @@ export const SearchTabTasksPanel = (props) =>{
     const [search, setSearch] = React.useState("");
     const [searchField, setSearchField] = React.useState("Output");
     const [taskStatus, setTaskStatus] = React.useState("");
-    const me = MeHook();
+    const me = props.me;
     const onChangeSearchField = (field) => {
         setSearchField(field);
         switch(field){
@@ -344,7 +343,7 @@ export const SearchTabTasksPanel = (props) =>{
                 {
                     taskingData.task.length > 0 ? (
                         taskingData.task.map( (task) => (
-                            <TaskDisplay key={"taskinteractdisplay" + task.id} task={task} command_id={task.command == null ? 0 : task.command.id} />
+                            <TaskDisplay key={"taskinteractdisplay" + task.id} me={props.me} task={task} command_id={task.command == null ? 0 : task.command.id} />
                         ))
                     ) : (<div style={{display: "flex", justifyContent: "center", alignItems: "center", position: "absolute", left: "50%", top: "50%"}}>No Search Results</div>)
                 }

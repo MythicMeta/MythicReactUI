@@ -16,10 +16,11 @@ import {snackActions} from '../../utilities/Snackbar';
 import EditIcon from '@mui/icons-material/Edit';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
+import {TagsDisplay, ViewEditTags} from '../../MythicComponents/MythicTag';
 
 const updateFileComment = gql`
-mutation updateCommentMutation($filebrowserobj_id: Int!, $comment: String!){
-    update_filebrowserobj_by_pk(pk_columns: {id: $filebrowserobj_id}, _set: {comment: $comment}) {
+mutation updateCommentMutation($mythictree_id: Int!, $comment: String!){
+    update_mythictree_by_pk(pk_columns: {id: $mythictree_id}, _set: {comment: $comment}) {
         comment
         id
     }
@@ -47,10 +48,10 @@ export function FileBrowserTable(props){
                 <TableHead>
                     <TableRow>
                         <TableCell >Host / Path</TableCell>
-                        <TableCell >Modify Time</TableCell>
-                        <TableCell >Comment</TableCell>
-                        <TableCell style={{width: "7rem"}}>Permissions</TableCell>
-                        <TableCell style={{width: "7rem"}}>Downloads</TableCell>
+                        <TableCell style={{width: "15rem"}}>Comment</TableCell>
+                        <TableCell style={{width: "10rem"}}>Tags</TableCell>
+                        <TableCell style={{width: "5rem"}}>Metadata</TableCell>
+                        <TableCell style={{width: "6rem"}}>Downloads</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -58,6 +59,7 @@ export function FileBrowserTable(props){
                 {files.map( (op) => (
                     <FileBrowserTableRow
                         key={"file" + op.id}
+                        me={props.me}
                         onEditComment={onEditComment}
                         {...op}
                     />
@@ -85,24 +87,25 @@ const convertTime = (timestamp) => {
     }
 }
 function FileBrowserTableRow(props){
+    const me = props.me;
     const [viewPermissionsDialogOpen, setViewPermissionsDialogOpen] = React.useState(false);
     const [fileHistoryDialogOpen, setFileHistoryDialogOpen] = React.useState(false);
     const [editCommentDialogOpen, setEditCommentDialogOpen] = React.useState(false);
     const [updateComment] = useMutation(updateFileComment, {
         onCompleted: (data) => {
             snackActions.success("updated comment");
-            props.onEditComment(data.update_filebrowserobj_by_pk)
+            props.onEditComment(data.update_mythictree_by_pk)
         }
     });
     const onSubmitUpdatedComment = (comment) => {
-        updateComment({variables: {filebrowserobj_id: props.id, comment: comment}})
+        updateComment({variables: {mythictree_id: props.id, comment: comment}})
     }
     return (
         <React.Fragment>
             <TableRow hover>
                 <MythicDialog fullWidth={true} maxWidth="md" open={viewPermissionsDialogOpen} 
                     onClose={()=>{setViewPermissionsDialogOpen(false);}} 
-                    innerDialog={<MythicViewJSONAsTableDialog title="View Permissions Data" leftColumn="Permission" rightColumn="Value" value={props.permissions} onClose={()=>{setViewPermissionsDialogOpen(false);}} />}
+                    innerDialog={<MythicViewJSONAsTableDialog title="View Permissions Data" leftColumn="Permission" rightColumn="Value" value={props.metadata} onClose={()=>{setViewPermissionsDialogOpen(false);}} />}
                     />
                 <MythicDialog fullWidth={true} maxWidth="md" open={fileHistoryDialogOpen} 
                     onClose={()=>{setFileHistoryDialogOpen(false);}} 
@@ -116,13 +119,14 @@ function FileBrowserTableRow(props){
                 <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.host}</Typography>
                 <Typography variant="body2" style={{wordBreak: "break-all", textDecoration: props.deleted ? "strike-through" : ""}}>{props.full_path_text}</Typography>
                 </MythicStyledTableCell>
-                <MythicStyledTableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{convertTime(props.modify_time)}</Typography>
-                </MythicStyledTableCell>
                 <MythicStyledTableCell>
                     <IconButton onClick={() => setEditCommentDialogOpen(true)} size="small" style={{display: "inline-block"}}><EditIcon /></IconButton>
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.comment}</Typography>
                     </MythicStyledTableCell>
+                <MythicStyledTableCell>
+                    <ViewEditTags target_object={"mythictree_id"} target_object_id={props.id} me={me} />
+                    <TagsDisplay tags={props.tags} />
+                </MythicStyledTableCell>
                 <MythicStyledTableCell>
                     <Button color="primary" variant="outlined" onClick={() => setViewPermissionsDialogOpen(true)}><PlaylistAddCheckIcon /></Button>
                 </MythicStyledTableCell>

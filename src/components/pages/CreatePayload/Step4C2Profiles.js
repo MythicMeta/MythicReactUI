@@ -7,18 +7,26 @@ import {CreatePayloadC2ProfileParametersTable} from './CreatePayloadC2ProfilePar
 import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import * as RandExp from 'randexp';
 import { meState } from '../../../cache';
 import {useReactiveVar} from '@apollo/client';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
+import {getDefaultValueForType, getDefaultChoices} from './Step2SelectPayloadType';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 
 const GET_Payload_Types = gql`
 query getPayloadTypesC2ProfilesQuery($payloadType: String!, $operation_id: Int!) {
-  c2profile(where: {payloadtypec2profiles: {payloadtype: {ptype: {_eq: $payloadType}}}, deleted: {_eq: false}}) {
+  c2profile(where: {payloadtypec2profiles: {payloadtype: {name: {_eq: $payloadType}}}, deleted: {_eq: false}}) {
     name
     is_p2p
     description
@@ -33,14 +41,16 @@ query getPayloadTypesC2ProfilesQuery($payloadType: String!, $operation_id: Int!)
       randomize
       required
       verifier_regex
+      choices
     }
     c2profileparametersinstances(where: {instance_name: {_is_null: false}, operation_id: {_eq: $operation_id}}, distinct_on: instance_name, order_by: {instance_name: asc}){
         instance_name
+        id
     }
   }
 }
  `;
- const getProfileInstaceQuery = gql`
+ const getProfileInstanceQuery = gql`
 query getProfileInstanceQuery($name: String!, $operation_id: Int!) {
   c2profileparametersinstance(where: {instance_name: {_eq: $name}, operation_id: {_eq: $operation_id}}) {
     c2profileparameter {
@@ -53,6 +63,7 @@ query getProfileInstanceQuery($name: String!, $operation_id: Int!) {
       randomize
       required
       verifier_regex
+      choices
       c2profile {
           name
       }
@@ -62,11 +73,30 @@ query getProfileInstanceQuery($name: String!, $operation_id: Int!) {
   }
 }
 `;
+const getDefaultsQuery = gql`
+query getDefaultC2ProfileParameters($c2profile_id: Int!) {
+    c2profile_by_pk(id: $c2profile_id) {
+      id
+      name
+      c2profileparameters(where: {deleted: {_eq: false}}) {
+        default_value
+        description
+        format_string
+        id
+        name
+        parameter_type
+        randomize
+        required
+        verifier_regex
+        choices
+      }
+    }
+  }
+`;
 
 export function Step4C2Profiles(props){
     const me = useReactiveVar(meState);
     const [c2Profiles, setC2Profiles] = React.useState([]);
-    const [selectedInstance, setSelectedInstance] = React.useState("");
     const { loading, error } = useQuery(GET_Payload_Types, {variables:{payloadType: props.buildOptions["payload_type"], operation_id: me?.user?.current_operation_id || 0},
         onCompleted: data => {
             const profiles = data.c2profile.map( (c2) => {
@@ -75,30 +105,13 @@ export function Step4C2Profiles(props){
                     for(let p = 0; p < props.prevData.length; p++){
                         if(props.prevData[p]["name"] === c2.name){
                             // we selected this c2 profile before and clicked back, so re-fill it out
-                            const parameters = props.prevData[p]["c2profileparameters"].map( (c) => {
-                                if(c.parameter_type === 'Dictionary'){
-                                    const original = JSON.parse(c.default_value);
-                                    const fixedArray = c.value.map( (p) => {
-                                        // p looks like {"name": "something", "key": "something", "value": "something", "custom": true/false}
-                                        // we're missing the "max" limiter from the original that we need to add back in
-                                        const originalPiece = original.find( o => o["name"] === p["name"]);
-                                        if(originalPiece !== undefined){
-                                            return {...originalPiece, ...p, "default_show": p.value === "" ? false : true}
-                                        }
-                                        return {...p, "default_show": false}
-                                    });
-                                    // now that we've added in the `max` value for each of the keys we had, we need to add back in the original possibilities that we didn't select
-                                    const final = original.reduce( (prev, cur) => {
-                                        //console.log("looking for", cur, "in", prev)
-                                        if(prev.findIndex( o => o["name"] === cur["name"]) > -1 ){
-                                            return [...prev]
-                                        }
-                                        return [...prev, {...cur, default_show: false, "key": cur.name === "*" ? "": cur.name, value: cur.default_value}]
-                                    }, [...fixedArray])
-                                    return {...c, value: final};
-                                    
+                            const parameters = props.prevData[p]["c2profileparameters"].map( (param) => {
+                                return {...param, error: false, 
+                                    value: param["value"], 
+                                    trackedValue: param["value"], 
+                                    initialValue: getDefaultValueForType(param),
+                                    choices: getDefaultChoices(param)
                                 }
-                                return c;
                             })
                             
                             parameters.sort((a,b) => -b.description.localeCompare(a.description));
@@ -106,36 +119,16 @@ export function Step4C2Profiles(props){
                         }
                     }
                 }
-                
                 const parameters = c2.c2profileparameters.map( (param) => {
-                    if(param.format_string !== ""){
-                        const random = new RandExp(param.format_string).gen();
-                        return {...param, default_value: random, value: random}
-                    }else if(param.default_value !== ""){
-                        if(param.parameter_type === "ChooseOne"){
-                            return {...param, value: param.default_value.split("\n")[0]}
-                        }else if(param.parameter_type === "Dictionary"){
-                            let tmp = JSON.parse(param.default_value);
-                            let initial = tmp.reduce( (prev, op) => {
-                                return [...prev, {...op, value: op.default_value, key: op.name === "*" ? "": op.name, default_show: op.default_show} ];
-                            }, [] );
-                            return {...param, value: initial}
-                        }else if(param.parameter_type === "Date"){
-                            var tmpDate = new Date();
-                            if(param.default_value !== ""){
-                                tmpDate.setDate(tmpDate.getDate() + parseInt(param.default_value));
-                            }
-                            return {...param, value: tmpDate.toISOString().slice(0,10)}
-                        }else{
-                            return {...param, value: param.default_value}
-                        }
-                    }else{
-                        return {...param, error: param.required, value: param.default_value}
-                    }
+                    const initialValue = getDefaultValueForType(param);
+                    return {...param, error: false, value: initialValue, 
+                        trackedValue: initialValue, 
+                        initialValue: initialValue, 
+                        choices: getDefaultChoices(param)};
                     
                 });
                 parameters.sort((a,b) => -b.description.localeCompare(a.description));
-                return {...c2, "selected": false, c2profileparameters: parameters};
+                return {...c2, "selected": false, c2profileparameters: parameters, "selected_instance": "None"};
             });
             profiles.sort((a, b) => -b.name.localeCompare(a.name))
             //console.log(profiles);
@@ -146,21 +139,6 @@ export function Step4C2Profiles(props){
     const finished = () => {
         let allValid = true;
         let includedC2 = false;
-        const adjustedC2 = c2Profiles.reduce( (prev, c2) => {
-            if(c2.selected){
-                const params = c2.c2profileparameters.map( (p) => {
-                    if(p.parameter_type === "Dictionary"){
-                        const values = p.value.filter(v => v.value !== "");
-                        return {...p, value: values};
-                    }else{
-                        return {...p};
-                    }
-                })
-                return [...prev, {...c2, c2profileparameters: params}];
-            }else{
-                return [...prev, {...c2}];
-            }
-        }, []);
         c2Profiles.forEach( (c2) => {
             if(c2.selected){
                 includedC2 = true;
@@ -178,8 +156,9 @@ export function Step4C2Profiles(props){
                 snackActions.warning("Must select at least one C2 to include");
                 return;
             }
-            props.finished(adjustedC2);
+            props.finished(c2Profiles);
         }
+
     }
     const canceled = () => {
         props.canceled();
@@ -200,7 +179,7 @@ export function Step4C2Profiles(props){
                     if (param.name === parameterName){
                         return {...param, error, value}
                     }
-                    return param;
+                    return {...param};
                 });
                 return {...curC2, c2profileparameters: c2params};
             }
@@ -208,35 +187,46 @@ export function Step4C2Profiles(props){
         });
         setC2Profiles(updatedc2);
     }
-    const [getInstanceValues] = useLazyQuery(getProfileInstaceQuery, {
+    const [getInstanceValues] = useLazyQuery(getProfileInstanceQuery, {
         onCompleted: (data) => {
           const updates = data.c2profileparametersinstance.map( (cur) => {
             let inst = {...cur, ...cur.c2profileparameter};
-            if(inst.parameter_type === "Dictionary" || inst.parameter_type === "Array"){
+            if(inst.parameter_type === "Array" || inst.parameter_type === "ChooseMultiple"){
                 inst["value"] = JSON.parse(inst["value"]);
-                const original = JSON.parse(inst.default_value);
-                const fixedArray = inst.value.map( (p) => {
-                    // p looks like {"name": "something", "key": "something", "value": "something", "custom": true/false}
-                    // we're missing the "max" limiter from the original that we need to add back in
-                    const originalPiece = original.find( o => o["name"] === p["name"]);
-                    if(originalPiece !== undefined){
-                        return {...originalPiece, ...p, "default_show": p.value === "" ? false : true}
+                inst["initialValue"] = getDefaultValueForType(inst);
+                inst["trackedValue"] = JSON.parse(inst["value"]);
+                inst["choices"] = getDefaultChoices(inst);
+              } else if(inst.parameter_type === "Dictionary"){
+                // 
+                let choices = getDefaultChoices(inst);
+                let finalDict = JSON.parse(inst["value"]); // this is a dictionary instead of an array, so fix it back
+                let finalDictKeys = Object.keys(finalDict);
+                let finalArray = [];
+                for(let i = 0; i < finalDictKeys.length; i++){
+                    let newDict = {
+                        name: finalDictKeys[i],
+                        value: finalDict[finalDictKeys[i]],
+                        default_show: true
+                      };
+                    for(let j = 0; j < choices.length; j++){
+                        if(choices[j].name === finalDictKeys[i]){
+                            newDict["default_value"] = choices[j]["default_value"]
+                        }
                     }
-                    return {...p, "default_show": false}
-                });
-                // now that we've added in the `max` value for each of the keys we had, we need to add back in the original possibilities that we didn't select
-                const final = original.reduce( (prev, current) => {
-                    //console.log("looking for", cur, "in", prev)
-                    if(prev.findIndex( o => o["name"] === current["name"]) > -1 ){
-                        return [...prev]
-                    }
-                    return [...prev, {...current, default_show: false, "key": current.name === "*" ? "": current.name, value: current.default_value}]
-                }, [...fixedArray])
-                return {...inst, value: final};
-            }
+                  finalArray.push(newDict);
+                }
+                
+                choices = choices.map(c => {return {...c, default_show: false}});
+                let initialValue = getDefaultValueForType(inst);
+                return {...inst, value: finalArray, choices: choices, trackedValue: finalArray, initialValue: initialValue, default_value: initialValue};
+              } else {
+                inst["choices"] = getDefaultChoices(inst);
+                inst["trackedValue"] = inst["value"];
+                inst["initialValue"] = getDefaultValueForType(inst);
+              }
             return inst;
           })
-          updates.sort( (a, b) => a.name < b.name ? -1 : 1);
+          updates.sort( (a, b) => a.description < b.description ? -1 : 1);
           const updatedc2 = c2Profiles.map( (curc2) => {
             if(updates[0].c2profile.name === curc2.name){
                 return {...curc2, c2profileparameters: updates};
@@ -250,27 +240,53 @@ export function Step4C2Profiles(props){
           console.log(data);
         },
         fetchPolicy: "no-cache"
-      })
+    });
+    const [getIDefaultValues] = useLazyQuery(getDefaultsQuery, {
+    onCompleted: (data) => {
+        const updates = data.c2profile_by_pk.c2profileparameters.map( (param) => {
+        const initialValue = getDefaultValueForType(param);
+        return {...param, error: false, value: initialValue, 
+            trackedValue: initialValue, 
+            initialValue: initialValue, 
+            choices: getDefaultChoices(param)};
+        })
+        updates.sort( (a, b) => a.description < b.description ? -1 : 1);
+        const updatedc2 = c2Profiles.map( (curc2) => {
+        if(data.c2profile_by_pk.name === curc2.name){
+            return {...curc2, c2profileparameters: updates};
+        }
+        return curc2;
+    });
+    setC2Profiles(updatedc2);
+    },
+    onError: (data) => {
+        snackActions.error("Failed to fetch instance data: " + data);
+        console.log(data);
+    },
+    fetchPolicy: "no-cache"
+    });
     const onChangeCreatedInstanceName = (evt, c2) => {
-        setSelectedInstance(evt.target.value);
-        if(evt.target.value !== ""){
-            const updatedc2 = c2Profiles.map( (curc2) => {
-                if(c2.name === curc2.name){
-                    curc2.c2profileparameters = [];
-                }
-                return curc2;
-            });
-            setC2Profiles(updatedc2);
-            getInstanceValues({variables: {name: evt.target.value, operation_id: me.user.current_operation_id}});
+        c2.selected_instance = evt.target.value;
+        //setSelectedInstance(evt.target.value);
+        const updatedc2 = c2Profiles.map( (curc2) => {
+            if(c2.name === curc2.name){
+                curc2.c2profileparameters = [];
+            }
+            return curc2;
+        });
+        setC2Profiles(updatedc2);
+        if(evt.target.value !== "None"){
+            getInstanceValues({variables: {name: evt.target.value, operation_id: me?.user?.current_operation_id || 0}});
+        } else {
+            getIDefaultValues({variables: {c2profile_id: c2.id}});
         }
       }
       if (loading) {
         return <div><CircularProgress /></div>;
        }
        if (error) {
-           snackActions.error("")
-        console.error(error);
-        return <div>Error!</div>;
+            console.error(error);
+            return <div>Error! {error.message}</div>;
        }
     return (
         <div >
@@ -278,51 +294,70 @@ export function Step4C2Profiles(props){
                 style={{"marginLeft": "10px"}}>
                   Select C2 Profiles
             </Typography>
-            {
-                c2Profiles.map( (c2) => (
-                <React.Fragment key={"step4c2switch" + c2.id}>
-                    <FormControlLabel
-                      value="top"
-                      control={
-                      <Switch
-                        checked={c2.selected}
-                        onChange={evt => toggleC2Selection(evt, c2)}
-                        inputProps={{ 'aria-label': 'primary checkbox' }}
-                        name="active"
-                      />}
-                      label={c2.name}
-                      labelPlacement="top"
-                      style={{display: "inline"}}
-                    />
-                    {c2.c2profileparametersinstances.length > 0 && c2.selected ? (
-                        <FormControl style={{width: "100%"}}>
-                        <InputLabel >Select an Existing Instance</InputLabel>
-                            <Select
-                              style={{width: "100%", marginBottom: "10px"}}
-                              value={selectedInstance}
-                              label="Select an Existing Instance"
-                              onChange={evt => onChangeCreatedInstanceName(evt, c2)}
-                            >
-                              <MenuItem value="">New Instance</MenuItem>
-                            {
-                                c2.c2profileparametersinstances.map((opt, i) => (
-                                    <MenuItem key={"buildparamopt" + i} value={opt.instance_name}>{opt.instance_name}</MenuItem>
-                                ))
-                            }
-                            </Select>
-                        </FormControl>
-                    ) : (null)}
-                    <Typography variant="body1" align="left" id="selectc2profiles" component="div" key={"step4desc" + c2.id}
-                        style={{"marginLeft": "10px"}}>
-                          {c2.description}
-                    </Typography>
-                    { c2.selected ? ( 
-                        <CreatePayloadC2ProfileParametersTable key={"step4table" + c2.id} returnAllDictValues={false} {...c2} onChange={updateC2Parameter} />
-                        ):(null)
+            <TableContainer component={Paper} className="mythicElement">
+                <Table size="small" style={{ "maxWidth": "100%", "overflow": "scroll"}}>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell style={{width: "4rem"}}>Include?</TableCell>
+                            <TableCell >C2 Name</TableCell>
+                            <TableCell >Pre-created Instances</TableCell>
+                            <TableCell >Description</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    {
+                        c2Profiles.map( (c2) => (
+                        <TableBody key={"step4c2tablerow" + c2.id}>
+                            <TableRow  hover>
+                                <MythicStyledTableCell>
+                                    
+                                        <Switch
+                                            checked={c2.selected}
+                                            onChange={evt => toggleC2Selection(evt, c2)}
+                                            inputProps={{ 'aria-label': 'primary checkbox' }}
+                                            name="active"
+                                        />
+                                    
+                                </MythicStyledTableCell>
+                                <MythicStyledTableCell>
+                                {c2.name}
+                                </MythicStyledTableCell>
+                                <MythicStyledTableCell>
+                                    {c2.c2profileparametersinstances.length > 0 ? (
+                                            <Select
+                                            style={{width: "100%", marginBottom: "5px", marginTop:"5px"}}
+                                            value={c2.selected_instance}
+                                            //label="Select an Existing Instance"
+                                            onChange={evt => onChangeCreatedInstanceName(evt, c2)}
+                                            >
+                                                <MenuItem key={"buildparamopt" + "-1"} value={"None"}>None</MenuItem>
+                                            {
+                                                c2.c2profileparametersinstances.map((opt, i) => (
+                                                    <MenuItem key={"buildparamopt" + i} value={opt.instance_name}>{opt.instance_name}</MenuItem>
+                                                ))
+                                            }
+                                            </Select>
+                                    ) : (null)}
+                                </MythicStyledTableCell>
+                                <MythicStyledTableCell>
+                                    <Typography variant="body1" align="left" id="selectc2profiles" component="div" key={"step4desc" + c2.id}
+                                        style={{"marginLeft": "10px"}}>
+                                        {c2.description}
+                                    </Typography>
+                                </MythicStyledTableCell>
+                            </TableRow>
+                                { c2.selected ? ( 
+                                    <TableRow><MythicStyledTableCell colSpan={4}>
+                                        <CreatePayloadC2ProfileParametersTable key={"step4table" + c2.id} returnAllDictValues={false} {...c2} onChange={updateC2Parameter} />
+                                    </MythicStyledTableCell></TableRow>
+                                    
+                                    ):(null)
+                                }
+                        </TableBody>
+                        ))
                     }
-                </React.Fragment>
-                ))
-            }
+                </Table>
+            </TableContainer>
+            
             <br/>
             <CreatePayloadNavigationButtons first={props.first} last={props.last} canceled={canceled} finished={finished} />
             <br/><br/>

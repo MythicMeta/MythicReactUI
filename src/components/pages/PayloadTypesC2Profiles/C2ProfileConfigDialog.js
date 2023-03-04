@@ -26,12 +26,12 @@ export function C2ProfileConfigDialog(props) {
     const [config, setConfig] = useState("");
     const theme = useTheme();
     const { loading, error } = useQuery(getProfileConfigQuery, {
-        variables: {id: props.profile_id, filename: "config.json"},
+        variables: {id: props.profile_id, filename: props.filename},
         onCompleted: data => {
             if(data.downloadContainerFile.status === "error"){
                 setConfig("Errored trying to read file from container\n" + data.downloadContainerFile.error);
             }else{
-                console.log(data);
+                //console.log(data);
                 setConfig(atob(data.downloadContainerFile.data));
             }
         },

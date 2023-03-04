@@ -10,10 +10,10 @@ import {faFolder} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Paper from '@mui/material/Paper';
 import DescriptionIcon from '@mui/icons-material/Description';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useTheme } from '@mui/material/styles';
-import { Button } from '@mui/material';
+import { IconButton } from '@mui/material';
 import Grow from '@mui/material/Grow';
 import Popper from '@mui/material/Popper';
 import MenuItem from '@mui/material/MenuItem';
@@ -34,18 +34,22 @@ import MythicResizableGrid from '../../MythicComponents/MythicResizableGrid';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import {TableFilterDialog} from './TableFilterDialog';
 import {MythicTransferListDialog} from '../../MythicComponents/MythicTransferList';
+import {TagsDisplay, ViewEditTags} from '../../MythicComponents/MythicTag';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { toLocalTime } from '../../utilities/Time';
+
 
 const getPermissionsDataQuery = gql`
-    query getPermissionsQuery($filebrowserobj_id: Int!) {
-        filebrowserobj_by_pk(id: $filebrowserobj_id) {
+    query getPermissionsQuery($mythictree_id: Int!) {
+        mythictree_by_pk(id: $mythictree_id) {
             id
-            permissions
+            metadata
         }
     }
 `;
 const getFileDownloadHistory = gql`
-    query getFileDownloadHistory($filebrowserobj_id: Int!) {
-        filebrowserobj_by_pk(id: $filebrowserobj_id) {
+    query getFileDownloadHistory($mythictree_id: Int!) {
+        mythictree_by_pk(id: $mythictree_id) {
             filemeta {
                 id
                 comment
@@ -63,8 +67,8 @@ const getFileDownloadHistory = gql`
     }
 `;
 const updateFileComment = gql`
-    mutation updateCommentMutation($filebrowserobj_id: Int!, $comment: String!) {
-        update_filebrowserobj_by_pk(pk_columns: { id: $filebrowserobj_id }, _set: { comment: $comment }) {
+    mutation updateCommentMutation($mythictree_id: Int!, $comment: String!) {
+        update_mythictree_by_pk(pk_columns: { id: $mythictree_id }, _set: { comment: $comment }) {
             comment
             id
         }
@@ -79,17 +83,18 @@ export const CallbacksTabsFileBrowserTable = (props) => {
     const [selectedColumn, setSelectedColumn] = React.useState({});
     const [sortData, setSortData] = React.useState({"sortKey": null, "sortDirection": null, "sortType": null})
     const [columnVisibility, setColumnVisibility] = React.useState({
-        "visible": ["Actions", "Name", "Size", "Last Modified"],
-        "hidden": ["Comment"]
+        "visible": ["Info", "Name", "Size","Comment", "Last Modify"],
+        "hidden": ["Tags"]
     });
     const [openAdjustColumnsDialog, setOpenAdjustColumnsDialog] = React.useState(false);
     const columns = React.useMemo(
         () =>
             [
-                { name: 'Actions', width: 100, disableAutosize: true, disableSort: true, disableFilterMenu: true },
+                { name: 'Info', width: 50, disableAutosize: true, disableSort: true, disableFilterMenu: true },
                 { name: 'Name', type: 'string', key: 'name_text', fillWidth: true },
-                { name: 'Size', type: 'number', key: 'size', width: 100 },
-                { name: 'Last Modified', type: 'date', key: 'modify_time', width: 220 },
+                { name: "Size", type: "size", key: "size", inMetadata: true},
+                { name: "Last Modify", type: "date", key: "modify_time", inMetadata: true, width: 300},
+                { name: 'Tags', type: 'tags', disableSort: true, disableFilterMenu: true, width: 220 },
                 { name: 'Comment', type: 'string', key: 'comment', width: 200 },
             ].reduce( (prev, cur) => {
                 if(columnVisibility.visible.includes(cur.name)){
@@ -109,11 +114,17 @@ export const CallbacksTabsFileBrowserTable = (props) => {
             return allData;
         }
         const tempData = [...allData];
-
         if (sortData.sortType === 'number' || sortData.sortType === 'size' || sortData.sortType === 'date') {
-            tempData.sort((a, b) => (parseInt(a[sortData.sortKey]) > parseInt(b[sortData.sortKey]) ? 1 : -1));
+            tempData.sort((a, b) => {
+                if(sortData.inMetadata){
+                    return parseInt(props.treeRootData[props.selectedFolderData.host][a]?.metadata[sortData.sortKey]) > 
+                    parseInt(props.treeRootData[props.selectedFolderData.host][b]?.metadata[sortData.sortKey]) ? 1 : -1
+                } else {
+                    return parseInt(props.treeRootData[props.selectedFolderData.host][a][sortData.sortKey]) > parseInt(props.treeRootData[props.selectedFolderData.host][b][sortData.sortKey]) ? 1 : -1
+                }
+            })
         } else if (sortData.sortType === 'string') {
-            tempData.sort((a, b) => (a[sortData.sortKey].toLowerCase() > b[sortData.sortKey].toLowerCase() ? 1 : -1));
+            tempData.sort((a, b) => (props.treeRootData[props.selectedFolderData.host][a][sortData.sortKey].toLowerCase() > props.treeRootData[props.selectedFolderData.host][b][sortData.sortKey].toLowerCase() ? 1 : -1));
         }
         if (sortData.sortDirection === 'DESC') {
             tempData.reverse();
@@ -125,7 +136,7 @@ export const CallbacksTabsFileBrowserTable = (props) => {
     }
     const filterRow = (row) => {
         for(const [key,value] of Object.entries(filterOptions)){
-            if(!String(row[key]).toLowerCase().includes(value)){
+            if(!String(props.treeRootData[props.selectedFolderData.host][row][key]).toLowerCase().includes(value)){
                 return true;
             }
         }
@@ -133,22 +144,39 @@ export const CallbacksTabsFileBrowserTable = (props) => {
     }
     const gridData = React.useMemo(
         () =>
+            // row is just the name
             sortedData.reduce((prev, row) => {
                 if(filterRow(row)){
                     return [...prev];
                 }else{
                     return [...prev, columns.map( c => {
                         switch(c.name){
-                            case "Actions":
-                                return  <FileBrowserTableRowActionCell rowData={row} onTaskRowAction={props.onTaskRowAction} />;
+                            case "Info":
+                                return  <FileBrowserTableRowActionCell 
+                                            treeRootData={props.treeRootData} 
+                                            selectedFolderData={props.selectedFolderData} 
+                                            rowData={props.treeRootData[props.selectedFolderData.host][row]} 
+                                            cellData={row}
+                                            onTaskRowAction={props.onTaskRowAction} />;
                             case "Name":
-                                return <FileBrowserTableRowNameCell rowData={row} cellData={row.name_text} />;
+                                return <FileBrowserTableRowNameCell 
+                                            treeRootData={props.treeRootData} 
+                                            selectedFolderData={props.selectedFolderData} 
+                                            cellData={row}
+                                            rowData={props.treeRootData[props.selectedFolderData.host][row]} />;
                             case "Size":
-                                return FileBrowserTableRowSizeCell({ cellData: row.size });
-                            case "Last Modified":
-                                return FileBrowserTableRowDateCell({ cellData: row.modify_time });
+                                return TableRowSizeCell({ cellData: props.treeRootData[props.selectedFolderData.host][row].metadata.size, rowData: props.treeRootData[props.selectedFolderData.host][row] });
+                            case "Tags":
+                                return <FileBrowserTagsCell 
+                                            rowData={props.treeRootData[props.selectedFolderData.host][row]} 
+                                            treeRootData={props.treeRootData} 
+                                            cellData={row}
+                                            selectedFolderData={props.selectedFolderData} 
+                                            me={props.me} />
+                            case "Last Modify":
+                                return TableRowDateCell({ cellData: props.treeRootData[props.selectedFolderData.host][row].metadata.modify_time, rowData: props.treeRootData[props.selectedFolderData.host][row] });
                             case "Comment":
-                                return FileBrowserTableRowStringCell({ cellData: row.comment });
+                                return <FileBrowserTableRowStringCell cellData={row.comment} rowData={props.treeRootData[props.selectedFolderData.host][row]} />
                         }
                     })];
                 }
@@ -158,20 +186,22 @@ export const CallbacksTabsFileBrowserTable = (props) => {
     );
 
     useEffect(() => {
-        if (props.showDeletedFiles) {
-            setAllData([...props.selectedFolder]);
-        } else {
-            const filteredData = props.selectedFolder.filter((f) => !f.deleted);
-            setAllData([...filteredData]);
+        // when the folder changes, we need to aggregate all of the entries
+        //console.log(props.selectedFolderData, props.treeAdjMatrix, props.treeRootData)
+        let desiredPath = props.selectedFolderData.full_path_text;
+        if(props.selectedFolderData.id === props.selectedFolderData.host){
+            desiredPath = "";
         }
-    }, [props.selectedFolder, props.showDeletedFiles]);
+        setAllData(Object.keys(props.treeAdjMatrix[props.selectedFolderData.host]?.[desiredPath] || {}));
+        //console.log("just set all data")
+    }, [props.selectedFolderData, props.showDeletedFiles, props.treeAdjMatrix]);
 
     const onRowDoubleClick = (e, rowIndex) => {
-        const rowData = allData[rowIndex];
-        if (rowData.is_file) {
+        const rowData = props.treeRootData[props.selectedFolderData.host][allData[rowIndex]];
+        if (!rowData.can_have_children) {
             return;
         }
-        snackActions.info('Fetching contents of folder...');
+        snackActions.info('Fetching contents from database...');
         props.onRowDoubleClick(rowData);
 
         setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC"});
@@ -183,16 +213,16 @@ export const CallbacksTabsFileBrowserTable = (props) => {
             return;
         }
         if (!column.key) {
-            setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC"});
+            setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC", "inMetadata": false});
         }
         if (sortData.sortKey === column.key) {
             if (sortData.sortDirection === 'ASC') {
                 setSortData({...sortData, "sortDirection": "DESC"});
             } else {
-                setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC"});
+                setSortData({"sortKey": null, "sortType":null, "sortDirection": "ASC", "inMetadata": false});
             }
         } else {
-            setSortData({"sortKey": column.key, "sortType":column.type, "sortDirection": "ASC"});
+            setSortData({"sortKey": column.key, "inMetadata": column.inMetadata, "sortType":column.type, "sortDirection": "ASC"});
         }
     };
     const contextMenuOptions = [
@@ -210,10 +240,6 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         {
             name: "Show/Hide Columns",
             click: ({event, columnIndex}) => {
-                if(columns[columnIndex].disableFilterMenu){
-                    snackActions.warning("Can't filter that column");
-                    return;
-                }
                 setOpenAdjustColumnsDialog(true);
             }
         }
@@ -257,11 +283,11 @@ export const CallbacksTabsFileBrowserTable = (props) => {
         </div>
     );
 };
-const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
+const FileBrowserTableRowNameCell = ({cellData,  rowData, treeRootData, selectedFolderData }) => {
     const theme = useTheme();
     return (
-        <div style={{ alignItems: 'center', display: 'flex', textDecoration: rowData.deleted ? 'line-through' : '' }}>
-            {rowData.is_file ? (
+        <div style={{ alignItems: 'center', display: 'flex', textDecoration: treeRootData[selectedFolderData.host][cellData].deleted ? 'line-through' : '' }}>
+            {!treeRootData[selectedFolderData.host][cellData].can_have_children ? (
                 <DescriptionIcon style={{ marginRight: '5px' }} />
             ) : (
                 <FontAwesomeIcon 
@@ -270,50 +296,65 @@ const FileBrowserTableRowNameCell = ({ cellData, rowData }) => {
                     style={{
                         marginRight: '5px',
                         color:
-                            rowData.filebrowserobjs_aggregate.aggregate.count > 0 || rowData.success !== null
+                        treeRootData[selectedFolderData.host][cellData].success !== null
                                 ? theme.folderColor
                                 : 'grey',
                     }}
                 />
             )}
-            {rowData.filemeta.length > 0 ? <GetAppIcon style={{ color: theme.palette.success.main }} /> : null}
+            {treeRootData[selectedFolderData.host][cellData].filemeta.length > 0 ? <GetAppIcon color="success" /> : null}
             <pre 
                 style={{
                     color:
-                        rowData.filebrowserobjs_aggregate.aggregate.count > 0 || rowData.success !== null
+                    treeRootData[selectedFolderData.host][cellData].success !== null
                             ? theme.palette.text.primary
                             : theme.palette.text.secondary,
                 }}>
-                {cellData}
+                {treeRootData[selectedFolderData.host][cellData].name_text}
             </pre>
-            {rowData.success === true ? (
+            {treeRootData[selectedFolderData.host][cellData].success === true ? (
                 <MythicStyledTooltip title='Successfully listed contents of folder'>
-                    <CheckCircleIcon fontSize='small' style={{ color: theme.palette.success.main }} />
+                    <CheckCircleOutlineIcon color="success" fontSize='small' />
                 </MythicStyledTooltip>
-            ) : rowData.success === false ? (
+            ) : treeRootData[selectedFolderData.host][cellData].success === false ? (
                 <MythicStyledTooltip title='Failed to list contents of folder'>
-                    <ErrorIcon fontSize='small' style={{ color: theme.palette.error.main }} />
+                    <ErrorIcon fontSize='small' color="error" />
                 </MythicStyledTooltip>
             ) : null}
         </div>
     );
 };
+const FileBrowserTagsCell = ({rowData, cellData, treeRootData, selectedFolderData, me}) => {
+    return (
+        <>
+            <ViewEditTags target_object={"mythictree_id"} target_object_id={treeRootData[selectedFolderData.host][cellData].id} me={me} />
+            <TagsDisplay tags={treeRootData[selectedFolderData.host][cellData].tags} />
+        </>
+    )
+}
 const FileBrowserTableRowStringCell = ({ cellData }) => {
-    return cellData;
+    return (
+        <>
+        {cellData}
+        </>
+    )
 };
-const FileBrowserTableRowDateCell = ({ cellData }) => {
-    if(cellData === "" || cellData <= 0){
-        return cellData;
-    }
+export const TableRowDateCell = ({ cellData, rowData, view_utc_time=true }) => {
+    
     try{
+        let cellDataInt = parseInt(cellData)
+        if(cellData === "" || cellData === undefined || cellDataInt <= 0){
+            return cellData;
+        }
         // handle Unix epoch timestamps
-        const dateData = new Date(parseInt(cellData)).toISOString();
-        return dateData.slice(0, 10) + " " + dateData.slice(11,-1);
+        const dateData = new Date(cellDataInt).toISOString();
+        return toLocalTime(dateData.slice(0, 10) + " " + dateData.slice(11,-1), view_utc_time);
     }catch(error){
         try{
+            let cellDataInt = parseInt(cellData)
             // handle windows FILETIME values
-            const dateData = new Date( ((parseInt(cellData) / 10000000) - 11644473600) * 1000).toISOString();
-            return dateData.slice(0, 10) + " " + dateData.slice(11,-1);
+            const dateData = new Date( ((cellDataInt / 10000000) - 11644473600) * 1000).toISOString();
+            return toLocalTime(dateData.slice(0, 10) + " " + dateData.slice(11,-1), view_utc_time);
         }catch(error2){
             console.log("error with timestamp: ", cellData);
             return String(cellData);
@@ -322,12 +363,12 @@ const FileBrowserTableRowDateCell = ({ cellData }) => {
     }
     
 };
-const FileBrowserTableRowSizeCell = ({ cellData }) => {
+export const TableRowSizeCell = ({ cellData, rowData }) => {
     const getStringSize = () => {
         try {
             // process for getting human readable string from bytes: https://stackoverflow.com/a/18650828
             let bytes = parseInt(cellData);
-            if (cellData === '') return '';
+            if (cellData === '' || cellData === undefined) return '';
             if (bytes === 0) return '0 B';
             const decimals = 2;
             const k = 1024;
@@ -343,7 +384,7 @@ const FileBrowserTableRowSizeCell = ({ cellData }) => {
     };
     return getStringSize(cellData);
 };
-const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
+const FileBrowserTableRowActionCell = ({ rowData, cellData, onTaskRowAction, treeRootData, selectedFolderData }) => {
     const dropdownAnchorRef = React.useRef(null);
     const theme = useTheme();
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
@@ -354,11 +395,31 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
     const [downloadHistory, setDownloadHistory] = React.useState([]);
     const [getPermissions] = useLazyQuery(getPermissionsDataQuery, {
         onCompleted: (data) => {
-            setPermissionData(data.filebrowserobj_by_pk.permissions);
-            if (data.filebrowserobj_by_pk.permissions !== '') {
+            let newPermissions = {};
+            Object.keys(data.mythictree_by_pk.metadata).forEach( (key) => {
+                if( key.includes("time") ){
+                    try{
+                        newPermissions[key] = TableRowDateCell({cellData: data.mythictree_by_pk.metadata[key]})
+                    }catch(error){
+                        console.log("failed to parse metadata as date", key, data.mythictree_by_pk.metadata[key]);
+                        newPermissions[key] = data.mythictree_by_pk.metadata[key];
+                    }
+                } else if( key.includes("size") ){
+                    try{
+                        newPermissions[key] = TableRowSizeCell({cellData: data.mythictree_by_pk.metadata[key]})
+                    }catch(error){
+                        console.log("failed to parse metadata as size", key, data.mythictree_by_pk.metadata[key]);
+                        newPermissions[key] = data.mythictree_by_pk.metadata[key];
+                    }
+                } else {
+                    newPermissions[key] = data.mythictree_by_pk.metadata[key];
+                }
+            });
+            setPermissionData(newPermissions);
+            if (data.mythictree_by_pk.metadata !== '') {
                 setViewPermissionsDialogOpen(true);
             } else {
-                snackActions.warning('No permission data available');
+                snackActions.warning('No metadata data available');
             }
         },
         fetchPolicy: 'network-only',
@@ -366,10 +427,10 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
     const [getHistory] = useLazyQuery(getFileDownloadHistory, {
         onCompleted: (data) => {
             //console.log(data);
-            if (data.filebrowserobj_by_pk.filemeta.length === 0) {
-                snackActions.warning('File has no download history');
+            if (data.mythictree_by_pk.filemeta.length === 0) {
+                snackActions.warning('No download history recorded');
             } else {
-                setDownloadHistory(data.filebrowserobj_by_pk.filemeta);
+                setDownloadHistory(data.mythictree_by_pk.filemeta);
                 setFileHistoryDialogOpen(true);
             }
         },
@@ -381,7 +442,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
         },
     });
     const onSubmitUpdatedComment = (comment) => {
-        updateComment({ variables: { filebrowserobj_id: rowData.id, comment: comment } });
+        updateComment({ variables: { mythictree_id: treeRootData[selectedFolderData.host][cellData].id, comment: comment } });
     };
     const handleDropdownToggle = (evt) => {
         evt.stopPropagation();
@@ -407,7 +468,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
         setDropdownOpen(false);
     };
     const copyToClipboard = () => {
-        let result = copyStringToClipboard(rowData.full_path_text);
+        let result = copyStringToClipboard(treeRootData[selectedFolderData.host][cellData].full_path_text);
         if (result) {
             snackActions.success('Copied text!');
         } else {
@@ -420,7 +481,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
             icon: <VisibilityIcon style={{ paddingRight: '5px' }} />,
             click: (evt) => {
                 evt.stopPropagation();
-                getPermissions({ variables: { filebrowserobj_id: rowData.id } });
+                getPermissions({ variables: { mythictree_id: treeRootData[selectedFolderData.host][cellData].id } });
             },
         },
         {
@@ -428,7 +489,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
             icon: <HistoryIcon style={{ paddingRight: '5px' }} />,
             click: (evt) => {
                 evt.stopPropagation();
-                getHistory({ variables: { filebrowserobj_id: rowData.id } });
+                getHistory({ variables: { mythictree_id: treeRootData[selectedFolderData.host][cellData].id } });
             },
         },
         {
@@ -450,40 +511,43 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
     ];
     const optionsB = [
         {
-            name: 'Task File Listing',
-            icon: <ListIcon style={{ paddingRight: '5px', color: theme.palette.warning.main }} />,
+            name: 'Task Listing',
+            icon: <ListIcon color="warning" style={{ paddingRight: '5px'}} />,
             click: (evt) => {
                 evt.stopPropagation();
                 onTaskRowAction({
-                    path: rowData.parent_path_text,
-                    host: rowData.host,
-                    filename: rowData.name_text,
+                    path: treeRootData[selectedFolderData.host][cellData].parent_path_text,
+                    full_path: treeRootData[selectedFolderData.host][cellData].full_path_text,
+                    host: treeRootData[selectedFolderData.host][cellData].host,
+                    filename: treeRootData[selectedFolderData.host][cellData].name_text,
                     uifeature: 'file_browser:list',
                 });
             },
         },
         {
             name: 'Task Download',
-            icon: <GetAppIcon style={{ paddingRight: '5px', color: theme.palette.success.main }} />,
+            icon: <GetAppIcon color="success" style={{ paddingRight: '5px' }} />,
             click: (evt) => {
                 evt.stopPropagation();
                 onTaskRowAction({
-                    path: rowData.parent_path_text,
-                    host: rowData.host,
-                    filename: rowData.name_text,
+                    path: treeRootData[selectedFolderData.host][cellData].parent_path_text,
+                    full_path: treeRootData[selectedFolderData.host][cellData].full_path_text,
+                    host: treeRootData[selectedFolderData.host][cellData].host,
+                    filename: treeRootData[selectedFolderData.host][cellData].name_text,
                     uifeature: 'file_browser:download',
                 });
             },
         },
         {
-            name: 'Task File Removal',
-            icon: <DeleteIcon style={{ paddingRight: '5px', color: theme.palette.error.main }} />,
+            name: 'Task Removal',
+            icon: <DeleteIcon color="error" style={{ paddingRight: '5px' }} />,
             click: (evt) => {
                 evt.stopPropagation();
                 onTaskRowAction({
-                    path: rowData.parent_path_text,
-                    host: rowData.host,
-                    filename: rowData.name_text,
+                    path: treeRootData[selectedFolderData.host][cellData].parent_path_text,
+                    full_path: treeRootData[selectedFolderData.host][cellData].full_path_text,
+                    host: treeRootData[selectedFolderData.host][cellData].host,
+                    filename: treeRootData[selectedFolderData.host][cellData].name_text,
                     uifeature: 'file_browser:remove',
                     getConfirmation: true
                 });
@@ -492,7 +556,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
     ];
     return (
         <React.Fragment>
-            <Button
+            <IconButton
                 style={{ }}
                 size='small'
                 aria-controls={dropdownOpen ? 'split-button-menu' : undefined}
@@ -502,8 +566,8 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
                 color='primary'
                 variant='contained'
                 ref={dropdownAnchorRef}>
-                Actions
-            </Button>
+                <SettingsIcon />
+            </IconButton>
             <Popper
                 open={dropdownOpen}
                 anchorEl={dropdownAnchorRef.current}
@@ -559,7 +623,7 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
                     }}
                     innerDialog={
                         <MythicModifyStringDialog
-                            title='Edit File Browser Comment'
+                            title='Edit Comment'
                             onSubmit={onSubmitUpdatedComment}
                             value={rowData.comment}
                             onClose={() => {
@@ -572,15 +636,15 @@ const FileBrowserTableRowActionCell = ({ rowData, onTaskRowAction }) => {
             {viewPermissionsDialogOpen && (
                 <MythicDialog
                     fullWidth={true}
-                    maxWidth='md'
+                    maxWidth='lg'
                     open={viewPermissionsDialogOpen}
                     onClose={() => {
                         setViewPermissionsDialogOpen(false);
                     }}
                     innerDialog={
                         <MythicViewJSONAsTableDialog
-                            title='View Permissions Data'
-                            leftColumn='Permission'
+                            title='View Metadata'
+                            leftColumn='Attribute'
                             rightColumn='Value'
                             value={permissionData}
                             onClose={() => {

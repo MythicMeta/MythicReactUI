@@ -53,21 +53,21 @@ return (
             tabTypes.map( (tab, index) => {
               switch (tab){
                 case "tasks":
-                  return <SearchTabTasksLabel key={"taskstab"} />;
+                  return <SearchTabTasksLabel key={"taskstab"} me={props.me} />;
                 case "files":
-                  return <SearchTabFilesLabel key={"filestab"} />;
+                  return <SearchTabFilesLabel key={"filestab"} me={props.me}/>;
                 case "credentials":
-                  return <SearchTabCredentialsLabel key={"credentialstab"} />;
+                  return <SearchTabCredentialsLabel key={"credentialstab"} me={props.me}/>;
                 case "keylogs":
-                  return <SearchTabKeylogsLabel key={"keylogstab"} />;
+                  return <SearchTabKeylogsLabel key={"keylogstab"} me={props.me}/>;
                 case "tokens":
-                  return <SearchTabTokensLabel key={"tokenstab"} />;
+                  return <SearchTabTokensLabel key={"tokenstab"} me={props.me}/>;
                 case "callbacks":
-                  return <SearchTabCallbacksLabel key={"callbackstab"} />;
+                  return <SearchTabCallbacksLabel key={"callbackstab"} me={props.me}/>;
                 case "artifacts":
-                  return <SearchTabArtifactsLabel key={"artifactstab"} />;
+                  return <SearchTabArtifactsLabel key={"artifactstab"} me={props.me}/>;
                 case "socks":
-                  return <SearchTabSocksLabel key={"sockstab"} />;
+                  return <SearchTabSocksLabel key={"sockstab"} me={props.me}/>;
                 default:
                   return (null);
               }
@@ -79,21 +79,21 @@ return (
         tabTypes.map( (tab, index) => {
           switch(tab){
               case "tasks":
-                return <SearchTabTasksPanel key={"taskspanel"} index={index} value={value} changeSearchParam={changeSearchParam} />
+                return <SearchTabTasksPanel key={"taskspanel"} index={index} me={props.me} value={value} changeSearchParam={changeSearchParam} />
               case "callbacks":
-                return <SearchTabCallbacksPanel key={"callbackspanel"} index={index} value={value} changeSearchParam={changeSearchParam} />
+                return <SearchTabCallbacksPanel key={"callbackspanel"} index={index} me={props.me} value={value} changeSearchParam={changeSearchParam} />
               case "files":
-                return <SearchTabFilesPanel key={"filespanel"} index={index} value={value} changeSearchParam={changeSearchParam} />
+                return <SearchTabFilesPanel key={"filespanel"} index={index} me={props.me} value={value} changeSearchParam={changeSearchParam} />
               case "credentials":
-                return <SearchTabCredentialsPanel key={"credentialspanel"} index={index} value={value} changeSearchParam={changeSearchParam}/>
+                return <SearchTabCredentialsPanel key={"credentialspanel"} index={index} me={props.me} value={value} changeSearchParam={changeSearchParam}/>
               case "keylogs":
-                return <SearchTabKeylogsPanel key={"keylogspanel"} index={index} value={value} changeSearchParam={changeSearchParam} />
+                return <SearchTabKeylogsPanel key={"keylogspanel"} index={index} me={props.me} value={value} changeSearchParam={changeSearchParam} />
               case "tokens":
-                return <SearchTabTokensPanel key={"tokenspanel"} index={index} value={value}  changeSearchParam={changeSearchParam} />
+                return <SearchTabTokensPanel key={"tokenspanel"} index={index} me={props.me} value={value}  changeSearchParam={changeSearchParam} />
               case "artifacts":
-                return <SearchTabArtifactsPanel key={"artifactspanel"} index={index} value={value}  changeSearchParam={changeSearchParam} />
+                return <SearchTabArtifactsPanel key={"artifactspanel"} index={index} me={props.me} value={value}  changeSearchParam={changeSearchParam} />
               case "socks":
-                return <SearchTabSocksPanel key={"sockspanel"} index={index} value={value} changeSearchParam={changeSearchParam} />
+                return <SearchTabSocksPanel key={"sockspanel"} index={index} me={props.me} value={value} changeSearchParam={changeSearchParam} />
               default:
                 return (null);
           }

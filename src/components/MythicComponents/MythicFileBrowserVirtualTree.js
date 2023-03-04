@@ -1,6 +1,6 @@
 import { alpha } from "@mui/material";
 import makeStyles from '@mui/styles/makeStyles';
-import { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList as List } from "react-window";
 import { snackActions } from '../utilities/Snackbar';
@@ -8,12 +8,17 @@ import {faFolderOpen, faFolder} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ComputerIcon from '@mui/icons-material/Computer';
 import DescriptionIcon from '@mui/icons-material/Description';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useTheme } from '@mui/material/styles';
-import Badge from '@mui/material/Badge';
 import { Typography } from '@mui/material';
 import { MythicStyledTooltip } from "./MythicStyledTooltip";
+import Grow from '@mui/material/Grow';
+import Popper from '@mui/material/Popper';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Paper from '@mui/material/Paper';
 
 const useStyles = makeStyles((theme) => ({
   rowContainer: {},
@@ -106,47 +111,103 @@ const VirtualTreeRow = ({
   onSelectNode,
   onExpandNode,
   onCollapseNode,
+  onDoubleClickNode,
+  contextMenuOptions,
   ...ListProps
 }) => {
-
-  const item = ListProps.data[ListProps.index];
+  //console.log("listprops", ListProps)
+  const itemTreeData = ListProps.data[ListProps.index];
+  const item = ListProps.treeRootData[itemTreeData.host]?.[itemTreeData.full_path_text] || itemTreeData;
+  //console.log("item", item, "itemlookup", ListProps.treeRootData[itemTreeData.host]?.[itemTreeData.name])
+  const dropdownAnchorRef = React.useRef(null);
   const theme = useTheme();
   const classes = useStyles();
   const handleOnClickButton = (e) => {
     e.stopPropagation();
-    if (item.isOpen) {
+    if (itemTreeData.isOpen) {
       onCollapseNode(item.id, item);
     } else {
-      snackActions.info('fetching elements...', { persist: true });
+      snackActions.info('fetching elements...', { autoClose: false });
       onExpandNode(item.id, item);
     }
   };
-
   const handleOnClickRow = (e) => {
     onSelectNode(item.id, item);
   };
+  const [openContextMenu, setOpenContextMenu] = React.useState(false);
+  const handleContextClick = useCallback(
+      (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if(contextMenuOptions && contextMenuOptions.length > 0){
+              
+              setOpenContextMenu(true);
+          }
+      },
+      [contextMenuOptions] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const handleMenuItemClick = (event, index) => {
+      event.preventDefault();
+      event.stopPropagation();
+      contextMenuOptions[index].click({event, node: item});
+      setOpenContextMenu(false);
+  };
+  const handleClose = (event) => {
+      if (dropdownAnchorRef.current && dropdownAnchorRef.current.contains(event.target)) {
+        return;
+      }
+      setOpenContextMenu(false);
+    };
   return (
     <div style={ListProps.style}>
-    <div style={{display: 'flex' , marginBottom: "2px", flexGrow: 1, width: "100%"}}>
-        {[...Array(item.data.depth)].map((o, i) => (
+    <div style={{display: 'flex' , marginBottom: "1px", flexGrow: 1, width: "100%"}}>
+        {[...Array(itemTreeData.depth)].map((o, i) => (
             <div
-                key={'folder' + item.data.id + 'lines' + i}
+                key={'folder' + itemTreeData.id + 'lines' + i}
                 style={{
                     borderLeft: `2px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
-                    marginLeft: 15,
-                    paddingRight: 15,
+                    marginLeft: 7,
+                    paddingRight: 7,
                     display: 'inline-block',
                 }}></div>
         ))}
         <div
           className={classes.root}
-          style={{ backgroundColor: theme.body, color: theme.text, alignItems: 'center', display: 'flex', paddingRight: "10px" }}
-          onClick={handleOnClickRow}>
-          {item.data.parent_id === null ? (
+          style={{ backgroundColor: theme.body, color: theme.text, alignItems: 'center', display: 'flex', paddingRight: "10px", textDecoration: itemTreeData.deleted ? 'line-through' : ''  }}
+          onClick={handleOnClickRow}
+          onContextMenu={handleContextClick}
+          ref={dropdownAnchorRef}
+          >
+            <Popper open={openContextMenu} anchorEl={dropdownAnchorRef.current} role={undefined} transition disablePortal style={{zIndex: 4}}>
+                  {({ TransitionProps, placement }) => (
+                    <Grow
+                      {...TransitionProps}
+                      style={{
+                        transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
+                      }}
+                    >
+                      <Paper variant="outlined" style={{backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light, color: "white"}}>
+                        <ClickAwayListener onClickAway={handleClose}>
+                          <MenuList id="split-button-menu"  >
+                            {contextMenuOptions.map((option, index) => (
+                              <MenuItem
+                                key={option.name + index}
+                                onClick={(event) => handleMenuItemClick(event, index)}
+                              >
+                                {option.name}
+                              </MenuItem>
+                            ))}
+                          </MenuList>
+                        </ClickAwayListener>
+                      </Paper>
+                    </Grow>
+                  )}
+            </Popper>
+          {itemTreeData.root  ? (
               <ComputerIcon style={{ marginLeft: '3px', marginRight: '5px' }} onClick={handleOnClickButton} />
-          ) : item.data.is_file ? (
+          ) : !itemTreeData.can_have_children ? (
               <DescriptionIcon style={{ marginLeft: '3px', marginRight: '5px' }} />
-          ) : item.isOpen ? (
+          ) : itemTreeData.isOpen ? (
             <FontAwesomeIcon 
               icon={faFolderOpen} 
               style={{
@@ -160,35 +221,24 @@ const VirtualTreeRow = ({
               <FontAwesomeIcon 
                 style={{ paddingTop: '5px', marginLeft: '3px', marginRight: '5px', color: theme.folderColor }} size={"lg"} icon={faFolder} onClick={handleOnClickButton} />
           )}
-          {item.data.depth > 0 &&
-          item.data.filebrowserobjs_aggregate.aggregate.count > 99 ? (
-              <MythicStyledTooltip title='Number of known children'>
-                  <Badge
-                      style={{ left: -50 }}
-                      max={99}
-                      badgeContent={item.data.filebrowserobjs_aggregate.aggregate.count}
-                      color='primary'
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}></Badge>
-              </MythicStyledTooltip>
-          ) : null}
           <Typography
               style={{
                   color:
-                      item.data.filebrowserobjs_aggregate.aggregate.count > 0 ||
-                      item.data.success !== null
+                  itemTreeData.children.length > 0 ||
+                      item.success !== null
                           ? theme.palette.text.primary
                           : theme.palette.text.secondary,
-              }}>
-              {item.data.parent_id === null ? item.data.host : item.data.name_text}
+              }} component="pre">
+              {itemTreeData.name}
           </Typography>
 
-          {item.data.success === true && item.data.depth > 0 ? (
+          {item.success === true && itemTreeData.depth > 0 ? (
               <MythicStyledTooltip title='Successfully listed contents of folder'>
-                  <CheckCircleIcon fontSize='small' style={{ color: theme.palette.success.main }} />
+                  <CheckCircleOutlineIcon fontSize='small' color="success" />
               </MythicStyledTooltip>
-          ) : item.data.success === false && item.data.depth > 0 ? (
+          ) : item.success === false && itemTreeData.depth > 0 ? (
               <MythicStyledTooltip title='Failed to list contents of folder'>
-                  <ErrorIcon fontSize='small' style={{ color: theme.palette.error.main }} />
+                  <ErrorIcon fontSize='small' color="error" />
               </MythicStyledTooltip>
           ) : null}
       </div>
@@ -198,55 +248,73 @@ const VirtualTreeRow = ({
 };
 
 const FileBrowserVirtualTree = ({
-  nodes,
+  treeRootData,
+  treeAdjMatrix,
   openNodes,
   onSelectNode,
   onExpandNode,
   onCollapseNode,
-  display_name,
+  contextMenuOptions,
 }) => {
   const flattenNode = useCallback(
-    (node, depth = 0) => {
+    // node is just a full_path_text
+    (node, host, depth = 0) => {
       if(depth === 0){
+        
         return [
           {
-            id: node.id,
-            name: node[display_name],
+            id: treeRootData[host][node].id,
+            name: treeRootData[host][node].name_text,
+            full_path_text: treeRootData[host][node].full_path_text,
+            deleted: treeRootData[host][node].deleted,
             depth,
-            isLeaf: !Array.isArray(node.children) || node.children.length === 0,
+            isLeaf: Object.keys(treeAdjMatrix[host]?.[node] || {}).length === 0,
+            can_have_children: treeRootData[host][node].can_have_children,
             isOpen: true,
-            data: {...node, depth}
+            children: (treeAdjMatrix[host]?.[node] || {}),
+            host,
+            root: true
           },
-          ...(Object.values(node.children).reduce( (prev, cur) => {
-            if(cur.is_file){return [...prev]}
-            return [...prev, flattenNode(cur, depth+1)];
-        }, []).flat())
+          ...(Object.keys(treeAdjMatrix[host]?.[node] || {})).reduce( (prev, cur) => {
+            if(!treeRootData[host][cur].can_have_children){return [...prev]}
+            return [...prev, flattenNode(cur, host, depth+1)];
+        }, []).flat()
         ];
       }
-      if (openNodes[node.id] === true) {
+      if (openNodes[treeRootData[host][node].id] === true) {
         return [
           {
-            id: node.id,
-            name: node[display_name],
+            id: treeRootData[host][node].id,
+            name: treeRootData[host][node].name_text,
+            full_path_text: treeRootData[host][node].full_path_text,
+            deleted: treeRootData[host][node].deleted,
             depth,
-            isLeaf: !Array.isArray(node.children) || node.children.length === 0,
+            isLeaf: Object.keys(treeAdjMatrix[host]?.[node] || {}).length === 0,
+            can_have_children: treeRootData[host][node].can_have_children,
             isOpen: true,
-            data: {...node, depth}
+            children: (treeAdjMatrix[host]?.[node] || {}), 
+            host,
+            root: false,
           },
-          ...(Object.values(node.children).reduce( (prev, cur) => {
-              if(cur.is_file){return [...prev]}
-              return [...prev, flattenNode(cur, depth+1)];
-          }, []).flat())
+          ...(Object.keys(treeAdjMatrix[host]?.[node] || {})).reduce( (prev, cur) => {
+            if(!treeRootData[host][cur].can_have_children){return [...prev]}
+            return [...prev, flattenNode(cur, host, depth+1)];
+        }, []).flat()
         ];
       }
       return [
         {
-          id: node.id,
-          name: node[display_name],
+          id: treeRootData[host][node].id,
+          name: treeRootData[host][node].name_text,
+          full_path_text: treeRootData[host][node].full_path_text,
+          deleted: treeRootData[host][node].deleted,
           depth,
-          isLeaf: !Array.isArray(node.children) || node.children.length === 0,
+          isLeaf: Object.keys(treeAdjMatrix[host]?.[node] || {}).length === 0,
+          can_have_children: treeRootData[host][node].can_have_children,
           isOpen: false,
-          data: {...node, depth},
+          children: (treeAdjMatrix[host]?.[node] || {}), 
+          host,
+          root: false,
         }
       ];
      
@@ -254,12 +322,35 @@ const FileBrowserVirtualTree = ({
     [openNodes] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
-  const flattenedNodes = useMemo(
-    () => nodes.map((node) => flattenNode(node)).flat(),
-    [flattenNode, nodes]
+  const flattenedNodes = useMemo(() => {
+    //console.log("in tree", treeRootData, treeAdjMatrix)
+    // need to return an array
+    let finalData = [];
+    for(const [host, matrix] of Object.entries(treeAdjMatrix)){
+      finalData.push({
+        id: host,
+        name: host,
+        depth: 0,
+        isLeaf: false,
+        isOpen: true,
+        can_have_children: true,
+        host, 
+        root: true,
+        deleted: false,
+        success: true,
+        children: matrix[""],
+        full_path_text: host,
+      });
+      finalData.push(...Object.keys(matrix[""]).map(c => flattenNode(c, host, 1)).flat())
+    }
+    //console.log("flattened data", finalData)
+    return finalData;
+    //nodes.map((node) => flattenNode(node)).flat()
+  },[flattenNode, treeRootData, treeAdjMatrix]
   );
   return (
-    <AutoSizer>
+    flattenedNodes.length > 0 ? (
+      <AutoSizer>
       {(AutoSizerProps) => (
         <List
           itemData={flattenedNodes}
@@ -272,14 +363,18 @@ const FileBrowserVirtualTree = ({
           {(ListProps) => (
             <VirtualTreeRow
               {...ListProps}
+              treeRootData={treeRootData}
               onSelectNode={onSelectNode}
               onExpandNode={onExpandNode}
               onCollapseNode={onCollapseNode}
+              contextMenuOptions={contextMenuOptions}
             />
           )}
         </List>
       )}
     </AutoSizer>
+    ) : (null)
+    
   );
 };
 

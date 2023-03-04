@@ -18,7 +18,7 @@ export function OperationTableRowUpdateOperatorsDialogRow(props){
     useEffect( () => {
       setChecked(props.operator.checked);
       setViewMode(props.operator.view_mode);
-      console.log(props.operator);
+      //console.log(props.operator);
       if(!props.operator.disabledcommandsprofile){
         setBlockListName("")
       }else{

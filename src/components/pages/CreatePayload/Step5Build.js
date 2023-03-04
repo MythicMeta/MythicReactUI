@@ -15,15 +15,20 @@ import {snackActions} from '../../utilities/Snackbar';
   }
 }
  `;
-
-
 export function Step5Build(props){
+    const [fromNow, setFromNow] = React.useState( (new Date().toISOString()));
     const [filename, setFilename] = React.useState("");
     const [description, setDescription] = React.useState("");
+    const [startSubscription, setStartSubscription] = React.useState(false);
+    const [subscriptionID, setSubscriptionID] = React.useState("");
     const [createPayloadMutation] = useMutation(create_payload, {
         update: (cache, {data}) => {
             if(data.createPayload.status === "success"){
                 snackActions.info("Submitted payload to build pipeline");
+                setSubscriptionID(data.createPayload.uuid);
+                if(!startSubscription){
+                    setStartSubscription(true);
+                }
             }else{
                 snackActions.error(data.createPayload.error);
             }
@@ -48,16 +53,30 @@ export function Step5Build(props){
     }
     const finished = () => {
         const buildParameters = props.buildOptions[1]["parameters"].map( (param) => {
-            return param;
+            if(param.parameter_type === "Dictionary"){
+                const newDict = param.value.reduce( (prev, cur) => {
+                    if(cur.default_show){
+                        return {...prev, [cur.name]: cur.value};
+                    }
+                    return {...prev}
+                }, {});
+                return {name: param.name, value: newDict};
+            } else {
+                return {name: param.name, value: param.value};
+            }
         });
         const c2Profiles = props.buildOptions[3].reduce( (prev, c2) => {
             if(c2.selected){
                 const parameters = c2.c2profileparameters.reduce( (prev, param) => {
                     if(param.parameter_type === "Dictionary"){
-                        const final_values = param.value.map( (p) => {
-                            return {name: p.name, key: p.key, value: p.value, custom: p.custom}
-                        });
-                        return {...prev, [param.name]: final_values};
+                        const newDict = param.value.reduce( (prev, cur) => {
+                            if(cur.default_show){
+                                return {...prev, [cur.name]: cur.value};
+                            }
+                            return {...prev}
+                            
+                        }, {});
+                        return {...prev, [param.name]: newDict};
                     }
                     return {...prev, [param.name]: param.value}
                 }, {});
@@ -69,11 +88,13 @@ export function Step5Build(props){
             "selected_os": props.buildOptions[0],
             "payload_type": props.buildOptions[1]["payload_type"],
             "filename": filename,
-            "tag": description,
+            "description": description,
             "commands": props.buildOptions[2],
             "build_parameters": buildParameters,
             "c2_profiles": c2Profiles
             };
+        //console.log("finishedPayload", finishedPayload)
+        snackActions.info("Submitted Creation to Mythic...");
         createPayloadMutation({variables: {payload: JSON.stringify(finishedPayload)}}).catch( (e) => {console.log(e)} );
     }
     const canceled = () => {
@@ -91,7 +112,8 @@ export function Step5Build(props){
             <MythicTextField onEnter={finished} required={false} placeholder={"description"} value={description} multiline={false} onChange={onChangeDescription} display="inline-block"/>
             <CreatePayloadNavigationButtons first={props.first} last={props.last} canceled={canceled} finished={finished} startOver={props.startOver} />
             <br/><br/>
-            <PayloadSubscriptionNotification/>
+            {startSubscription && <PayloadSubscriptionNotification me={props.me} subscriptionID={subscriptionID} fromNow={fromNow}/>}
+            
         </div>
     );
 } 

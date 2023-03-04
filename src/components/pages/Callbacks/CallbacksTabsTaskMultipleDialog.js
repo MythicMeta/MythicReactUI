@@ -8,29 +8,33 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
-import Paper from '@mui/material/Paper';
-import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import {useQuery, gql } from '@apollo/client';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
 import MenuItem from '@mui/material/MenuItem';
 import {TaskFromUIButton} from './TaskFromUIButton';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
+import { CardContent } from '@mui/material';
+import LinearProgress from '@mui/material/LinearProgress';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
 
 
 const callbacksAndFeaturesQuery = gql`
-query callbacksAndFeatures($operation_id: Int!) {
-  callback(where: {operation_id: {_eq: $operation_id}, active: {_eq: true}}, order_by: {id: asc}) {
-    loadedcommands(where: {command: {supported_ui_features: {_ilike: "%callback_table%"}}}) {
+query callbacksAndFeatures($operation_id: Int!, $payloadtype_id: Int!) {
+  callback(where: {operation_id: {_eq: $operation_id}, active: {_eq: true}, payload: {payloadtype: { id: {_eq: $payloadtype_id}}}}, order_by: {id: asc}) {
+    loadedcommands {
       command {
-        supported_ui_features
+        cmd
+        description
+        id
       }
+      id
     }
     id
     host
@@ -46,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
   },
   paper: {
     width: 200,
-    height: 500,
+    //height: 500,
   },
   button: {
     margin: theme.spacing(0.5, 0),
@@ -65,8 +69,7 @@ function intersection(a, b) {
   return a.filter((value) => b.indexOf(value) !== -1);
 }
 
-export function CallbacksTabsTaskMultipleDialog({onClose}) {
-    const me = useReactiveVar(meState);
+export function CallbacksTabsTaskMultipleDialog({onClose, callback}) {
     const [featureOptions, setFeatureOptions] = React.useState([]);
     const [selectedFeature, setSelectedFeature] = React.useState("");
     const classes = useStyles();
@@ -81,49 +84,39 @@ export function CallbacksTabsTaskMultipleDialog({onClose}) {
     const leftToTask = React.useRef([]);
     const startTasking = React.useRef(false);
     const finalTaskedParameters = React.useRef(null);
-    useQuery(callbacksAndFeaturesQuery, {variables: {operation_id: me?.user?.current_operation_id || 0},
+    const [openProgressIndicator, setOpenProgressIndicator] = React.useState(false);
+    const [progress, setProgress] = React.useState(0);
+    const totalToTask = React.useRef(1);
+    const normalize = (value) => ((value - 0) * 100) / (totalToTask.current - 0);
+    useQuery(callbacksAndFeaturesQuery, {variables: {operation_id: callback.operation_id, payloadtype_id: callback.payload.payloadtype.id},
       fetchPolicy: "no-cache",
       onCompleted: (data) => {
         const callbackData = data.callback.map( c => {
-          // for each callback, get a unique set of supported features
-          const features = c.loadedcommands.reduce( (prev, cur) => {
-            // for each command, get their set of supported features
-            const featureList = cur.command.supported_ui_features.split("\n");
-            // iterate over those supported features in the command and add them to the running list for the callback
-            // if the callback doesn't currently have it listed
-            let runningSet = [...prev];
-            featureList.forEach( feature => {
-              // for each new feature in this current command, see if we have it before, if not, push it
-              if(!runningSet.includes(feature) && feature.startsWith("callback_table")){
-                runningSet.push(feature);
-              }
-            });
-            return [...runningSet];
-          }, []);
-          const display = `${c.id} - ${c.user}@${c.host} (${c.pid})`
-          return {...c, features: features, display};
+          const display = `${c.id} - ${c.user}@${c.host} (${c.pid})`;
+          return {...c, display};
         });
         setLeft(callbackData);
       }
     });
     React.useEffect( () =>{
       //based on what's in the `right` variable, we can update the featureOptions to be the intersection of those values
-      let allFeatures = [];
+      let allCommands = [];
       if(right.length >= 1){
-        allFeatures = [...right[0].features];
+        allCommands = [...right[0].loadedcommands];
         for(let i = 1; i < right.length; i++){
           let intersection = [];
-          for(let j = 0; j < allFeatures.length; j++){
-            if(right[i].features.includes(allFeatures[j])){
-              intersection.push(allFeatures[j]);
+          for(let j = 0; j < allCommands.length; j++){
+            if(right[i].loadedcommands.findIndex( x => x.command.cmd === allCommands[j].command.cmd) >= 0){
+              intersection.push(allCommands[j]);
             }
           }
-          allFeatures = [...intersection];
+          allCommands = [...intersection];
         }
       }
-      setFeatureOptions(allFeatures);
-      if(allFeatures.length > 0){
-        setSelectedFeature(allFeatures[0]);
+      allCommands.sort( (a,b) => a.command.cmd < b.command.cmd ? -1 : a.command.cmd > b.command.cmd ? 1 : 0)
+      setFeatureOptions(allCommands);
+      if(allCommands.length > 0){
+        setSelectedFeature(allCommands[0]);
       }else{
         setSelectedFeature('');
       }
@@ -164,31 +157,39 @@ export function CallbacksTabsTaskMultipleDialog({onClose}) {
     };
     const issueNextTasking = () => {
       let callback = leftToTask.current.shift(1);
+      
       if(callback){
         if(finalTaskedParameters.current){
-          taskingData.current = {ui_feature: selectedFeature, callback_id: callback.id, openDialog: false, parameters: finalTaskedParameters.current, tasking_location: "modal"};
+          taskingData.current = {cmd: selectedFeature.command.cmd, callback_id: callback.id, openDialog: false, parameters: finalTaskedParameters.current, tasking_location: "modal", dontShowSuccessDialog: true};
         }else{
-          taskingData.current = {ui_feature: selectedFeature, callback_id: callback.id, openDialog: true, parameters: "", tasking_location: "modal"};
+          taskingData.current = {cmd: selectedFeature.command.cmd, callback_id: callback.id, openDialog: true, parameters: "", tasking_location: "modal", dontShowSuccessDialog: true};
         }
         setOpenTaskingButton(true);
       }else{
-        onClose();
+        //setOpenProgressIndicator(false);
+        //onClose();
         return;
       }
     }
     const submitTasking = () => {
+      //console.log("selectedFeature", selectedFeature)
       if(right.length === 0 || selectedFeature === ""){
         onClose();
         return;
       }
       startTasking.current = true;
       leftToTask.current = [...right];
+      totalToTask.current = right.length;
+      
+      //console.log("calling issueNextTasking")
       issueNextTasking();
     }
     const onTasked = ({tasked, variables}) => {
       if(tasked){
-        console.log("setting finalTaskedParameters to", variables);
+        //console.log("setting finalTaskedParameters to", variables);
         finalTaskedParameters.current = variables;
+        setProgress(progress + 1);
+        setOpenProgressIndicator(true);
         setOpenTaskingButton(false);
       }else{
         onClose()
@@ -203,16 +204,17 @@ export function CallbacksTabsTaskMultipleDialog({onClose}) {
         }
       }
     }, [openTaskingButton, startTasking])
+    React.useEffect( () => {
+      if(!openProgressIndicator){
+        setProgress(0);
+      }
+    }, [openProgressIndicator])
     const customList = (title, items) => (
-      <Paper className={classes.paper} style={{width:"100%"}}>
-        <Card>
-          <CardHeader
-            className={classes.cardHeader}
-            title={title}
-          />
+      <React.Fragment>
+          <CardHeader title={title} />
           <Divider classes={{root: classes.divider}}/>
-          <div style={{overflow: "auto"}}>
-            <List dense component="div" role="list" style={{padding:0}}>
+          <CardContent style={{flexGrow: 1, overflowY: "auto", padding: 0}}>
+            <List dense component="div" role="list" style={{padding:0, width: "100%"}}>
               {items.map((value) => {
                 const labelId = `transfer-list-item-${value.id}-label`;
                 return (
@@ -231,22 +233,21 @@ export function CallbacksTabsTaskMultipleDialog({onClose}) {
               })}
               <ListItem />
             </List>
-          </div>
-          
-          </Card>
-      </Paper>
+          </CardContent>
+      </React.Fragment>
     );
     const handleChange = (event) => {
       setSelectedFeature(event.target.value);
     };
   return (
     <React.Fragment>
-        <DialogTitle id="form-dialog-title">Task Multiple Callbacks at Once</DialogTitle>
-        <DialogContent dividers={true}>
-        <Grid container spacing={0} justifyContent="center" alignItems="center" className={classes.root}>
-          <Grid item xs={5}>{customList("Callbacks Not Being Tasked", left)}</Grid>
-          <Grid item xs={1}>
-            <Grid container direction="column" alignItems="center">
+        <DialogTitle id="form-dialog-title">Task Multiple {callback.payload.payloadtype.name} Callbacks at Once</DialogTitle>
+        <DialogContent dividers={true} style={{height: "100%", display: "flex", flexDirection: "column", position: "relative",  maxHeight: "100%"}}>
+        <div style={{display: "flex", flexDirection: "row", overflowY: "auto", flexGrow: 1, minHeight: 0}}>
+          <div  style={{paddingLeft: 0, flexGrow: 1,  marginLeft: 0, marginRight: "10px", position: "relative",  overflowY: "auto", display: "flex", flexDirection: "column" }}>
+            {customList("Callbacks Not Being Tasked", left)}
+          </div>
+            <div style={{display: "flex", flexDirection: "column", justifyContent: "center"}}>
               <Button
                 variant="outlined"
                 size="small"
@@ -255,7 +256,7 @@ export function CallbacksTabsTaskMultipleDialog({onClose}) {
                 disabled={left.length === 0}
                 aria-label="move all right"
               >
-                ≫
+                &gt;&gt;
               </Button>
               <Button
                 variant="outlined"
@@ -285,16 +286,20 @@ export function CallbacksTabsTaskMultipleDialog({onClose}) {
                 disabled={right.length === 0}
                 aria-label="move all left"
               >
-                ≪
+                &lt;&lt;
               </Button>
-            </Grid>
-          </Grid>
-          <Grid item xs={5}>{customList("Callbacks To Task", right)}</Grid>
-          <Grid item xs={12}>
+ 
+          </div>
+          <div  style={{marginLeft: "10px", position: "relative", flexGrow: 1, display: "flex", flexDirection: "column" }}>
+            {customList("Callbacks To Task", right)}
+          </div>
+        </div>
+        
+        <Grid item xs={12} >
             <pre>
               {"The following capabilities are loaded into all of the selected callbacks. Select one to issue mass tasking."}
             </pre>
-            <InputLabel ref={inputRef}>Supported UI Features</InputLabel>
+            <InputLabel ref={inputRef}>Supported Commands</InputLabel>
             <Select
               labelId="demo-dialog-select-label"
               id="demo-dialog-select"
@@ -302,23 +307,49 @@ export function CallbacksTabsTaskMultipleDialog({onClose}) {
               onChange={handleChange}
               disabled={featureOptions.length === 0}
               variant="filled"
-              input={<Input style={{width: "100%"}}/>}
+              input={<Input style={{maxWidth: "100%"}}/>}
             >
               {featureOptions.map( (opt) => (
-                  <MenuItem value={opt} key={opt}>{opt.split(":")[1]}</MenuItem>
+                  <MenuItem value={opt} key={opt.id}><b>{opt.command.cmd}</b> - {opt.command.description}</MenuItem>
               ) )}
             </Select>
-          </Grid>
+          
         </Grid>
         </DialogContent>
         {openTaskingButton && 
-            <TaskFromUIButton ui_feature={taskingData.current?.ui_feature || " "} 
+            <TaskFromUIButton cmd={taskingData.current?.cmd} 
                 callback_id={taskingData?.current?.callback_id || 0} 
                 parameters={taskingData.current?.parameters || ""}
                 openDialog={taskingData.current?.openDialog || false}
                 tasking_location={taskingData.current?.tasking_location || "command_line"}
+                dontShowSuccessDialog={taskingData.current?.dontShowSuccessDialog || false}
                 onTasked={onTasked}/>
         }  
+        {openProgressIndicator &&
+          <Dialog
+            open={openProgressIndicator}
+            onClose={() => {setOpenProgressIndicator(false)}}
+            scroll="paper"
+            fullWidth={true}
+            aria-labelledby="scroll-dialog-title"
+            aria-describedby="scroll-dialog-description"
+          >
+              <DialogContent>
+                {progress === totalToTask.current ? (
+                  "Complete!"
+                ) : (
+                  "Issuing tasks..."
+                )}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ width: '100%', mr: 1 }}>
+                    <LinearProgress variant="determinate" value={normalize(progress)} valueBuffer={progress + 1} />
+                  </Box>
+                    <Typography style={{width: "5rem"}} variant="body2" color="text.secondary">{progress} / {totalToTask.current} </Typography>
+                </Box>
+              </DialogContent>
+          </Dialog>
+          
+        }
         <DialogActions>
           <Button onClick={onClose} variant="contained" color="primary">
             Close

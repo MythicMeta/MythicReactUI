@@ -7,7 +7,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { SettingsOperatorRow } from './SettingsOperator';
+import { SettingsOperatorTableRow } from './SettingsOperatorTableRow';
 import Typography from '@mui/material/Typography';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import { SettingsOperatorDialog } from './SettingsOperatorDialog';
@@ -39,45 +39,46 @@ export function SettingsOperatorTable(props){
             </Typography>
         </Paper>
         <TableContainer component={Paper} className="mythicElement">   
-        <Button size="small" onClick={()=>{setOpenNewDialog(true);}} style={{float: "right"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="success" variant="contained">New Operator</Button>
-        <MythicDialog open={openNew} 
-            onClose={()=>{setOpenNewDialog(false);}} 
-            innerDialog={<SettingsOperatorDialog title="New Operator" onAccept={onSubmitNewOperator} handleClose={()=>{setOpenNewDialog(false);}}  {...props}/>}
-         />
-        <Table  size="small" style={{"tableLayout": "fixed", "maxWidth": "calc(100vw)", "overflow": "scroll"}}>
-            <TableHead>
-                <TableRow>
-                    <TableCell style={{width: "9rem"}}>Delete Account</TableCell>
-                    <TableCell>Username</TableCell>
-                    <TableCell style={{width: "6rem"}}>Modify</TableCell>
-                    <TableCell style={{width: "10rem"}}>Use UTC</TableCell>
-                    <TableCell style={{width: "10rem"}}>Hide Usernames</TableCell>
-                    <TableCell style={{width: "9rem"}}>Account Active</TableCell>
-                    <TableCell>Last Login</TableCell>
-                    <TableCell>Account Creation Date</TableCell>
-                    <TableCell style={{width: "9rem"}}>Admin Status</TableCell>
-                    <TableCell style={{width: "5rem"}}>More...</TableCell>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-            
-            {props.operators.map( (op) => (
-                <SettingsOperatorRow
-                    onViewUTCChanged={props.onViewUTCChanged}
-                    onAdminChanged={props.onAdminChanged}
-                    onActiveChanged={props.onActiveChanged} 
-                    onDeleteOperator={props.onDeleteOperator}
-                    onUsernameChanged={props.onUsernameChanged}
-                    onPasswordChanged={props.onPasswordChanged}
-                    onDeleteAPIToken={props.onDeleteAPIToken}
-                    onCreateAPIToken={props.onCreateAPIToken}
-                    key={"operator" + op.id}
-                    {...op}
-                />
-            ))}
-            </TableBody>
-        </Table>
-    </TableContainer>
+            <Button size="small" onClick={()=>{setOpenNewDialog(true);}} style={{float: "right"}} startIcon={<AddCircleOutlineOutlinedIcon/>} color="success" variant="contained">New Operator</Button>
+            <MythicDialog open={openNew} 
+                onClose={()=>{setOpenNewDialog(false);}} 
+                innerDialog={<SettingsOperatorDialog title="New Operator" onAccept={onSubmitNewOperator} handleClose={()=>{setOpenNewDialog(false);}}  {...props}/>}
+            />
+            <Table  size="small" style={{"tableLayout": "fixed", "maxWidth": "calc(100vw)", "overflow": "scroll"}}>
+                <TableHead>
+                    <TableRow>
+                        <TableCell >Delete</TableCell>
+                        <TableCell >Username</TableCell>
+                        <TableCell >Update Password</TableCell>
+                        <TableCell >Use UTC</TableCell>
+                        <TableCell >UI Preferences</TableCell>
+                        <TableCell >Active</TableCell>
+                        <TableCell >Last Login</TableCell>
+                        <TableCell >Creation Date</TableCell>
+                        <TableCell >Admin</TableCell>
+                        <TableCell >More...</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                
+                {props.operators.map( (op) => (
+                    <SettingsOperatorTableRow
+                        me={props.me}
+                        onViewUTCChanged={props.onViewUTCChanged}
+                        onAdminChanged={props.onAdminChanged}
+                        onActiveChanged={props.onActiveChanged} 
+                        onDeleteOperator={props.onDeleteOperator}
+                        onUsernameChanged={props.onUsernameChanged}
+                        onPasswordChanged={props.onPasswordChanged}
+                        onDeleteAPIToken={props.onDeleteAPIToken}
+                        onCreateAPIToken={props.onCreateAPIToken}
+                        key={"operator" + op.id}
+                        {...op}
+                    />
+                ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
     </React.Fragment>
     )
 }

@@ -24,6 +24,7 @@ import { MythicDialog } from '../../MythicComponents/MythicDialog';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import { Backdrop } from '@mui/material';
 import {CircularProgress} from '@mui/material';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
 
 const getDynamicQueryParams = gql`
 mutation getDynamicParamsMutation($callback: Int!, $command: String!, $payload_type: String!, $parameter_name: String!){
@@ -82,12 +83,12 @@ export function TaskParametersDialogRow(props){
     const updateToLatestCredential = React.useRef(false);
     const [getDynamicParams] = useMutation(getDynamicQueryParams, {
         onCompleted: (data) => {
-            //console.log(data);
+            console.log(data);
             if(data.dynamic_query_function.status === "success"){
                 try{
                     setChoiceOptions([...data.dynamic_query_function.choices]);
                     usingDynamicParamChoices.current = true;
-                    if(props.type === "Choice"){
+                    if(props.type === "ChooseOne"){
                         if(data.dynamic_query_function.choices.length > 0){
                             setValue(data.dynamic_query_function.choices[0]);
                             props.onChange(props.name, data.dynamic_query_function.choices[0], false);
@@ -107,6 +108,7 @@ export function TaskParametersDialogRow(props){
         onError: (data) => {
             snackActions.warning("Failed to perform dynamic parameter query");
             console.log(data);
+            setBackdropOpen(false);
         }
     })
     const [createCredential] = useMutation(createCredentialMutation, {
@@ -122,14 +124,15 @@ export function TaskParametersDialogRow(props){
         }
     })
     useEffect( () => {
-        if(props.dynamic_query_function !== null){
+        if(props.dynamic_query_function !== ""){
             if(ChoiceOptions.length === 0){
                 setBackdropOpen(true);
+                snackActions.info("Querying payload type container for options...");
                 getDynamicParams({variables:{
                     callback: props.callback_id,
                     parameter_name: props.name,
                     command: props.commandInfo.cmd,
-                    payload_type: props.commandInfo.payloadtype.ptype
+                    payload_type: props.commandInfo.payloadtype.name
                 }})
             }
         }
@@ -142,7 +145,7 @@ export function TaskParametersDialogRow(props){
             if(arrayValue.length === 0 && props.value.length > 0){
                 setArrayValue(props.value);
             }
-       }else if(props.type === "ChoiceMultiple" && props.dynamic_query_function === null){
+       }else if(props.type === "ChooseMultiple" && props.dynamic_query_function === null){
            if(value === ""){
                //console.log(props.value);
                 setChoiceMultipleValue(props.value);
@@ -193,40 +196,12 @@ export function TaskParametersDialogRow(props){
                     setValue(props.value);
                }
            }
-           if(props.type.includes("Credential")){
+           if(props.type === "CredentialJson"){
                //console.log("updating choiceOptions from useEffect in dialog row: ", [...props.choices])
                setChoiceOptions([...props.choices]);
                if(updateToLatestCredential.current){
-                switch(props.type){
-                    case "Credential-JSON":
-                        //console.log("set new value")
-                        setValue(props.choices.length-1);
-                        props.onChange(props.name, {...props.choices[props.choices.length-1]}, false);
-                        break;
-                    case "Credential-Account":
-                        //console.log("set new value in dialog row as part of useMutation")
-                        setValue(props.choices[props.choices.length-1].account);
-                        //console.log("calling props.onChange")
-                        props.onChange(props.name, props.choices[props.choices.length-1].account, false);
-                        break;
-                    case "Credential-Realm":
-                        //console.log("set new value")
-                        setValue(props.choices[props.choices.length-1].realm);
-                        props.onChange(props.name, props.choices[props.choices.length-1].realm, false);
-                        break;
-                    case "Credential-Type":
-                        //console.log("set new value")
-                        setValue(props.choices[props.choices.length-1].type);
-                        props.onChange(props.name, props.choices[props.choices.length-1].type, false);
-                        break;
-                    case "Credential-Credential":
-                        //console.log("set new value")
-                        setValue(props.choices[props.choices.length-1].credential_text);
-                        props.onChange(props.name, props.choices[props.choices.length-1].credential_text, false);
-                        break;
-                    default:
-                        break;
-                }
+                setValue(props.choices.length-1);
+                props.onChange(props.name, {...props.choices[props.choices.length-1]}, false);
                 updateToLatestCredential.current = false;
                }
            }
@@ -406,8 +381,8 @@ export function TaskParametersDialogRow(props){
     }
     const getParameterObject = () => {
         switch(props.type){
-            case "Choice":
-            case "ChoiceMultiple":
+            case "ChooseOne":
+            case "ChooseMultiple":
                 return (
                     <React.Fragment>
                         <Backdrop open={backdropOpen} style={{zIndex: 2, position: "absolute"}} invisible={false}>
@@ -417,9 +392,9 @@ export function TaskParametersDialogRow(props){
                             <Select
                             native
                             autoFocus={props.autoFocus}
-                            multiple={props.type === "ChoiceMultiple"}
-                            value={props.type === "ChoiceMultiple" ? choiceMultipleValue : value}
-                            onChange={props.type === "ChoiceMultiple" ? onChangeChoiceMultiple : onChangeValue}
+                            multiple={props.type === "ChooseMultiple"}
+                            value={props.type === "ChooseMultiple" ? choiceMultipleValue : value}
+                            onChange={props.type === "ChooseMultiple" ? onChangeChoiceMultiple : onChangeValue}
                             input={<Input />}
                             >
                             {
@@ -438,23 +413,23 @@ export function TaskParametersDialogRow(props){
                         <Table size="small" style={{tableLayout: "fixed", maxWidth: "100%", "overflow": "auto"}}>
                             <TableBody>
                                 {arrayValue.map( (a, i) => (
-                                    <TableRow key={'array' + props.name + i} hover>
-                                        <TableCell style={{width: "2rem", paddingLeft:"0"}}>
+                                    <TableRow key={'array' + props.name + i} >
+                                        <MythicStyledTableCell style={{width: "2rem", paddingLeft:"0"}}>
                                             <IconButton onClick={(e) => {removeArrayValue(i)}} size="large"><DeleteIcon color="error" /> </IconButton>
-                                        </TableCell>
-                                        <TableCell>
-                                            <MythicTextField required={props.required} fullWidth={true} placeholder={""} value={a} multiline={true} autoFocus={props.autoFocus }
+                                        </MythicStyledTableCell>
+                                        <MythicStyledTableCell>
+                                            <MythicTextField required={props.required} fullWidth={true} placeholder={""} value={a} multiline={true} autoFocus={props.autoFocus || i > 0}
                                                 onChange={(n,v,e) => onChangeArrayText(v, e, i)} display="inline-block" maxRows={5}
                                                 validate={testParameterValues} errorText={"Must match: " + props.verifier_regex}
                                             />
-                                        </TableCell>
+                                        </MythicStyledTableCell>
                                     </TableRow>
                                 ))}
-                                <TableRow hover>
-                                    <TableCell style={{width: "5rem", paddingLeft:"0"}}>
+                                <TableRow >
+                                    <MythicStyledTableCell style={{width: "5rem", paddingLeft:"0"}}>
                                         <IconButton onClick={addNewArrayValue} size="large"> <AddCircleIcon color="success"  /> </IconButton>
-                                    </TableCell>
-                                    <TableCell></TableCell>
+                                    </MythicStyledTableCell>
+                                    <MythicStyledTableCell></MythicStyledTableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
@@ -528,15 +503,15 @@ export function TaskParametersDialogRow(props){
                                 {openAdditionalPayloadOnHostMenu ? (
                                 <React.Fragment>
                                     <TableRow>
-                                        <TableCell style={{width: "15em"}}>Hostname</TableCell>
-                                        <TableCell>
+                                        <MythicStyledTableCell style={{width: "15em"}}>Hostname</MythicStyledTableCell>
+                                        <MythicStyledTableCell>
                                             <MythicTextField required={true} placeholder={"hostname"} value={agentConnectNewHost} multiline={false} autoFocus={props.autoFocus}
                                                 onChange={onChangeAgentConnectNewHost} display="inline-block"/>
-                                        </TableCell>
+                                        </MythicStyledTableCell>
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell>Payload on that host</TableCell>
-                                        <TableCell>
+                                        <MythicStyledTableCell>Payload on that host</MythicStyledTableCell>
+                                        <MythicStyledTableCell>
                                             <FormControl>
                                                 <Select
                                                   native
@@ -551,23 +526,23 @@ export function TaskParametersDialogRow(props){
                                                 ) : ( <option key={props.name + "nooptionnewpayload"} value="-1">No Payloads</option> )}
                                                 </Select>
                                             </FormControl>
-                                        </TableCell>
+                                        </MythicStyledTableCell>
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell>
+                                        <MythicStyledTableCell>
                                             <Button component="span"  style={{color: theme.palette.success.main, padding: 0}} onClick={onAgentConnectAddNewPayloadOnHost}><AddCircleIcon />Confirm</Button>
-                                        </TableCell>
-                                        <TableCell>
+                                        </MythicStyledTableCell>
+                                        <MythicStyledTableCell>
                                             <Button component="span" style={{color: theme.palette.warning.main, padding: 0}} onClick={() =>{setOpenAdditionalPayloadOnHostmenu(false)}}><CancelIcon />Cancel</Button>
-                                        </TableCell>
+                                        </MythicStyledTableCell>
                                     </TableRow>
                                 </React.Fragment>
                                 ) : (<React.Fragment>
                                     <TableRow>
-                                        <TableCell style={{width: "14em"}}>
+                                        <MythicStyledTableCell style={{width: "14em"}}>
                                             Host 
-                                        </TableCell>
-                                        <TableCell>
+                                        </MythicStyledTableCell>
+                                        <MythicStyledTableCell>
                                             <FormControl>
                                                 <Select
                                                 native
@@ -582,11 +557,11 @@ export function TaskParametersDialogRow(props){
                                                 }
                                                 </Select>
                                             </FormControl>
-                                        </TableCell>
+                                        </MythicStyledTableCell>
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell>Payload</TableCell>
-                                        <TableCell>
+                                        <MythicStyledTableCell>Payload</MythicStyledTableCell>
+                                        <MythicStyledTableCell>
                                             <FormControl>
                                                 <Select
                                                 native
@@ -602,19 +577,19 @@ export function TaskParametersDialogRow(props){
                                                 </Select>
                                             </FormControl>
                                             
-                                        </TableCell>
+                                        </MythicStyledTableCell>
                                     </TableRow>
                                                 <TableRow>
-                                                    <TableCell>
+                                                    <MythicStyledTableCell>
                                                     <Button component="span" style={{color: theme.palette.success.main, padding: 0}} onClick={() =>{setOpenAdditionalPayloadOnHostmenu(true)}}><AddCircleIcon />Register New</Button>
-                                                    </TableCell>
-                                                    <TableCell>
+                                                    </MythicStyledTableCell>
+                                                    <MythicStyledTableCell>
                                                     <Button component="span" style={{color: theme.palette.error.main, padding: 0}} onClick={onAgentConnectRemovePayloadOnHost}><DeleteIcon />Remove Listed</Button>
-                                                    </TableCell>
+                                                    </MythicStyledTableCell>
                                                 </TableRow>
                                     <TableRow>
-                                        <TableCell>C2 Profile</TableCell>
-                                        <TableCell>
+                                        <MythicStyledTableCell>C2 Profile</MythicStyledTableCell>
+                                        <MythicStyledTableCell>
                                             <FormControl>
                                                     <Select
                                                     native
@@ -629,7 +604,7 @@ export function TaskParametersDialogRow(props){
                                                     }
                                                     </Select>
                                                 </FormControl>
-                                        </TableCell>
+                                        </MythicStyledTableCell>
                                     </TableRow>
                                 </React.Fragment>) }
 
@@ -640,16 +615,16 @@ export function TaskParametersDialogRow(props){
                             <Table size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
                                 <TableHead>
                                         <TableRow>
-                                            <TableCell style={{width: "30%"}}>Parameter</TableCell>
-                                            <TableCell>Value</TableCell>
+                                            <MythicStyledTableCell style={{width: "30%"}}>Parameter</MythicStyledTableCell>
+                                            <MythicStyledTableCell>Value</MythicStyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                 <TableBody>
                                     
                                     {agentConnectC2ProfileOptions[agentConnectC2Profile]["parameters"].map( (opt, i) => (
                                         <TableRow key={"agentconnectparameters" + props.name + i}>
-                                            <TableCell>{opt.name}</TableCell>
-                                            <TableCell><pre>{JSON.stringify(opt.value, null, 2)}</pre></TableCell>
+                                            <MythicStyledTableCell>{opt.name}</MythicStyledTableCell>
+                                            <MythicStyledTableCell><pre>{JSON.stringify(opt.value, null, 2)}</pre></MythicStyledTableCell>
                                         </TableRow>
                                     ) ) }
                                 </TableBody>
@@ -657,7 +632,7 @@ export function TaskParametersDialogRow(props){
                         ): (null)}
                     </TableContainer>
                 )
-            case "Credential-JSON":
+            case "CredentialJson":
                 return (
                     <React.Fragment>
                         <MythicDialog fullWidth={true} maxWidth="md" open={createCredentialDialogOpen} 
@@ -685,130 +660,23 @@ export function TaskParametersDialogRow(props){
                     </React.Fragment>
                     
                 )
-            case "Credential-Account":
-                return (
-                    <React.Fragment>
-                        <MythicDialog fullWidth={true} maxWidth="md" open={createCredentialDialogOpen} 
-                            onClose={()=>{setCreateCredentialDialogOpen(false);}} 
-                            innerDialog={<CredentialTableNewCredentialDialog onSubmit={onCreateCredential} onClose={()=>{setCreateCredentialDialogOpen(false);}} />}
-                        />
-                        <FormControl style={{width: "100%"}}>
-                            <Select
-                                native
-                                value={value}
-                                autoFocus={props.autoFocus}
-                                onChange={onChangeValue}
-                                input={<Input />}
-                            >
-                            {
-                                ChoiceOptions.map((opt, i) => (
-                                    <option key={props.name + i} value={opt.account} >
-                                        {opt.comment.length > 0 ? opt.comment + " ( " + opt.account + " )" : opt.account}
-                                    </option>
-                                ))
-                            }
-                            </Select>
-                        </FormControl>
-                        <Button size="small" color="primary" onClick={ () => {setCreateCredentialDialogOpen(true);}} variant="contained">New Credential</Button>
-                    </React.Fragment>
-                )
-            case "Credential-Realm":
-                return (
-                    <React.Fragment>
-                        <MythicDialog fullWidth={true} maxWidth="md" open={createCredentialDialogOpen} 
-                            onClose={()=>{setCreateCredentialDialogOpen(false);}} 
-                            innerDialog={<CredentialTableNewCredentialDialog onSubmit={onCreateCredential} onClose={()=>{setCreateCredentialDialogOpen(false);}} />}
-                        />
-                        <FormControl style={{width: "100%"}}>
-                            <Select
-                                native
-                                value={value}
-                                autoFocus={props.autoFocus}
-                                onChange={onChangeValue}
-                                input={<Input />}
-                            >
-                            {
-                                ChoiceOptions.map((opt, i) => (
-                                    <option key={props.name + i} value={opt.realm}>
-                                        {opt.comment.length > 0 ? opt.comment + " ( " + opt.realm + " )" : opt.realm}
-                                    </option>
-                                ))
-                            }
-                            </Select>
-                        </FormControl>
-                        <Button size="small" color="primary" onClick={ () => {setCreateCredentialDialogOpen(true);}} variant="contained">New Credential</Button>
-                    </React.Fragment>
-                )
-            case "Credential-Type":
-                return (
-                    <React.Fragment>
-                        <MythicDialog fullWidth={true} maxWidth="md" open={createCredentialDialogOpen} 
-                            onClose={()=>{setCreateCredentialDialogOpen(false);}} 
-                            innerDialog={<CredentialTableNewCredentialDialog onSubmit={onCreateCredential} onClose={()=>{setCreateCredentialDialogOpen(false);}} />}
-                        />
-                        <FormControl style={{width: "100%"}}>
-                            <Select
-                                native
-                                value={value}
-                                autoFocus={props.autoFocus}
-                                onChange={onChangeValue}
-                                input={<Input />}
-                            >
-                            {
-                                ChoiceOptions.map((opt, i) => (
-                                    <option key={props.name + i} value={opt.type}>{opt.type}
-                                    </option>
-                                ))
-                            }
-                            </Select>
-                        </FormControl>
-                        <Button size="small" color="primary" onClick={ () => {setCreateCredentialDialogOpen(true);}} variant="contained">New Credential</Button>
-                    </React.Fragment>
-                )
-            case "Credential-Credential":
-                return (
-                    <React.Fragment>
-                        <MythicDialog fullWidth={true} maxWidth="md" open={createCredentialDialogOpen} 
-                            onClose={()=>{setCreateCredentialDialogOpen(false);}} 
-                            innerDialog={<CredentialTableNewCredentialDialog onSubmit={onCreateCredential} onClose={()=>{setCreateCredentialDialogOpen(false);}} />}
-                        />
-                        <FormControl style={{width: "100%"}}>
-                            <Select
-                                native
-                                value={value}
-                                autoFocus={props.autoFocus}
-                                onChange={onChangeValue}
-                                input={<Input />}
-                            >
-                            {
-                                ChoiceOptions.map((opt, i) => (
-                                    <option key={props.name + i} value={opt.credential_text} style={{textOverflow: "ellipsis"}}>
-                                        {opt.comment.length > 0 ? opt.comment + " ( " + opt.credential_text + " )" : opt.credential_text}
-                                    </option>
-                                ))
-                            }
-                            </Select>
-                        </FormControl>
-                        <Button size="small" color="primary" onClick={ () => {setCreateCredentialDialogOpen(true);}} variant="contained">New Credential</Button>
-                    </React.Fragment>
-                )
            default:
             return null
         }
     }
     return (
             <TableRow key={"buildparam" + props.id}>
-                <TableCell >
+                <MythicStyledTableCell >
                     <MythicStyledTooltip title={props.description.length > 0 ? props.description : "No Description"}>
                         {props.display_name}
                     </MythicStyledTooltip>
                     {props.required ? (
                         <Typography component="div" style={{color: theme.palette.warning.main}}>Required</Typography>
                     ) : (null) }
-                 </TableCell>
-                <TableCell>
+                 </MythicStyledTableCell>
+                <MythicStyledTableCell>
                     {getParameterObject()}
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
         )
 }

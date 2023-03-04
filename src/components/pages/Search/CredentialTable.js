@@ -9,11 +9,8 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { MythicDialog, MythicModifyStringDialog } from '../../MythicComponents/MythicDialog';
 import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
-import { toLocalTime } from '../../utilities/Time';
 import { gql, useMutation } from '@apollo/client';
 import {snackActions} from '../../utilities/Snackbar';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
 import {useTheme} from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
@@ -28,6 +25,7 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
+import {TagsDisplay, ViewEditTags} from '../../MythicComponents/MythicTag';
 
 const updateCredentialComment = gql`
 mutation updateCommentMutation($credential_id: Int!, $comment: String!){
@@ -148,19 +146,18 @@ export function CredentialTable(props){
                     <TableRow>
                         <TableCell style={{width: "2rem"}}>Delete</TableCell>
                         <TableCell style={{width: "4rem"}}>Edit</TableCell>
-                        <TableCell >Account</TableCell>
-                        <TableCell >Realm</TableCell>
                         <TableCell >Credential</TableCell>
-                        <TableCell style={{width: "20rem"}}>Comment</TableCell>
-                        <TableCell style={{width: "15rem"}}>Timestamp</TableCell>
-                        <TableCell >Task / Operator</TableCell>
+                        <TableCell style={{width: "15rem"}}>Comment</TableCell>
+                        <TableCell style={{width: "10rem"}}>Task / Operator</TableCell>
                         <TableCell style={{width: "5rem"}}>Type</TableCell>
+                        <TableCell >Tags</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                 
                 {credentials.map( (op) => (
                     <CredentialTableRow
+                        me={props.me}
                         key={"cred" + op.id}
                         onEditComment={onEditComment}
                         onEditAccount={onEditAccount}
@@ -177,7 +174,7 @@ export function CredentialTable(props){
 }
 
 function CredentialTableRow(props){
-    const me = useReactiveVar(meState);
+    const me = props.me;
     const theme = useTheme();
     const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
     const [editCommentDialogOpen, setEditCommentDialogOpen] = React.useState(false);
@@ -186,7 +183,7 @@ function CredentialTableRow(props){
     const [editCredentialDialogOpen, setEditCredentialDialogOpen] = React.useState(false);
     const dropdownAnchorRef = React.useRef(null);
     const [openDropdownButton, setOpenDropdownButton] = React.useState(false);
-    const maxDisplayLength = 200;
+    const maxDisplayLength = 400;
     const displayCred = props.credential_text.length > maxDisplayLength ? props.credential_text.slice(0, maxDisplayLength) + "..." : props.credential_text;
     const [updateComment] = useMutation(updateCredentialComment, {
         onCompleted: (data) => {
@@ -345,12 +342,8 @@ function CredentialTableRow(props){
                     </Popper>
                 </TableCell>
                 <MythicStyledTableCell>
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.account}</Typography>
-                </MythicStyledTableCell>
-                <MythicStyledTableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all"}}>{props.realm}</Typography>
-                </MythicStyledTableCell>
-                <MythicStyledTableCell >
+                    <Typography variant="body2" style={{wordBreak: "break-all"}}><b>Account: </b>{props.account}</Typography>
+                    <Typography variant="body2" style={{wordBreak: "break-all"}}><b>Realm: </b>{props.realm}</Typography>
                     {props.credential_text.length > 64 ? 
                     (
                         <React.Fragment>
@@ -359,13 +352,13 @@ function CredentialTableRow(props){
                                     <FontAwesomeIcon icon={faCopy} />
                                 </IconButton>
                             </MythicStyledTooltip>
-                            <Typography variant="body2" style={{wordBreak: "break-all", maxWidth: "40rem"}}>{displayCred}</Typography>
+                            <Typography variant="body2" style={{wordBreak: "break-all", maxWidth: "40rem"}}><b>Credential: </b>{displayCred}</Typography>
                         </React.Fragment>
                     )
                     :
                     (
                         <React.Fragment>
-                            <Typography variant="body2" style={{wordBreak: "break-all", maxWidth: "40rem"}}>{displayCred}</Typography>
+                            <Typography variant="body2" style={{wordBreak: "break-all", maxWidth: "40rem"}}><b>Credential: </b>{displayCred}</Typography>
                         </React.Fragment>   
                     )}
                     
@@ -373,15 +366,20 @@ function CredentialTableRow(props){
                 <MythicStyledTableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.comment}</Typography>
                     </MythicStyledTableCell>
-                <MythicStyledTableCell>
-                <Typography variant="body2" style={{wordBreak: "break-all"}}>{toLocalTime(props.timestamp, me?.user?.view_utc_time || false)}</Typography>
-                </MythicStyledTableCell>
+
                 <MythicStyledTableCell>
                     {props.task_id !== null ? (
                         <Link style={{wordBreak: "break-all"}} underline="always" target="_blank" href={"/new/task/" + props.task_id}>{props.task_id}</Link>
                     ): (props.operator.username)}
                 </MythicStyledTableCell>
                 <MythicStyledTableCell>{props.type}</MythicStyledTableCell>
+                <MythicStyledTableCell>
+                    <ViewEditTags 
+                        target_object={"credential_id"} 
+                        target_object_id={props?.id || 0} 
+                        me={me} />
+                    <TagsDisplay tags={props.tags || []} />
+                </MythicStyledTableCell>
             </TableRow>
         </React.Fragment>
     )

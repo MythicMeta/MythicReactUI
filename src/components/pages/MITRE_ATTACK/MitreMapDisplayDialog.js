@@ -23,10 +23,10 @@ export function MitreMapDisplayDialog({entry, showCountGrouping, onClose}){
           break;
         case "command":
           const groupedCommands = entry.commands.reduce( (prev, cur) => {
-            if(cur.payloadtype.ptype in prev){
-              prev[cur.payloadtype.ptype].push(cur.cmd);
+            if(cur.payloadtype.name in prev){
+              prev[cur.payloadtype.name].push(cur.cmd);
             }else{
-              prev[cur.payloadtype.ptype] = [cur.cmd];
+              prev[cur.payloadtype.name] = [cur.cmd];
             }
             return {...prev};
           }, {});
@@ -34,15 +34,15 @@ export function MitreMapDisplayDialog({entry, showCountGrouping, onClose}){
           break;
         case "task":
           const groupedTasks = entry.tasks.reduce( ( prev, cur) => {
-            if(cur.callback.payload.payloadtype.ptype in prev){
-              prev[cur.callback.payload.payloadtype.ptype].push({
+            if(cur.callback.payload.payloadtype.name in prev){
+              prev[cur.callback.payload.payloadtype.name].push({
                 id: cur.id,
                 command: cur.command_name + " " + cur.display_params,
                 comment: cur.comment,
                 callback_id: cur.callback.id
               });
             }else{
-              prev[cur.callback.payload.payloadtype.ptype] = [{
+              prev[cur.callback.payload.payloadtype.name] = [{
                 id: cur.id,
                 command: cur.command_name + " " + cur.display_params,
                 comment: cur.comment,

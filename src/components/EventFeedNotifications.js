@@ -6,6 +6,7 @@ import {snackActions} from './utilities/Snackbar';
 
 //fromNow must be in ISO format for hasura/postgres stuff
 //new Date().toISOString() will do it
+/*
 const subscribe_payloads = gql`
 subscription EventFeedNotificationSubscription($fromNow: timestamp!, $operation_id: Int!) {
   operationeventlog(limit: 1, where: {deleted: {_eq: false}, timestamp: {_gte: $fromNow}, operation_id: {_eq: $operation_id}}, order_by: {id: desc}) {
@@ -20,6 +21,21 @@ subscription EventFeedNotificationSubscription($fromNow: timestamp!, $operation_
   }
 }
  `;
+ */
+ const subscribe_payloads = gql`
+ subscription EventFeedNotificationSubscription($fromNow: timestamp!, $operation_id: Int!) {
+   operationeventlog_stream(cursor: {initial_value: {timestamp: $fromNow}, ordering: ASC}, batch_size: 1, where: {deleted: {_eq: false}, operation_id: {_eq: $operation_id}}) {
+     operator {
+         username
+     }
+     id
+     message
+     level
+     resolved
+     source
+   }
+ }
+  `;
 
 export function EventFeedNotifications(props) {
     const me = useReactiveVar(meState);
@@ -36,20 +52,20 @@ export function EventFeedNotifications(props) {
 
     useEffect( () => {
         //console.log(data, loading, error, fromNow.current);
-        if(!loading && !error && data && data.operationeventlog.length > 0){
-            if(data.operationeventlog[0].source === "debug"){
+        if(!loading && !error && data && data.operationeventlog_stream.length > 0){
+            if(data.operationeventlog_stream[0].source === "debug"){
                 return;
             }
-            if(data.operationeventlog[0].resolved){
+            if(data.operationeventlog_stream[0].resolved){
                 return;
             }
-            if(data.operationeventlog[0].operator && !seenIds.current.includes(data.operationeventlog[0].id)){
-                const message = data.operationeventlog[0].operator.username + ":" + data.operationeventlog[0].message;
-                snackActions.toast(message, data.operationeventlog[0].level, { autoHideDuration: 2000});
-                seenIds.current.push(data.operationeventlog[0].id);
-            }else if(!data.operationeventlog[0].operator && !seenIds.current.includes(data.operationeventlog[0].id)){
-                snackActions.toast(data.operationeventlog[0].message, data.operationeventlog[0].level, {autoHideDuration: 3000});
-                seenIds.current.push(data.operationeventlog[0].id);
+            if(data.operationeventlog_stream[0].operator && !seenIds.current.includes(data.operationeventlog_stream[0].id)){
+                const message = data.operationeventlog_stream[0].operator.username + ":" + data.operationeventlog_stream[0].message;
+                snackActions.info(message, { autoClose: 2000});
+                seenIds.current.push(data.operationeventlog_stream[0].id);
+            }else if(!data.operationeventlog_stream[0].operator && !seenIds.current.includes(data.operationeventlog_stream[0].id)){
+                snackActions.info(data.operationeventlog_stream[0].message, {autoClose: 3000});
+                seenIds.current.push(data.operationeventlog_stream[0].id);
             }
         }else if(error){
             console.error(error);

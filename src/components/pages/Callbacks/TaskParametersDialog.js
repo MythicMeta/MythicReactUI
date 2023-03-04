@@ -22,7 +22,6 @@ import { Backdrop } from '@mui/material';
 import {CircularProgress} from '@mui/material';
 import Divider from '@mui/material/Divider';
 import {useTheme} from '@mui/material/styles';
-import { faVolumeDown } from '@fortawesome/free-solid-svg-icons';
 
 //if we need to get all the loaded commands for the callback and filter, use this
 const GetLoadedCommandsQuery = gql`
@@ -108,7 +107,7 @@ const getAllPayloadsQuery = gql`
 query getAllPayloadsQuery($operation_id: Int!){
     payload(where: {deleted: {_eq: false}, build_phase: {_eq: "success"}, operation_id: {_eq: $operation_id}}) {
     id
-    tag
+    description
     uuid
     payloadc2profiles {
       id
@@ -120,7 +119,7 @@ query getAllPayloadsQuery($operation_id: Int!){
     }
     payloadtype{
         id
-        ptype
+        name
     }
     filemetum {
         id
@@ -146,7 +145,7 @@ query getAllPayloadsOnHostsQuery($operation_id: Int!){
         payload {
             auto_generated
             id
-            tag
+            description
             filemetum {
                 filename_text
                 id
@@ -178,7 +177,7 @@ query getAllPayloadsOnHostsQuery($operation_id: Int!){
         payload {
             auto_generated
             id
-            tag
+            description
             filemetum {
                 filename_text
                 id
@@ -232,7 +231,7 @@ query getCommandQuery($id: Int!){
     needs_admin
     version
     payloadtype{
-        ptype
+        name
     }
     commandparameters {
       choice_filter_by_command_attributes
@@ -252,12 +251,6 @@ query getCommandQuery($id: Int!){
       parameter_group_name
       display_name
       cli_name
-    }
-    commandopsec {
-      authentication
-      id
-      injection_method
-      process_creation
     }
   }
 }
@@ -445,11 +438,11 @@ export function TaskParametersDialog(props) {
                         }else{
                             return [...prev, {...cmd, value: []}];
                         }
-                    case "Choice":
-                    case "ChoiceMultiple":
-                        let choices = cmd.choices.split("\n");
+                    case "ChooseOne":
+                    case "ChooseMultiple":
+                        let choices = cmd.choices;
                         let defaultV = cmd.default_value;
-                        if(cmd.type === "ChoiceMultiple"){
+                        if(cmd.type === "ChooseMultiple"){
                             if(cmd.default_value !== ""){
                                 defaultV = JSON.parse(cmd.default_value);
                             }else{
@@ -460,19 +453,15 @@ export function TaskParametersDialog(props) {
                                 defaultV = cmd.default_value === "" ? choices[0] : cmd.default_value;
                             }
                         }
-                        let filter = JSON.parse(cmd.choice_filter_by_command_attributes);
+                        let filter = cmd.choice_filter_by_command_attributes;
                         if(cmd.choices_are_all_commands){
                             //get all of the latest commands
                             choices = [...allCommandsLoading.command];
                             choices = choices.reduce( (prevn, c) => {
                                 let match = true;
-                                let cmd_attributes = JSON.parse(c.attributes);
+                                let cmd_attributes = c.attributes;
                                 for(const [key, value] of Object.entries(filter)){
-                                    if(key === "spawn_and_injectable"){
-                                        if(value !== cmd_attributes[key]){
-                                            match = false;
-                                        }
-                                    }else if(key === "supported_os" && value.length > 0){
+                                    if(key === "supported_os" && value.length > 0){
                                         if(intersect(value, cmd_attributes[key]).length === 0){
                                             match = false;
                                         }
@@ -486,7 +475,7 @@ export function TaskParametersDialog(props) {
                             }, []);
                             choices.sort();
                             if(choices.length > 0){
-                                if(cmd.type === "ChoiceMultiple"){defaultV = []}
+                                if(cmd.type === "ChooseMultiple"){defaultV = []}
                                 else{defaultV = choices[0];}
                             }
                         }else if(cmd.choices_are_loaded_commands){
@@ -494,13 +483,9 @@ export function TaskParametersDialog(props) {
                             choices = [...loadedCommandsLoading.loadedcommands];
                             choices = choices.reduce( (prevn, c) => {
                                 let match = true;
-                                let cmd_attributes = JSON.parse(c.command.attributes);
+                                let cmd_attributes = c.command.attributes;
                                 for(const [key, value] of Object.entries(filter)){
-                                    if(key === "spawn_and_injectable"){
-                                        if(value !== cmd_attributes[key]){
-                                            match = false;
-                                        }
-                                    }else if(key === "supported_os" && value.length > 0){
+                                    if(key === "supported_os" && value.length > 0){
                                         if(intersect(value, cmd_attributes[key]).length === 0){
                                             match = false;
                                         }
@@ -513,7 +498,7 @@ export function TaskParametersDialog(props) {
                                 }
                             }, []);
                             if(choices.length > 0){
-                                if(cmd.type === "ChoiceMultiple"){defaultV = []}
+                                if(cmd.type === "ChooseMultiple"){defaultV = []}
                                 else{defaultV = choices[0];}
                             }
                         }
@@ -524,7 +509,7 @@ export function TaskParametersDialog(props) {
                         }
                     case "File":
                         return [...prev, {...cmd, value: {} }];                   
-                    case "Credential-JSON":
+                    case "CredentialJson":
                         if (loadedCredentialsLoading.credential.length > 0){
                             if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
                                 cmd.value = loadedCredentialsLoading.credential[0];
@@ -532,46 +517,6 @@ export function TaskParametersDialog(props) {
                             return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
                         }else{
                             return [...prev, {...cmd, value: {}, choices: []}];
-                        }
-                    case "Credential-Account":
-                        if (loadedCredentialsLoading.credential.length > 0){
-                            //console.log("Current value, potentially updating in useEffect in taskparametersdialog: ", cmd.value)
-                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
-                                //console.log("updating credential-account to the first because cmd.value is ", cmd.value)
-                                cmd.value = loadedCredentialsLoading.credential[0]["account"];
-                            }
-                            //console.log("updated credential-account to in useEffect: ", cmd.value)
-                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
-                        }else{
-                            //console.log("setting value to ''")
-                            return [...prev, {...cmd, value: "", choices: []}];
-                        }
-                    case "Credential-Realm":
-                        if (loadedCredentialsLoading.credential.length > 0){
-                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
-                                cmd.value = loadedCredentialsLoading.credential[0]["realm"];
-                            }
-                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
-                        }else{
-                            return [...prev, {...cmd, value: "", choices: []}];
-                        }
-                    case "Credential-Type":
-                        if (loadedCredentialsLoading.credential.length > 0){
-                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
-                                cmd.value = loadedCredentialsLoading.credential[0]["type"];
-                            }
-                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
-                        }else{
-                            return [...prev, {...cmd, value: "", choices: []}];
-                        }
-                    case "Credential-Credential":
-                        if (loadedCredentialsLoading.credential.length > 0){
-                            if(cmd.value === "" || (typeof(cmd.value) === Object && Object.keys(cmd.value).length === 0) || cmd.value === undefined){
-                                cmd.value = loadedCredentialsLoading.credential[0]["credential_text"];
-                            }
-                            return [...prev, {...cmd, choices: loadedCredentialsLoading.credential}];
-                        }else{
-                            return [...prev, {...cmd, value: "", choices: []}];
                         }
                     case "AgentConnect":
                         const agentConnectNewPayloads = loadedAllPayloadsLoading.payload.reduce( (prevn, payload) => {
@@ -581,7 +526,7 @@ export function TaskParametersDialog(props) {
                                 return [...prevn, profile.c2profile.name];
                             }, []).join(",");
                             if(foundP2P){
-                                return [...prevn, {...payload, display: payload.filemetum.filename_text + " - " + profiles + " - " + payload.tag}];
+                                return [...prevn, {...payload, display: payload.filemetum.filename_text + " - " + profiles + " - " + payload.description}];
                             }else{
                                 return [...prevn];
                             }
@@ -658,7 +603,7 @@ export function TaskParametersDialog(props) {
                                     for( const [key, value] of Object.entries(c2info)){
                                         c2array.push({name: key, parameters: value});
                                     }
-                                    const payloadInfo = {...entry.payload, c2info: c2array, display: entry.payload.filemetum.filename_text + " - " + entry.payload.tag, type: "payload", payloadOnHostID:entry.id};
+                                    const payloadInfo = {...entry.payload, c2info: c2array, display: entry.payload.filemetum.filename_text + " - " + entry.payload.description, type: "payload", payloadOnHostID:entry.id};
                                     return {...host, payloads: [...host.payloads, payloadInfo]}
                                 }else{
                                     //this doesn't match our host, so don't modify
@@ -680,7 +625,7 @@ export function TaskParametersDialog(props) {
                                 for( const [key, value] of Object.entries(c2info)){
                                     c2array.push({name: key, parameters: value});
                                 }
-                                const payloadInfo = {...entry.payload, c2info: c2array, display: entry.payload.filemetum.filename_text + " - " + entry.payload.tag, type: "payload", payloadOnHostID:entry.id};
+                                const payloadInfo = {...entry.payload, c2info: c2array, display: entry.payload.filemetum.filename_text + " - " + entry.payload.description, type: "payload", payloadOnHostID:entry.id};
                                 return [...prevn, {host: entry.host, payloads: [payloadInfo] } ]
                             }else{
                                 return updates;
@@ -702,18 +647,18 @@ export function TaskParametersDialog(props) {
                         console.log("updating choices and payload choices", allOrganized, agentConnectNewPayloads)
                         return [...prev, {...cmd, choices: allOrganized, payload_choices: agentConnectNewPayloads, value: getLinkInfoFromAgentConnect(organized)}];
                     case "PayloadList":
-                        let supported_agents = cmd.supported_agents.split(",");
+                        let supported_agents = cmd.supported_agents;
                         if(supported_agents.indexOf("") !== -1){supported_agents.splice(supported_agents.indexOf(""))}
-                        const build_requirements = JSON.parse(cmd.supported_agent_build_parameters);
+                        const build_requirements = cmd.supported_agent_build_parameters;
                         const payloads = loadedAllPayloadsLoading.payload.reduce( (prevn, payload) => {
                             const profiles = payload.payloadc2profiles.reduce( (prevn, profile) => {
                                 return [...prevn, profile.c2profile.name];
                             }, []).join(",");
-                            if(supported_agents.length > 0 && !supported_agents.includes(payload.payloadtype.ptype)){return prevn};
+                            if(supported_agents.length > 0 && !supported_agents.includes(payload.payloadtype.name)){return prevn};
                             let matched = true;
-                            if(payload.payloadtype.ptype in build_requirements){
+                            if(payload.payloadtype.name in build_requirements){
                                 //this means we have a filtering condition on our payload
-                                for(const [key, value] of Object.entries(build_requirements[payload.payloadtype.ptype])){
+                                for(const [key, value] of Object.entries(build_requirements[payload.payloadtype.name])){
                                     payload.buildparameterinstances.forEach( (build_param) => {
                                         if(build_param.buildparameter.name === key){
                                             if(build_param.parameter !== value){matched = false}
@@ -722,7 +667,7 @@ export function TaskParametersDialog(props) {
                                 }
                             }
                             if(matched){
-                                return [...prevn, {...payload, display: payload.filemetum.filename_text + " - " + profiles + " - " + payload.tag}]
+                                return [...prevn, {...payload, display: payload.filemetum.filename_text + " - " + profiles + " - " + payload.description}]
                             }else{
                                 return prevn;
                             }
@@ -771,12 +716,8 @@ export function TaskParametersDialog(props) {
                 case "String":
                 case "Boolean":
                 case "Number":
-                case "Choice":
-                case "ChoiceMultiple":
-                case "Credential-Account":
-                case "Credential-Realm":
-                case "Credential-Type":
-                case "Credential-Credential":
+                case "ChooseOne":
+                case "ChooseMultiple":
                 case "AgentConnect":
                 case "PayloadList":
                 case "Array":
@@ -795,7 +736,7 @@ export function TaskParametersDialog(props) {
                         return;
                     }
                     break;
-                case "Credential-JSON":
+                case "CredentialJson":
                     collapsedParameters[param.name] = {
                         account: param.value["account"],
                         comment: param.value["comment"],
@@ -847,7 +788,7 @@ export function TaskParametersDialog(props) {
                 <b>Requires Admin?</b><pre style={{margin:0}}>{commandInfo.needs_admin ? "True": "False"}</pre><br/>
                 <Divider />
                 {parameterGroups.length > 1 &&
-                    <FormControl style={{width: "100%"}} >
+                    <FormControl style={{width: "100%", marginTop: "7px"}} >
                         <TextField
                             select
                             label="Parameter Group"

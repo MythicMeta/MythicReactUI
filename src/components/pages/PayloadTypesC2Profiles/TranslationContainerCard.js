@@ -1,11 +1,17 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import Badge from '@mui/material/Badge';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import { faLanguage } from '@fortawesome/free-solid-svg-icons';
+import {useTheme} from '@mui/material/styles';
+import CardContent from '@mui/material/CardContent';
+import {useMutation, gql} from '@apollo/client';
+import {snackActions} from '../../utilities/Snackbar';
+import Button from '@mui/material/Button';
+import {MythicConfirmDialog} from '../../MythicComponents/MythicConfirmDialog';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreFromTrashOutlinedIcon from '@mui/icons-material/RestoreFromTrashOutlined';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,56 +38,73 @@ const useStyles = makeStyles((theme) => ({
     color: 'red',
   },
 }));
-const StyledAvatar = styled(Badge)(({theme}) => ({
-  '& .MuiBadge-badge': {
-      boxShadow: "0 0 0 2px white",
-      width: 15,
-      height: 15,
-      zIndex: 0,
-      '&::after': {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        borderRadius: '50%',
-        animation: 'ripple 1.2s infinite ease-in-out',
-        border: '1px solid currentColor',
-        content:'""'
-      },
-    },
-'@keyframes ripple': {
-  '0%': {
-    transform: 'scale(.8)',
-    opacity: 1,
-  },
-  '100%': {
-    transform: 'scale(2.4)',
-    opacity: 0,
-  },
-},
-}));
+
+const toggleDeleteStatus = gql`
+mutation toggleC2ProfileDeleteStatus($translationcontainer_id: Int!, $deleted: Boolean!){
+  update_translationcontainer_by_pk(pk_columns: {id: $translationcontainer_id}, _set: {deleted: $deleted}) {
+    id
+  }
+}
+`;
 
 export function TranslationContainerCard(props) {
+  const theme = useTheme();
   const classes = useStyles();
-  let date = new Date();
-  let now = date.getTime() + date.getTimezoneOffset() * 60000;
-  let heartbeat = new Date(props.last_heartbeat);
-  let difference = (now - heartbeat.getTime()) / 1000;
-  const running = difference < 30 ? 'running' : 'notrunning';
-
+  const [openDelete, setOpenDeleteDialog] = React.useState(false);
+    const [updateDeleted] = useMutation(toggleDeleteStatus, {
+      onCompleted: data => {
+      },
+      onError: error => {
+        if(props.deleted){
+          snackActions.error("Failed to restore translation profile");
+        } else {
+          snackActions.error("Failed to mark translation profile as deleted");
+        }
+        
+      }
+    });
+    const onAcceptDelete = () => {
+      updateDeleted({variables: {translationcontainer_id: props.id, deleted: !props.deleted}})
+      setOpenDeleteDialog(false);
+    }
   return (
     <Card className={classes.root} elevation={5}>
-        <StyledAvatar overlap="circular" color={props.container_running ? "success" : "error"} variant="dot" anchorOrigin={{vertical: "bottom", horizontal: "right"}}>
-            <FontAwesomeIcon icon={faLanguage} size="6x" style={{width: "125px", height: "125px"}} />
-        </StyledAvatar>
+        <FontAwesomeIcon icon={faLanguage} style={{width: "100px", height: "100px"}} />
         <div>
           <Typography variant="h4" component="h1" style={{textAlign:"left", marginLeft: "10px"}}>{props.name}</Typography>
-          {props.payloadtypes.length > 0 ? (
+          <CardContent style={{textAlign:"left"}}>
               <Typography variant="body1" component="p">
-                <b>Translated Payload Types:</b> {props.payloadtypes.map( (pt) => pt.ptype).join(", ")}
+                <b>Author:</b> {props.author}
               </Typography>
-          ): (null)}
+              <Typography variant="body1" component="p">
+                <b>Supported Agents:</b> {props.payloadtypes.filter(pt => !pt.deleted).map( (pt) => pt.name).join(", ")}
+              </Typography>
+              <Typography variant="body2" component="p">
+                <b>Description: </b>{props.description}
+              </Typography>
+              <Typography variant="body2" component="p" >
+                <b>Container Status: </b>
+              </Typography>
+              <Typography variant="body2" component="p" color={props.container_running ? theme.palette.success.main : theme.palette.error.main} >
+                <b>{props.container_running ? "Online" : "Offline"}</b>
+              </Typography>
+          </CardContent>
+        </div>
+        <div style={{display: "inline-flex", paddingRight: "10px", marginLeft: "auto", justifyContent: "space-evenly", alignItems: "stretch", flexDirection: "column", alignContent: "flex-end"}}>
+            <Button size="small" variant="contained" color="primary" href={"/docs/c2-profiles/" + props.name.toLowerCase()} target="_blank">
+              Docs
+            </Button>
+            {props.deleted ? (
+              <Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} color="success" variant="contained"><RestoreFromTrashOutlinedIcon/> Restore</Button>
+            ) : (
+              <Button size="small" onClick={()=>{setOpenDeleteDialog(true);}} color="error" variant="contained"><DeleteIcon/> Delete</Button>
+            )}
+            {openDelete && 
+              <MythicConfirmDialog onClose={() => {setOpenDeleteDialog(false);}} onSubmit={onAcceptDelete} 
+                open={openDelete} 
+                acceptText={props.deleted ? "Restore" : "Remove"} 
+                acceptColor={props.deleted ? "success": "error"} />
+            }
         </div>
     </Card>
   );

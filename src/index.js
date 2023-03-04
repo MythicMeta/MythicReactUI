@@ -16,8 +16,8 @@ import MessageTypes from 'subscriptions-transport-ws/dist/message-types';
 import jwt_decode from 'jwt-decode';
 import {meState} from './cache';
 
-export const mythicVersion = "2.3.13";
-export const mythicUIVersion = "0.0.74";
+export const mythicVersion = "3.0.0-rc1";
+export const mythicUIVersion = "0.1.0-rc1";
 
 let fetchingNewToken = false;
 
@@ -209,9 +209,10 @@ export const GetNewToken = async () =>{
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       },
       body: JSON.stringify({"refresh_token": localStorage.getItem("refresh_token"),
-        "access_token": localStorage.getItem("access_Token")})
+        "access_token": localStorage.getItem("access_token")})
   };
   const response = await fetch('/refresh', requestOptions);
   const json = response.json().then(data => {

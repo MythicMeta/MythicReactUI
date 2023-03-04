@@ -27,13 +27,13 @@ export function EventFeedTableEvents(props){
     const me = useReactiveVar(meState);
 
     return (
-            <ListItem alignItems="flex-start" style={{...props.style, }}>
-                <ListItemAvatar>
-                    <Avatar>
+            <ListItem alignItems="flex-start" style={{...props.style, margin: 0, padding: "0 0 0 10px"}}>
+                <ListItemAvatar style={{margin: "0 0 0 0", paddingTop: "10px"}}>
+                    <Avatar style={{padding: "0 0 0 0", margin: "0 0 0 0"}}>
                         {props.operator ? props.operator.username[0] : "M"}
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText disableTypography 
+                <ListItemText disableTypography style={{margin: "0 0 0 0"}}
                     primary={
                         <React.Fragment>
                           <Typography
@@ -56,9 +56,11 @@ export function EventFeedTableEvents(props){
                         </React.Fragment>
                     }
                     secondary={
-                          <pre style={{overflowX: "auto", width: "max-content", maxWidth: "97%", margin: "0 0 0 0", borderRadius: "9px", padding: "5px", backgroundColor: props.level === "warning" && props.resolved ? theme.palette.textBackgroundColorSuccess : (props.level === "warning" && !props.resolved ? theme.palette.textBackgroundColorError : (props.operator ? theme.palette.textBackgroundColor : theme.palette.textBackgroundColorMythic))}}>{props.message}</pre>
+                          <pre style={{overflowX: "auto", width: "max-content", maxWidth: "97%", margin: "0 0 0 0", 
+                          borderRadius: "9px", padding: "5px", 
+                          backgroundColor: props.level === "warning" && props.resolved ? theme.palette.textBackgroundColorSuccess : (props.level === "warning" && !props.resolved ? theme.palette.textBackgroundColorError : (props.operator ? theme.palette.textBackgroundColor : theme.palette.textBackgroundColorMythic))}}>
+                            {props.message}</pre>
                     }
-                    style={{}}
                 />
                 <EventFeedTableEventsActions id={props.id} level={props.level} 
                   onUpdateDeleted={props.onUpdateDeleted}

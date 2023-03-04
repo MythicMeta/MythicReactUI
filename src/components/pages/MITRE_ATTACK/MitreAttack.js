@@ -1,7 +1,6 @@
 import React from 'react';
 import { MitreGrid } from './MitreGrid';
 import {useQuery, gql, useLazyQuery} from '@apollo/client';
-import { MeHook } from '../../../cache';
 import { snackActions } from '../../utilities/Snackbar';
 import { Backdrop } from '@mui/material';
 import {CircularProgress} from '@mui/material';
@@ -32,7 +31,7 @@ query GetMitreTaskAttack($operation_id: Int!) {
         id
         payload {
           payloadtype {
-            ptype
+            name
           }
         }
       }
@@ -42,7 +41,7 @@ query GetMitreTaskAttack($operation_id: Int!) {
 `;
 const Get_TaskAttacksFiltered = gql`
 query GetMitreTaskAttack($operation_id: Int!, $payload_type: String!) {
-  attacktask(where: {task: {callback: {operation_id: {_eq: $operation_id}, payload: {payloadtype: {ptype: {_eq: $payload_type}}}}}}) {
+  attacktask(where: {task: {callback: {operation_id: {_eq: $operation_id}, payload: {payloadtype: {name: {_eq: $payload_type}}}}}}) {
     attack_id
     task {
       id
@@ -53,7 +52,7 @@ query GetMitreTaskAttack($operation_id: Int!, $payload_type: String!) {
         id
         payload {
           payloadtype {
-            ptype
+            name
           }
         }
       }
@@ -74,7 +73,7 @@ query GetMitreTaskAttack($tasks: [Int!]!) {
         id
         payload {
           payloadtype {
-            ptype
+            name
           }
         }
       }
@@ -89,7 +88,7 @@ query GetMitreCommandAttack{
     command {
       cmd
       payloadtype {
-        ptype
+        name
       }
     }
   }
@@ -97,12 +96,12 @@ query GetMitreCommandAttack{
 `;
 const Get_CommandAttacksFiltered = gql`
 query GetMitreCommandAttack($payload_type: String!){
-  attackcommand(where: {command: {payloadtype: {ptype: {_eq: $payload_type}}}}) {
+  attackcommand(where: {command: {payloadtype: {name: {_eq: $payload_type}}}}) {
     attack_id
     command {
       cmd
       payloadtype {
-        ptype
+        name
       }
     }
   }
@@ -118,8 +117,7 @@ query getTaskTags ($operation_id: Int!) {
 }
 `;
 
-export function MitreAttack(props){
-    const me = MeHook();
+export function MitreAttack({me}){
     const [backdropOpen, setBackdropOpen] = React.useState(true);
     const [mitreAttack, setMitreAttack] = React.useState({
       "Reconnaissance": {rows: [], tactic: "Reconnaissance", commands: 0, tasks: 0},
@@ -336,7 +334,10 @@ export function MitreAttack(props){
           }
           return {...p};
         }, {});
-        setMitreAttack(mitre);
+        if(Object.keys(mitre).length !== 0 ){
+          setMitreAttack(mitre);
+        }
+        
         setBackdropOpen(false);
       },
       onError: (error) => {

@@ -17,6 +17,9 @@ import Pagination from '@mui/material/Pagination';
 import { Typography } from '@mui/material';
 import { Backdrop } from '@mui/material';
 import { CircularProgress } from '@mui/material';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import Fab from '@mui/material/Fab';
 
 
 const subResponsesQuery = gql`
@@ -38,15 +41,6 @@ query subResponsesQuery($task_id: Int!, $fetchLimit: Int!, $offset: Int!, $searc
     }
   }
 }`;
-const getMaxCountQuery = gql`
-subscription responseTotalCountSubscription($task_id: Int!){
-  response_aggregate(where: {task_id: {_eq: $task_id}}){
-    aggregate{
-      count
-    }
-  }
-}
-`;
 const getAllResponsesLazyQuery = gql`
 query subResponsesQuery($task_id: Int!, $search: String!) {
   response(where: {task_id: {_eq: $task_id}, response_escape: {_ilike: $search}}, order_by: {id: asc}) {
@@ -75,21 +69,29 @@ query getBrowserScriptsQuery($command_id: Int!, $operator_id: Int!, $operation_i
 
 `;
 const fetchLimit = 10;
-// the base64 decode function to handle unicode was pulled from the following stack overflow post
-// https://stackoverflow.com/a/30106551
-function b64DecodeUnicode(str) {
-  // Going backwards: from bytestream, to percent-encoding, to original string.
-  //console.log("decoding", str);
+export function b64DecodeUnicode(str) {
+  if(str.length === 0){return ""}
   try{
-    return decodeURIComponent(atob(str).split('').map(function(c) {
-      //console.log('%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2));
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+    const text = window.atob(str);
+    const length = text.length;
+    const bytes = new Uint8Array(length);
+    for (let i = 0; i < length; i++) {
+        bytes[i] = text.charCodeAt(i);
+    }
+    const decoder = new TextDecoder(); // default is utf-8
+    return decodeURIComponent(decoder.decode(bytes));
   }catch(error){
-    //console.log("Failed to base64 decode response", error)
-    return atob(str);
+    try{
+      return decodeURIComponent(window.atob(str));
+    }catch(error2){
+      try{
+        return window.atob(str);
+      }catch(error3){
+        console.log("Failed to base64 decode response", error, error2)
+        return str;
+      }
+    }
   }
-  
 }
 export const ResponseDisplay = (props) =>{
     const [output, setOutput] = React.useState("");
@@ -262,6 +264,7 @@ export const ResponseDisplay = (props) =>{
        <SearchBar onSubmitSearch={onSubmitSearch} />
       }
       <div style={{overflow: "auto", maxWidth: "100%", width: "100%"}}>
+        
         <ResponseDisplayComponent rawResponses={rawResponses} viewBrowserScript={props.viewBrowserScript} output={output} command_id={props.command_id} task={props.task} search={search}/>
       </div>
       <PaginationBar selectAllOutput={props.selectAllOutput} totalCount={totalCount} onSubmitPageChange={onSubmitPageChange} task={props.task} search={search} parentMountedRef={mountedRef} />
@@ -275,15 +278,6 @@ const PaginationBar = ({selectAllOutput, totalCount, onSubmitPageChange, task, s
   const [maxCount, setMaxCount] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(1);
   const mountedRef = React.useRef(true);
-  const subscriptionMaxCountCallback = React.useCallback( ({subscriptionData}) => {
-    if(!mountedRef.current || !parentMountedRef.current){
-      return;
-    }
-    setMaxCount(subscriptionData.data.response_aggregate.aggregate.count);
-  }, [maxCount]);
-  useSubscription(getMaxCountQuery, {variables: {task_id: task.id},
-    onSubscriptionData: subscriptionMaxCountCallback
-  })
   const onChangePage =  (event, value) => {
     if(!mountedRef.current){
       return;
@@ -291,6 +285,11 @@ const PaginationBar = ({selectAllOutput, totalCount, onSubmitPageChange, task, s
     setCurrentPage(value);
     onSubmitPageChange(value);
   };
+  React.useEffect( () => {
+    if(maxCount != task.response_count){
+      setMaxCount(task.response_count);
+    }
+  }, [task.response_count]);
   React.useEffect( () => {
     return() => {
       mountedRef.current = false;
@@ -310,10 +309,12 @@ const PaginationBar = ({selectAllOutput, totalCount, onSubmitPageChange, task, s
       setTotalcount(totalCount);
     }
   }, [totalCount, maxCount, search, selectAllOutput]);
-  
+  const pageCount = Math.ceil(localTotalCount / fetchLimit);
   return (
-    <div style={{background: "transparent", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "10px"}} >
-      <Pagination count={Math.ceil(localTotalCount / fetchLimit)} page={currentPage} variant="outlined" color="primary" boundaryCount={2} onChange={onChangePage} style={{margin: "10px"}}/>
+    <div id={'scrolltotaskbottom' + task.id} style={{background: "transparent", display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "10px"}} >
+      
+        <Pagination count={pageCount} page={currentPage} variant="outlined" color="primary" boundaryCount={2} onChange={onChangePage} style={{margin: "10px"}}/>
+      
       <Typography style={{paddingLeft: "10px"}}>Total Results: {localTotalCount}</Typography>
     </div>
   )
@@ -345,6 +346,7 @@ const SearchBar = ({onSubmitSearch}) => {
 const ResponseDisplayComponent = ({rawResponses, viewBrowserScript, output, command_id, task, search}) => {
   const [localViewBrowserScript, setViewBrowserScript] = React.useState(true);
   const [browserScriptData, setBrowserScriptData] = React.useState({});
+  const [visibleScrollButtons, setVisibleScrollButtons] = React.useState(false);
   const script = React.useRef();
   const me = useReactiveVar(meState);
   useEffect( () => {
@@ -451,9 +453,44 @@ const ResponseDisplayComponent = ({rawResponses, viewBrowserScript, output, comm
       fetchScripts({variables: {command_id: command_id, operator_id: me.user.user_id, operation_id: me.user.current_operation_id}});
     }
   }, [command_id]);
+  const scrollToTop = () => {
+    document.getElementById(`scrolltotask${task.id}`).scrollIntoView({
+      //behavior: "smooth",
+      block: "start",
+      inline: "start"
+    })
+  }
+  const scrollToBottom = () => {
+    document.getElementById(`scrolltotaskbottom${task.id}`).scrollIntoView({
+      //behavior: "smooth",
+      block: "end",
+      inline: "end"
+    })
+  }
+  
+  const toggleVisible = ({scrollTop}) => {
+    console.log("called toggleVisible", "scrolled", scrollTop);
+    if(scrollTop > 300){
+      if(!visibleScrollButtons){
+        setVisibleScrollButtons(true);
+      }
+    } else if (visibleScrollButtons) {
+      setVisibleScrollButtons(false);
+    }
+  }
+  useEffect( () => {
+    
+  }, []);
   return (
     localViewBrowserScript && browserScriptData ? (
       <React.Fragment>
+          {visibleScrollButtons ? (
+            <div style={{position: "absolute", top: "40%", left: "97%", display: "flex", flexDirection: "column", justifyContent: "space-evenly"}}>
+              <Fab onClick={scrollToTop} color="info" size="small" aria-label="top" style={{position: "relative", right: 0, zIndex: 10}}><ArrowUpwardIcon /></Fab><br/>
+              <Fab onClick={scrollToBottom} color="info" size="small" aria-label="top" style={{position: "relative", right: 0, zIndex: 10}}><ArrowDownwardIcon /></Fab>
+            </div>
+          ): (null)}
+          
           {browserScriptData?.screenshot?.map( (scr, index) => (
               <ResponseDisplayScreenshot key={"screenshot" + index + 'fortask' + task.id} {...scr} />
             )) || null
@@ -475,7 +512,16 @@ const ResponseDisplayComponent = ({rawResponses, viewBrowserScript, output, comm
           }
       </React.Fragment>
     ) : (
-      <ResponseDisplayPlaintext plaintext={output} />
+      <React.Fragment>
+        {visibleScrollButtons ? (
+            <div style={{position: "absolute", top: "40%", left: "97%", display: "flex", flexDirection: "column", justifyContent: "space-evenly"}}>
+              <Fab onClick={scrollToTop} color="info" size="small" aria-label="top" style={{position: "relative", right: 0, zIndex: 10}}><ArrowUpwardIcon /></Fab><br/>
+              <Fab onClick={scrollToBottom} color="info" size="small" aria-label="top" style={{position: "relative", right: 0, zIndex: 10}}><ArrowDownwardIcon /></Fab>
+            </div>
+          ): (null)}
+          <ResponseDisplayPlaintext plaintext={output}/>
+      </React.Fragment>
+      
     )
   )
 }

@@ -1,30 +1,27 @@
-import { useSnackbar } from 'notistack'
-
-let useSnackbarRef = null;
-
-export const SnackbarUtilsConfigurator = () => {
-  useSnackbarRef = useSnackbar();
-
-  return null;
-};
+import { toast } from 'react-toastify';
 
 export const snackActions = {
   success(msg, options) {
-    this.toast(msg, 'success', options)
+    toast.success(msg, {position: toast.POSITION.TOP_CENTER, ...options});
   },
   warning(msg, options) {
-    this.toast(msg, 'warning', options)
+    toast.warn(msg, {position: toast.POSITION.TOP_CENTER, ...options});
   },
   info(msg, options) {
-    this.toast(msg, 'info', options)
+    toast.info(msg, {position: toast.POSITION.TOP_CENTER, ...options});
   },
   error(msg, options) {
-    this.toast(msg, 'error', options)
+    toast.error(msg, {position: toast.POSITION.TOP_CENTER, ...options});
+  },
+  update(msg, toastID, options) {
+    if(toast.isActive){
+      toast.update(toastID, {...options, render: msg});
+    }    
+  },
+  loading(msg, options) {
+    toast.loading(msg,{position: toast.POSITION.TOP_CENTER, ...options})
   },
   dismiss(){
-    useSnackbarRef.closeSnackbar();
+    toast.dismiss();
   },
-  toast(msg, variant = 'default', options) {
-    useSnackbarRef.enqueueSnackbar(msg, { variant, ...options })
-  }
 }

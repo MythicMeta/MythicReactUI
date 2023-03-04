@@ -2,12 +2,12 @@ import React from 'react';
 import FileBrowserVirtualTree from '../../MythicComponents/MythicFileBrowserVirtualTree';
 
 
-export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTableData }) => {
+export const CallbacksTabsFileBrowserTree = ({ treeRootData, treeAdjMatrix, fetchFolderData, setTableData, taskListing, tableOpenedPathId, showDeletedFiles}) => {
     const [openNodes, setOpenNodes] = React.useState({});
     const toggleNodeExpanded = (nodeId, nodeData) => {
         //console.log("toggleNodeExpanded", nodeId, nodeData);
-        setTableData(nodeData.data);
-        fetchFolderData(nodeData.data);
+        setTableData(nodeData);
+        fetchFolderData(nodeData);
         setOpenNodes({
           ...openNodes,
           [nodeId]: true
@@ -20,29 +20,32 @@ export const CallbacksTabsFileBrowserTree = ({ treeRoot, fetchFolderData, setTab
         });
       };
     const onSelectNode = (nodeId, nodeData) => {
-        setTableData(nodeData.data);
-        //console.log("onSelectNode", nodeId, nodeData);
+        setTableData(nodeData);
     };
-    return treeRoot.length === 0 ? (
-        <div
-            style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-            }}>
-            No File Browser Data Collected
-        </div>
-    ) : (
-        <FileBrowserVirtualTree
-            nodes={treeRoot}
-            display_name={"name_text"}
-            openNodes={openNodes}
-            onSelectNode={onSelectNode}
-            onExpandNode={toggleNodeExpanded}
-            onCollapseNode={toggleNodeCollapsed}
-        />
-    );
+    React.useEffect( () => {
+      setOpenNodes({
+        ...openNodes,
+        [tableOpenedPathId]: true
+      });
+    }, [tableOpenedPathId]);
+    const contextMenuOptions = [
+      {
+          name: 'Task Listing', 
+          click: ({event, node}) => {
+              taskListing(node);
+          }
+      },
+  ];
+  return(
+    <FileBrowserVirtualTree
+        showDeletedFiles={showDeletedFiles}
+        treeRootData={treeRootData}
+        treeAdjMatrix={treeAdjMatrix}
+        openNodes={openNodes}
+        onSelectNode={onSelectNode}
+        onExpandNode={toggleNodeExpanded}
+        onCollapseNode={toggleNodeCollapsed}
+        contextMenuOptions={contextMenuOptions}
+    />
+  )
 };

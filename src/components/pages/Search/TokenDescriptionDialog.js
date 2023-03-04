@@ -14,6 +14,24 @@ mutation updateComment ($token_id: Int!, $description: String) {
   }
 }
 `;
+const updateTokenFieldStringTemplate = ({target_object}) => {
+  return gql`
+  mutation updateTokenStringField ($token_id: Int!, $${target_object}: String!) {
+    update_token_by_pk(pk_columns: {id: $token_id}, _set:{ ${target_object}: $${target_object} }) {
+      id
+      ${target_object}
+  }
+  `;
+}
+const getTokenFieldStringTemplate = ({target_object}) => {
+  return gql`
+  query getTokenStringField ($token_id: Int!, $${target_object}: String!) {
+    token_by_pk(pk_columns: {id: $token_id}) {
+      id
+      ${target_object}
+  }
+  `;
+}
 const getCommentQuery = gql`
 query getCommentQuery ($token_id: Int!) {
   token_by_pk(id: $token_id) {
@@ -34,7 +52,6 @@ export function TokenDescriptionDialog(props) {
     });
     const [updateComment] = useMutation(updateCommentMutation, {
         onCompleted: (data) => {
-          //console.log('udpated');
           props.onUpdateDescription({id: props.token_id, description: data.update_token_by_pk.description});
           props.onClose();
         },

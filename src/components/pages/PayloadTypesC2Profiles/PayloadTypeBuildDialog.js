@@ -11,18 +11,24 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableHead from '@mui/material/TableHead';
 import LinearProgress from '@mui/material/LinearProgress';
+import { getDefaultChoices } from '../CreatePayload/Step2SelectPayloadType';
+import { getDefaultValueForType } from '../CreatePayload/Step2SelectPayloadType';
 
 const GET_Payload_Details = gql`
 query GetPayloadDetails($payload_name: String!) {
-  payloadtype(where: {ptype: {_eq: $payload_name}}) {
+  payloadtype(where: {name: {_eq: $payload_name}}) {
     buildparameters (where: {deleted: {_eq: false} } ){
       description
       name
       id
-      parameter
+      default_value
       parameter_type
       required
       verifier_regex
+      choices
+      crypto_type
+      randomize
+      format_string
     }
   }
 }
@@ -33,15 +39,39 @@ export function PayloadTypeBuildDialog(props) {
     const { loading, error } = useQuery(GET_Payload_Details, {
         variables: {payload_name: props.payload_name},
         onCompleted: data => {
-            //console.log(data);
+            console.log(data);
             const buildParams = data.payloadtype[0].buildparameters.map((param) => {
-              switch(param.parameter_type){
-                case "ChooseMultiple":
-                case "ChooseOne":
-                  return {...param, defaultParameter: param.parameter.split("\n")[0], options: param.parameter.split("\n").join(", ")};
-                default:
-                  return {...param, defaultParameter: param.parameter};
+              let choices = getDefaultChoices(param);
+              if(choices.length > 0){
+                if(param.parameter_type === "Dictionary"){
+                  choices = choices.reduce( (prev, cur) => {
+                    return {...prev, [cur.name]: cur.default_value};
+                  }, {});
+                  choices = JSON.stringify(choices, null, 2);
+                } else {
+                  choices = choices.join(", ")
+                }
+                
+              } else {
+                choices = "";
               }
+              let default_value = getDefaultValueForType(param);
+              if(param.parameter_type === "Array" || param.parameter_type === "ChooseMultiple"){
+                default_value = default_value.join(", ")
+              } else if(param.parameter_type === "Boolean"){
+                default_value = default_value ? "True" : "False"
+              } else if(param.parameter_type === "Dictionary"){
+                let defaultChoices = getDefaultChoices(param);
+                defaultChoices = defaultChoices.reduce( (prev, cur) => {
+                  if(cur.default_show){
+                    return {...prev, [cur.name]: cur.default_value};
+                  }else{
+                    return {...prev};
+                  }
+                }, {});
+                default_value = JSON.stringify(defaultChoices, null, 2);
+              }
+              return {...param, choices: choices, default_value: default_value}
             });
             setBuildParams(buildParams);
         }
@@ -51,7 +81,7 @@ export function PayloadTypeBuildDialog(props) {
     }
     if (error) {
      console.error(error);
-     return <div>Error!</div>;
+     return <div>Error! {error.message}</div>;
     }
   
   return (
@@ -76,14 +106,20 @@ export function PayloadTypeBuildDialog(props) {
                             <TableCell>
                             <b>Scripting/Building Name: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.name}</pre><br/>
                             <b>Parameter Type: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.parameter_type}</pre><br/>
-                            <b>Default Parameter: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.defaultParameter}</pre><br/>
-                            {param.parameter_type === "ChooseOne" || param.parameter_type === "ChooseMultiple" ? (
+                            <b>Default Value: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.default_value}</pre><br/>
+                            {param.choices.length > 0 ? (
                               <React.Fragment>
-                                <b>Parameter Options: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.options}</pre><br/>
+                                <b>Parameter Options: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.choices}</pre><br/>
                               </React.Fragment>
                             ) : (null)}
                             <b>Required? </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.required ? "Yes": "No"}</pre><br/>
                             <b>Verifier Regex: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.verifier_regex}</pre><br/>
+                            <b>Randomized: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.randomize ? "Yes": "No"}</pre><br/>
+                            {param.randomize ? (
+                              <React.Fragment>
+                                <b>Format String: </b><pre style={{display: "inline-block", whiteSpace: "pre-wrap", margin: 0}}>{param.format_string}</pre><br/>
+                              </React.Fragment>
+                            ) : (null)}
                             </TableCell>
                         </TableRow>
                     ))

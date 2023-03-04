@@ -115,10 +115,10 @@ function PayloadTypeBlockListPreMemo(props){
       setRightTitle(props.rightTitle);
     }, [props.left, props.right, props.leftTitle, props.rightTitle, props.itemKey]);
     useEffect( () => {
-      props.onChange({selected: right, ptype: props.ptype});
+      props.onChange({selected: right, name: props.name});
     }, [right])
     const customList = (title, items) => (
-      <Paper style={{width:"100%"}}>
+      <Paper style={{width:"100%", marginTop:"5px"}}>
         <Card>
           <CardHeader
             className={classes.paper}
@@ -151,11 +151,11 @@ function PayloadTypeBlockListPreMemo(props){
     );
     
   return (
-    <Grid container spacing={2} justifyContent="center" alignItems="center" className={classes.root}>
+    <Grid container spacing={0} justifyContent="center" alignItems="center" className={classes.root}>
       <Grid item xs={12}>
-        <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main, marginBottom: "5px", marginTop: "10px", marginRight: "5px"}} variant={"elevation"}>
+        <Paper elevation={5} style={{backgroundColor: theme.pageHeader.main, color: theme.pageHeaderText.main}} variant={"elevation"}>
             <Typography variant="h3" style={{textAlign: "left", display: "inline-block", marginLeft: "20px"}}>
-                {props.ptype}
+                {props.name}
             </Typography>
         </Paper>
       </Grid>
@@ -211,13 +211,13 @@ function PayloadTypeBlockListPreMemo(props){
 const PayloadTypeBlockList = React.memo(PayloadTypeBlockListPreMemo);
 const getPayloadTypesAndCommandsQuery = gql`
   query getPayloadTypesAndCommands{
-    payloadtype(where: {deleted: {_eq: false}, wrapper: {_eq: false}}, order_by: {ptype: asc}) {
+    payloadtype(where: {deleted: {_eq: false}, wrapper: {_eq: false}}, order_by: {name: asc}) {
       commands(order_by: {cmd: asc}) {
         cmd
         id
       }
       id
-      ptype
+      name
     }
   }
 `;
@@ -233,8 +233,8 @@ export function EditBlockListDialog({dialogTitle, onSubmit, blockListName: propB
       // for each of the possible commands mark them as selected or not
       const updatedPayloadTypes = data.payloadtype.map( p => {
         let selectedCommands = [];
-        if(currentSelected[p.ptype] !== undefined){
-          selectedCommands = [...currentSelected[p.ptype]];
+        if(currentSelected[p.name] !== undefined){
+          selectedCommands = [...currentSelected[p.name]];
         }
         return {...p, selected: selectedCommands};
       });
@@ -246,8 +246,8 @@ export function EditBlockListDialog({dialogTitle, onSubmit, blockListName: propB
 
     }
   })
-  const onChange = React.useCallback( ({selected, ptype}) => {
-    setSelectedCommands({...selectedCommands, [ptype]: selected});
+  const onChange = React.useCallback( ({selected, name}) => {
+    setSelectedCommands({...selectedCommands, [name]: selected});
   }, [selectedCommands]);
   const onChangeBlockListName = (name, value, error) => {
     setBlockListName(value);
@@ -287,7 +287,7 @@ export function EditBlockListDialog({dialogTitle, onSubmit, blockListName: propB
       <DialogContent dividers={true}>
         <MythicTextField disabled={!editable} onChange={onChangeBlockListName} value={blockListName} name="Block List Name" autoFocus requiredValue/>
         {payloadtypes.map(p => (
-          <PayloadTypeBlockList key={p.ptype} leftTitle={"Not Blocked"} onChange={onChange} rightTitle={"Blocked Commands"} itemKey={"cmd"} right={p.selected} left={p.commands} ptype={p.ptype}/>
+          <PayloadTypeBlockList key={p.name} leftTitle={"Not Blocked"} onChange={onChange} rightTitle={"Blocked Commands"} itemKey={"cmd"} right={p.selected} left={p.commands} name={p.name}/>
         ))}
       </DialogContent>
       <DialogActions>

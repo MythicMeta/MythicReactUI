@@ -14,7 +14,7 @@ import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip'
 
 
 export function CallbacksTabsTaskingLabel(props){
-    const [description, setDescription] = React.useState(props.tabInfo.payloadDescription !== props.tabInfo.callbackDescription ? props.tabInfo.callbackDescription : "Callback: " + props.tabInfo.callbackID)
+    const [description, setDescription] = React.useState(props.tabInfo.payloadDescription !== props.tabInfo.callbackDescription ? props.tabInfo.callbackDescription : "Callback: " + props.tabInfo.displayID)
     const [openEditDescriptionDialog, setOpenEditDescriptionDialog] = React.useState(false);
     useEffect( () => {
         if(props.tabInfo.customDescription !== "" && props.tabInfo.customDescription !== undefined){
@@ -22,7 +22,7 @@ export function CallbacksTabsTaskingLabel(props){
         }else if(props.tabInfo.payloadDescription !== props.tabInfo.callbackDescription){
             setDescription(props.tabInfo.callbackDescription);
         }else{
-            setDescription("Callback: " + props.tabInfo.callbackID);
+            setDescription("Callback: " + props.tabInfo.displayID);
         }
     }, [props.tabInfo.payloadDescription, props.tabInfo.customDescription])
     const editDescriptionSubmit = (description) => {
@@ -38,7 +38,7 @@ export function CallbacksTabsTaskingLabel(props){
     ]);
     return (
         <React.Fragment>
-            <MythicTabLabel label={description} onDragTab={props.onDragTab} {...props} contextMenuOptions={contextMenuOptions}/>
+            <MythicTabLabel label={description} onDragTab={props.onDragTab} me={props.me} {...props} contextMenuOptions={contextMenuOptions}/>
             {openEditDescriptionDialog &&
                 <MythicDialog fullWidth={true} open={openEditDescriptionDialog}  onClose={() => {setOpenEditDescriptionDialog(false);}}
                     innerDialog={
@@ -58,6 +58,7 @@ export const taskingDataFragment = gql`
         }
         completed
         id
+        display_id
         operator{
             username
         }
@@ -70,10 +71,6 @@ export const taskingDataFragment = gql`
           id
         }
         command_name
-        responses(limit: 1, order_by: {id: desc}){
-            id
-            timestamp
-        }
         opsec_pre_blocked
         opsec_pre_bypassed
         opsec_post_blocked
@@ -81,8 +78,13 @@ export const taskingDataFragment = gql`
         tasks {
             id
         }
-        tasktags(order_by: {tag: asc}) {
-            tag
+        response_count
+        tags {
+            tagtype {
+                name
+                color
+                id
+              }
             id
         }
         token {
@@ -120,7 +122,7 @@ query getBatchTasking($callback_id: Int!, $offset: Int!, $fetchLimit: Int!){
     }
 }
 `;
-export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, parentMountedRef}) =>{
+export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, parentMountedRef, me}) =>{
     const [taskLimit, setTaskLimit] = React.useState(10);
     const [openParametersDialog, setOpenParametersDialog] = React.useState(false);
     const [commandInfo, setCommandInfo] = React.useState({});
@@ -148,7 +150,7 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
             if(data.createTask.status === "error"){
                 snackActions.error(data.createTask.error);
             }else{
-                snackActions.success("Task created", {autoHideDuration: 1000});
+                snackActions.success("Task created", {autoClose: 1000});
             }
         },
         onError: data => {
@@ -196,20 +198,20 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
             if(oldArray[i].tasks.length !== newArray[i].tasks.length){
                 return false;
             }
-            if(oldArray[i].tasktags.length !== newArray[i].tasktags.length){
+            if(oldArray[i].tags.length !== newArray[i].tags.length){
                 return false;
             }
         }
         return true;
     }
-    const subscriptionDataCallback = useCallback( ({subscriptionData}) => {
+    const subscriptionDataCallback =  ({subscriptionData}) => {
         if((mountedRef && !mountedRef.current) || (parentMountedRef && !parentMountedRef.current)){
             return null;
         }
         if(!fetched){
             setFetched(true);
         }
-        //console.log(subscriptionData);
+        //console.log("new subscription data in CallbacksTabsTasking", subscriptionData);
         const oldLength = taskingDataRef.current.task.length;
         const mergedData = subscriptionData.data.task.reduce( (prev, cur) => {
             const index = prev.findIndex(element => element.id === cur.id);
@@ -237,7 +239,7 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
         if(mergedData.length > taskLimit){
             setTaskLimit(mergedData.length);
         }
-    }, [fetched, setFetched, setCanScroll, taskLimit])
+    }
     useSubscription(getTaskingQuery, {
         variables: {callback_id: tabInfo.callbackID, fromNow:fromNow, limit: taskLimit},
         shouldResubscribe: true,
@@ -398,13 +400,13 @@ export const CallbacksTabsTaskingPanel = ({tabInfo, index, value, onCloseTab, pa
             <div style={{overflowY: "auto", flexGrow: 1}}>
             {
                 taskingData.task.map( (task) => (
-                    <TaskDisplay key={"taskinteractdisplay" + task.id} task={task} command_id={task.command == null ? 0 : task.command.id} 
+                    <TaskDisplay key={"taskinteractdisplay" + task.id} me={me} task={task} command_id={task.command == null ? 0 : task.command.id} 
                         filterOptions={filterOptions}/>
                 ))
             }
             </div>
             <div ref={messagesEndRef} />
-        <CallbacksTabsTaskingInput onSubmitFilter={onSubmitFilter} onSubmitCommandLine={onSubmitCommandLine} changeSelectedToken={changeSelectedToken}
+        <CallbacksTabsTaskingInput me={me} onSubmitFilter={onSubmitFilter} onSubmitCommandLine={onSubmitCommandLine} changeSelectedToken={changeSelectedToken}
             filterOptions={filterOptions} callback_id={tabInfo.callbackID} callback_os={tabInfo.os} parentMountedRef={mountedRef} />
         {openParametersDialog && 
             <MythicDialog fullWidth={true} maxWidth="lg" open={openParametersDialog} 

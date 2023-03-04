@@ -64,10 +64,10 @@ export function TokenTable(props){
         });
         setTokens(updates);
     }
-    const onUpdateUser = ({id, User}) => {
+    const onUpdateUser = ({id, user}) => {
         const updates = tokens.map( (cred) => {
             if(cred.id === id){
-                return {...cred, User}
+                return {...cred, user}
             }else{
                 return {...cred}
             }
@@ -76,14 +76,13 @@ export function TokenTable(props){
     }
 
     return (
-        <TableContainer component={Paper} className="mythicElement" style={{height: "calc(78vh)"}}>
+        <TableContainer component={Paper} className="mythicElement" >
             <Table stickyHeader size="small" style={{"maxWidth": "100%", "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
                         <TableCell style={{width: "5rem"}}>Visibility</TableCell>
                         <TableCell >User</TableCell>
                         <TableCell >TokenId</TableCell>
-                        <TableCell >Logon Session</TableCell>
                         <TableCell >Description</TableCell>
                         <TableCell >Task</TableCell>
                         <TableCell >Callbacks With Handles</TableCell>
@@ -152,7 +151,7 @@ function TokenTableRow(props){
                     </MythicStyledTooltip>
                 )} </MythicStyledTableCell>
                 <MythicStyledTableCell>
-                <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.User}</Typography>
+                <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.user}</Typography>
                     <IconButton onClick={() => setEditUserDialog(true)} size="small"><EditIcon /></IconButton>
                         <MythicDialog fullWidth={true} maxWidth="md" open={editUserDialog} 
                             onClose={()=>{setEditUserDialog(false);}} 
@@ -160,22 +159,13 @@ function TokenTableRow(props){
                         />
                 </MythicStyledTableCell>
                 <MythicStyledTableCell >
-                    <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.TokenId}</Typography>
+                    <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.token_id}</Typography>
                     <MythicStyledTooltip title="View Token Information"><IconButton size="small" color="primary" onClick={()=>{setViewTokenDialog(true);}}><ConfirmationNumberIcon/></IconButton></MythicStyledTooltip>
                     <MythicDialog fullWidth={true} maxWidth="md" open={viewTokenDialog} 
                         onClose={()=>{setViewTokenDialog(false);}} 
                         innerDialog={<TaskTokenDialog token_id={props.id} onClose={()=>{setViewTokenDialog(false);}} />}
                     />
                 </MythicStyledTableCell>
-                <MythicStyledTableCell>
-                    {props.logonsession === null ? (
-                        <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>No Logon Session Data</Typography>
-                    ) : (
-                        <React.Fragment>
-                            {props.logonsession.LogonId} {props.logonsession.LogonType !== null ? (" (" + props.logonsession.LogonType + ")") : (null)}
-                        </React.Fragment>
-                    )}
-                    </MythicStyledTableCell>
                 <MythicStyledTableCell>
                     <Typography variant="body2" style={{wordBreak: "break-all", display: "inline-block"}}>{props.description}</Typography>
                     <IconButton onClick={() => setEditDescriptionDialog(true)} size="small"><EditIcon /></IconButton>

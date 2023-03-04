@@ -9,6 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Link from '@mui/material/Link';
+import {b64DecodeUnicode} from '../Callbacks/ResponseDisplay';
 
 
 export function TaskFilesTable(props){
@@ -35,14 +36,14 @@ export function TaskFilesTable(props){
         
         <Paper elevation={5} style={{position: "relative", backgroundColor: theme.body}} variant={"elevation"}>
         <TableContainer component={Paper} className="mythicElement">
-          <Table  size="small" style={{"tableLayout": "fixed", "maxWidth": "100%", "overflow": "scroll"}}>
+          <Table  size="small" style={{ "overflow": "scroll"}}>
                 <TableHead>
                     <TableRow>
                         <TableCell>Filename</TableCell>
-                        <TableCell style={{width: "10rem"}}>Type</TableCell>
+                        <TableCell style={{width: "5rem"}}>Type</TableCell>
                         <TableCell >Remote Path</TableCell>
-                        <TableCell style={{width: "15rem"}}>Comment</TableCell>
-                        <TableCell style={{width: "15rem"}}>Hashes</TableCell>
+                        <TableCell >Comment</TableCell>
+                        <TableCell >Hashes</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -50,11 +51,11 @@ export function TaskFilesTable(props){
                     <TableRow key={"file" + file.id} hover>
                       <TableCell>
                         {!file.deleted && file.complete ? (
-                          <Link href={window.origin + "/api/v1.4/files/download/" + file.agent_file_id} style={{textDecoration: "underline", color: "inherit"}}>{file.filename_text}</Link>
+                          <Link href={"/direct/download/" + file.agent_file_id} style={{textDecoration: "underline", color: "inherit"}}>{b64DecodeUnicode(file.filename_text)}</Link>
                         ) : ( 
                           !file.complete ? (
-                            file.filename_text +  " (" + file.chunks_received + "/" + file.total_chunks + ")"
-                          ) : (file.filename_text)
+                            b64DecodeUnicode(file.filename_text) +  " (" + file.chunks_received + "/" + file.total_chunks + ")"
+                          ) : (b64DecodeUnicode(file.filename_text))
                          )}
                         </TableCell>
                       <TableCell>
@@ -66,9 +67,9 @@ export function TaskFilesTable(props){
                           )
                         )}
                       </TableCell>
-                      <TableCell style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>{file.full_remote_path_text === "" ? ("") : (file.host + ":" + file.full_remote_path_text) }</TableCell>
+                      <TableCell style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>{b64DecodeUnicode(file.full_remote_path_text) === "" ? ("") : (file.host + "\n" + b64DecodeUnicode(file.full_remote_path_text)) }</TableCell>
                       <TableCell style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>{file.comment}</TableCell>
-                      <TableCell>MD5:<br/>{file.md5}<br/>SHA1:<br/>{file.sha1}</TableCell>
+                      <TableCell>{"MD5: "}{file.md5}<br/>{"SHA1: "}{file.sha1}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

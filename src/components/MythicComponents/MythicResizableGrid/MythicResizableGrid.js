@@ -95,11 +95,13 @@ const ResizableGridWrapper = ({
 
     const autosizeColumn = (columnIndex) => {
         const longestElementInColumn = Math.max(...items.map((itemRow) => {
-            if(typeof(itemRow[columnIndex]) === "string"){
-                return itemRow[columnIndex].length;
-            }else if(widthMeasureKey){
-                return String(itemRow[columnIndex]?.props?.cellData?.[widthMeasureKey]).length || -1;
-            }else{
+            if(columns[columnIndex].key){
+                //console.log(columns[columnIndex].key)
+                //console.log(itemRow[columnIndex]?.props?.rowData)
+                return String(itemRow[columnIndex]?.props?.rowData?.[columns[columnIndex].key]).length || -1;
+            } else if(typeof(itemRow[columnIndex]?.props?.cellData) === "string"){
+                return itemRow[columnIndex]?.props?.cellData.length;
+            }else {
                 return itemRow[columnIndex]?.props?.cellData?.length || -1;
             }
             

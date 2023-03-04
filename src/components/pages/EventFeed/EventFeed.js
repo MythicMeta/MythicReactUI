@@ -1,6 +1,5 @@
-import React  from 'react';
+import React, {useCallback} from 'react';
 import { gql, useMutation, useLazyQuery, useSubscription } from '@apollo/client';
-import { MeHook } from '../../../cache';
 import {EventFeedTable} from './EventFeedTable';
 import {snackActions} from '../../utilities/Snackbar';
 
@@ -23,8 +22,8 @@ query GetOperationEventLogs($operation_id: Int!, $offset: Int!, $eventQuerySize:
 }
  `;
  const SUB_Event_Feed = gql`
-subscription GetOperationEventLogs($operation_id: Int!, $offset: Int!, $eventQuerySize: Int!) {
-  operationeventlog(where: {operation_id: {_eq: $operation_id}, deleted: {_eq: false}}, order_by: {id: desc}, limit: $eventQuerySize, offset: $offset) {
+subscription GetOperationEventLogs($operation_id: Int!, $fromNow: timestamp!, $eventQuerySize: Int!) {
+  operationeventlog_stream(cursor: {initial_value: {timestamp: $fromNow}, ordering: ASC}, batch_size: $eventQuerySize, where: {operation_id: {_eq: $operation_id}, deleted: {_eq: false}}) {
     id
     level
     message
@@ -115,7 +114,7 @@ mutation UpdateLevelOperationEventLog($id: Int!) {
   `;
   const Update_ResolveAllErrors = gql`
   mutation UpdateResolveAllErrorsOperationEventLog($operation_id: Int!) {
-    update_operationeventlog(where: {resolved: {_eq: false}, operation_id: {_eq: $operation_id}}, _set: {resolved: true}) {
+    update_operationeventlog(where: {level: {_eq: "warning"}, resolved: {_eq: false}, operation_id: {_eq: $operation_id}}, _set: {resolved: true}) {
       returning{
           id
           resolved
@@ -124,29 +123,38 @@ mutation UpdateLevelOperationEventLog($id: Int!) {
   }
    `;
 export function EventFeed(props){
-  const me = MeHook();
+  const me = props.me;
   const [operationeventlog, setOperationEventLog] = React.useState([]);
   const [offset, setOffset] = React.useState(0);
+  const [fromNow, setFromNow] = React.useState((new Date()).toISOString());
+  const [sortDirection, setSortDirection] = React.useState("asc");
+  
   useSubscription(SUB_Event_Feed, {
-    variables: {operation_id: me?.user?.current_operation_id || 0, offset: 0, eventQuerySize: EVENT_QUERY_SIZE}, fetchPolicy: "network-only",
-    shouldResubscribe: true,
+    variables: {operation_id: me?.user?.current_operation_id || 0, fromNow, eventQuerySize: EVENT_QUERY_SIZE}, fetchPolicy: "no-cache",
     onSubscriptionData: ({subscriptionData}) => {
+      //console.log("got subscription data")
       if(offset === 0){
-        setOffset(subscriptionData.data.operationeventlog.length);
+        setOffset(subscriptionData.data.operationeventlog_stream.length);
       }
-      const newEvents = subscriptionData.data.operationeventlog.reduce( (prev, cur) => {
-        if(prev.find(({ id }) => id === cur.id)){
-          let indx = prev.findIndex( ({id}) => id === cur.id);
+      const newEvents = subscriptionData.data.operationeventlog_stream.reduce( (prev, cur) => {
+        let indx = prev.findIndex( ({id}) => id === cur.id);
+        if(indx > -1){
           let updatingPrev = [...prev];
           updatingPrev[indx] = cur;
           return [...updatingPrev];
         }
         return [...prev, cur];
       }, [...operationeventlog]);
-      newEvents.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+      if(sortDirection === "desc"){
+        newEvents.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+      }else{
+        newEvents.sort((a,b) => (a.id > b.id) ? -1 : ((b.id > a.id) ? 1 : 0));
+      }
+      //console.log("finished processing subscription data")
       setOperationEventLog(newEvents);
     }
-});
+  });
+  
   const [getMoreTasking] = useLazyQuery(GET_Event_Feed, {
       onError: data => {
           console.error(data)
@@ -165,6 +173,11 @@ export function EventFeed(props){
             return [...prev, cur];
           }, [...operationeventlog]);
           setOffset(offset + EVENT_QUERY_SIZE);
+          if(sortDirection === "desc"){
+            newEvents.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+          }else{
+            newEvents.sort((a,b) => (a.id > b.id) ? -1 : ((b.id > a.id) ? 1 : 0));
+          }
           setOperationEventLog(newEvents);
         snackActions.success("Successfully fetched more events");
       }
@@ -184,6 +197,11 @@ export function EventFeed(props){
           foundNew = true;
           return [...prev, cur];
         }, [...operationeventlog]);
+        if(sortDirection === "desc"){
+          newEvents.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+        }else{
+          newEvents.sort((a,b) => (a.id > b.id) ? -1 : ((b.id > a.id) ? 1 : 0));
+        }
         setOperationEventLog(newEvents);
         if(foundNew){
           snackActions.success("Successfully fetched surrounding events");
@@ -210,11 +228,15 @@ export function EventFeed(props){
           }
           return [...prev, cur];
         }, [...operationeventlog]);
+        if(sortDirection === "desc"){
+          newEvents.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+        }else{
+          newEvents.sort((a,b) => (a.id > b.id) ? -1 : ((b.id > a.id) ? 1 : 0));
+        }
         setOperationEventLog(newEvents);
         snackActions.success("Successfully fetched more errors");
     }
   });
-  const [newOperationEventLog] = useMutation(Create_Operational_Event_Log);
   const [updateDeleted] = useMutation(Update_Deleted, {
     update: (cache, {data}) => {
         const removedMessage = data.update_operationeventlog.returning[0];
@@ -287,32 +309,29 @@ export function EventFeed(props){
       
     }
   });
-  const onUpdateDeleted = ({id}) => {
+  const onUpdateDeleted = useCallback( ({id}) => {
       snackActions.info("Deleting event log...");
       updateDeleted({variables: {id}});
-  }
-  const onSubmitMessage = ({level, message}) => {
-      newOperationEventLog({variables: {level, message}});
-  }
-  const onUpdateResolution = ({id, resolved}) => {
+  }, [])
+  const onUpdateResolution = useCallback( ({id, resolved}) => {
     updateResolution({variables: {id, resolved}});
-  }
-  const onUpdateLevel = ({id}) => {
+  }, []);
+  const onUpdateLevel = useCallback( ({id}) => {
     updateLevel({variables: {id}})
-  }
-  const loadMore = () => {
+  }, []);
+  const loadMore = useCallback( () => {
     snackActions.info("Loading more events...");
     getMoreTasking({variables: {operation_id: me?.user?.current_operation_id || 0, offset: offset, eventQuerySize: EVENT_QUERY_SIZE}})
-  }
-  const loadNextError = () => {
+  }, [offset]);
+  const loadNextError = useCallback( () => {
     snackActions.info("Loading more errors...");
     getNextError({variables: {operation_id: me?.user?.current_operation_id || 0}})
-  }
-  const getSurroundingEvents = ({id}) => {
+  }, []);
+  const getSurroundingEvents = useCallback( ({id}) => {
     snackActions.info("Loading surrounding events...");
     getSurroundingEventQuery({variables: {lower_id: id - SURROUNDING_EVENTS, upper_id: id + SURROUNDING_EVENTS, operation_id: me?.user?.current_operation_id || 0}})
-  }
-  const resolveViewableErrors = () => {
+  }, []);
+  const resolveViewableErrors = useCallback( () => {
     snackActions.info("Resolving Errors...");
     const resolveIds = operationeventlog.reduce( (prev, cur) => {
       if(cur.level === "warning" && !cur.resolved){
@@ -322,15 +341,27 @@ export function EventFeed(props){
       }
     }, []);
     updateResolveViewable({variables: {ids: resolveIds}});
-  }
-  const resolveAllErrors = () => {
+  }, [operationeventlog]);
+  const resolveAllErrors = useCallback( () => {
     snackActions.info("Resolving Errors...");
     updateResolveAllErrors({variables: {operation_id: me?.user?.current_operation_id || 0}});
+  }, []);
+  const changeSortDirection = () => {
+    if(sortDirection === "asc"){
+      setSortDirection("desc");
+      operationeventlog.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+    }else{
+      setSortDirection("asc");
+      operationeventlog.sort((a,b) => (a.id > b.id) ? -1 : ((b.id > a.id) ? 1 : 0));
+    }
   }
+  React.useEffect( () => {
+    loadMore();
+  }, []);
   return (
-      <EventFeedTable onSubmitMessage={onSubmitMessage} operationeventlog={operationeventlog} loadMore={loadMore} loadNextError={loadNextError}
+      <EventFeedTable operationeventlog={operationeventlog} loadMore={loadMore} loadNextError={loadNextError}
                       onUpdateDeleted={onUpdateDeleted} onUpdateResolution={onUpdateResolution} onUpdateLevel={onUpdateLevel} getSurroundingEvents={getSurroundingEvents}
-                      resolveViewableErrors={resolveViewableErrors} resolveAllErrors={resolveAllErrors}
+                      resolveViewableErrors={resolveViewableErrors} resolveAllErrors={resolveAllErrors} changeSortDirection={changeSortDirection} sortDirection={sortDirection}
       />
   );
 }

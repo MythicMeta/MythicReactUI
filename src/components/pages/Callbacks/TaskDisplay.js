@@ -3,8 +3,6 @@ import {IconButton} from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { toLocalTime } from '../../utilities/Time';
-import { meState } from '../../../cache';
-import {useReactiveVar} from '@apollo/client';
 import { alpha } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import Accordion from '@mui/material/Accordion';
@@ -17,11 +15,12 @@ import {useTheme} from '@mui/material/styles';
 import TreeView from '@mui/lab/TreeView';
 import TreeItem, {useTreeItem} from '@mui/lab/TreeItem';
 import SvgIcon from '@mui/material/SvgIcon';
-import {gql, useLazyQuery } from '@apollo/client';
+import {gql, useLazyQuery, useSubscription } from '@apollo/client';
 import {TaskDisplayContainer} from './TaskDisplayContainer';
-import Chip from '@mui/material/Chip';
+import {TagsDisplay} from '../../MythicComponents/MythicTag';
 
-const taskDataFragment = gql`
+
+export const taskDataFragment = gql`
     fragment taskData on task {
         comment
         callback_id
@@ -30,6 +29,7 @@ const taskDataFragment = gql`
         }
         completed
         id
+        display_id
         operator{
             username
         }
@@ -42,10 +42,7 @@ const taskDataFragment = gql`
           id
         }
         command_name
-        responses(limit: 1, order_by: {id: desc}){
-            id
-            timestamp
-        }
+        response_count
         opsec_pre_blocked
         opsec_pre_bypassed
         opsec_post_blocked
@@ -53,8 +50,12 @@ const taskDataFragment = gql`
         tasks {
             id
         }
-        tasktags(order_by: {tag: asc}) {
-          tag
+        tags {
+          tagtype {
+              name
+              color
+              id
+            }
           id
         }
         token {
@@ -62,11 +63,11 @@ const taskDataFragment = gql`
         }
     }
 `;
-
+// task(where: {parent_task_id: {_eq: $task_id}}, order_by: {id: asc}) {
 const getSubTaskingQuery = gql`
 ${taskDataFragment}
-query getSubTasking($task_id: Int!){
-    task(where: {parent_task_id: {_eq: $task_id}}, order_by: {id: asc}) {
+subscription getSubTasking($task_id: Int!){
+    task_stream(batch_size: 10, cursor: {initial_value: {timestamp: "1970-01-01"}}, where: {parent_task_id: {_eq: $task_id}}) {
         ...taskData
   }
 }
@@ -79,7 +80,6 @@ const useStyles = makeStyles((theme) => ({
     marginRight: "0px",
     height: "auto",
     width: "99%",
-    
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -226,7 +226,7 @@ const CustomTreeItemContent = React.forwardRef(function CustomContent(props, ref
   );
 });
 
-function TaskDisplayPreMemo({task, filterOptions}){
+function TaskDisplayPreMemo({task, me, filterOptions}){
     
     const classes = useStyles();
     const [nodesSelected, setNodesSelected] = React.useState([]);
@@ -253,7 +253,7 @@ function TaskDisplayPreMemo({task, filterOptions}){
   	<TreeView className={classes.root}
   		expanded={nodesSelected}
     >
-      <TaskRow task={task} filterOptions={filterOptions} nodesSelected={nodesSelected} toggleSelection={toggleTaskTree} />
+      <TaskRow me={me} task={task} filterOptions={filterOptions} nodesSelected={nodesSelected} toggleSelection={toggleTaskTree} />
     </TreeView>
   );
 }
@@ -280,9 +280,7 @@ const TaskStatusDisplay = ({task, theme}) => {
 }
 const TaskTagDisplay = ({task}) => {
   return (
-    task.tasktags.map( tt => (
-      <Chip label={tt.tag} color="info" size="small" style={{float: "right"}} key={tt.tag} />
-    ))
+    <TagsDisplay tags={task.tags} />
   )
 }
 const ColoredTaskDisplay = ({task, theme, children}) => {
@@ -312,40 +310,32 @@ const ColoredTaskDisplay = ({task, theme, children}) => {
       </span>
     )
 }
-const TaskRow = ({task, filterOptions, nodesSelected, toggleSelection}) => {
+const TaskRow = ({task, filterOptions, nodesSelected, toggleSelection, me}) => {
 	  const [dropdownOpen, setDropdownOpen] = React.useState(false);
-    const [taskingData, setTaskingData] = React.useState({task: []});
+    const [taskingData, setTaskingData] = React.useState([]);
     const [isFetchingSubtasks, setIsFetchingSubtasks] = React.useState(false);
     const [shouldDisplay, setShouldDisplay] = React.useState(true);
-    const me = useReactiveVar(meState);
     const treeClasses = treeItemUseStyles();
-    const [getSubTasking, { startPolling, stopPolling }] = useLazyQuery(getSubTaskingQuery, {
-        onError: data => {
-            console.error(data)
-        },
-        fetchPolicy: "network-only",
-        notifyOnNetworkStatusChange: true,
-        onCompleted: (data) => {
-        	if(nodesSelected.includes("treenode:" + task.id)){
-        		startPolling(2000);
-        	}else{
-        		stopPolling();
-        		setIsFetchingSubtasks(false);
-        		return;
-        	}
-        	setTaskingData(data);
-        }
-    });
-    const getSubTasks = React.useCallback( (event) => {
-    	if(!isFetchingSubtasks){
-        	toggleSelection(task.id, true);
-        	setIsFetchingSubtasks(true);
-    		getSubTasking({variables: {task_id: task.id} });
-    		return;
+    const {} = useSubscription(getSubTaskingQuery, {
+      variables: {task_id: task.id},
+      onSubscriptionData:  ({subscriptionData}) => {
+        //console.log(subscriptionData);
+        // need to merge in the tasking data
+        const newTaskingData = subscriptionData.data.task_stream.reduce( (prev, cur) => {
+          for(let i = 0; i < prev.length; i++){
+            if(prev[i].id === cur.id){
+              prev[i] = {...cur}
+              return prev;
+            }
+          }
+          return [...prev, cur];
+        }, [...taskingData])
+        setTaskingData(newTaskingData);
       }
-      //// we're already fetching subtasks, but just clicked the minus sign, so stop
-      toggleSelection(task.id, false);
-    }, [isFetchingSubtasks]);
+    });
+   const showSubTasks = (e) => {
+    toggleSelection(task.id, !nodesSelected.includes("treenode:" + task.id));
+   }
     useEffect( () => {
       /*props.onSubmit({
       "operatorsList": onlyOperators,
@@ -416,40 +406,41 @@ const TaskRow = ({task, filterOptions, nodesSelected, toggleSelection}) => {
       }
       setDropdownOpen(!dropdownOpen);
     }, [dropdownOpen]);
-    
+    /*
     useEffect( () => {
       if(!isFetchingSubtasks && task.tasks.length > 0){
         getSubTasks();
       }
-    }, [task.tasks])
+    }, [task.tasks]);
+    */
     return (
       shouldDisplay ? (
         <TreeItem nodeId={"treenode:" + task.id}
           classes={treeClasses}
           ContentComponent={CustomTreeItemContent}
           ContentProps={{
-            onClick: getSubTasks,
+            onClick: showSubTasks,
             icon: nodesSelected.includes("treenode:" + task.id) ? <MinusSquare /> : task.tasks.length > 0 ? <PlusSquare /> : null,
-            label: <TaskLabel task={task} dropdownOpen={dropdownOpen} toggleTaskDropdown={toggleTaskDropdown}/>,
+            label: <TaskLabel me={me} task={task} dropdownOpen={dropdownOpen} toggleTaskDropdown={toggleTaskDropdown}/>,
             
           }}>
           {
-            taskingData.task.map( (tsk) => (
-              <TaskRow key={"taskrow: " + tsk.id} task={tsk} nodesSelected={nodesSelected} filterOptions={filterOptions} toggleSelection={toggleSelection}/>
+            taskingData.map( (tsk) => (
+              <TaskRow key={"taskrow: " + tsk.id} me={me} task={tsk} nodesSelected={nodesSelected} filterOptions={filterOptions} toggleSelection={toggleSelection}/>
             ))
           }
       </TreeItem>
       ) : (null)
     )
 }
-const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
-  const [fromNow, setFromNow] = React.useState( (new Date()) );
-  const me = useReactiveVar(meState);
+const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown, me}) => {
+  const [fromNow, setFromNow] = React.useState(new Date());
   const theme = useTheme();
   const [displayComment, setDisplayComment] = React.useState(false);
   const [alertBadges, setAlertBadges] = React.useState(0);
   const classes = useStyles();
   const accordionClasses = accordionUseStyles();
+  
   const localStorageInitialHideUsernameValue = localStorage.getItem(`${me?.user?.user_id || 0}-hideUsernames`);
   const initialHideUsernameValue = localStorageInitialHideUsernameValue === null ? false : (localStorageInitialHideUsernameValue.toLowerCase() === "false" ? false : true);
   const toggleDisplayComment = (evt) => {
@@ -458,37 +449,45 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
   }
   const prevResponseMaxId = useRef(0);
   useLayoutEffect( () => {
-    scrollContent();
+    if(task.operator.username === (me?.user?.username || "")){
+      scrollContent();
+    }
   }, [])
   useEffect( () => {
     //console.log("in use effect", prevResponseCount.current, props.task.responses);
-    let currentData = task?.responses?.length > 0 ? task.responses[0] : {id: 0, timestamp: 0};
+    let currentData = task.response_count;
     if(!dropdownOpen){
-      if((new Date(currentData.timestamp + "Z")) > fromNow){
-        if(prevResponseMaxId.current === 0){
+      // only automatically open the dropdown if a new response comes in while we're looking
+      if((new Date(task.timestamp + "Z")) > fromNow){
+        if(prevResponseMaxId.current === 0 && currentData > 0){
           toggleTaskDropdown();
-        }else if(currentData.id > prevResponseMaxId.current){
+          prevResponseMaxId.current = currentData;
+        }else if(currentData > prevResponseMaxId.current){
           setAlertBadges(1);
         }
       }
         
     }else{
-      prevResponseMaxId.current = currentData.id;
+      prevResponseMaxId.current = currentData;
       setAlertBadges(0);
     }
-  }, [task.responses, dropdownOpen]);
+  }, [task.response_count, dropdownOpen]);
   const scrollContent = (node, isAppearing) => {
-    document.getElementById(`scrolltotask${task.id}`).scrollIntoView({
-        behavior: "smooth",
+    // only auto-scroll if you issued the task
+    if(task.operator.username === (me?.user?.username || "")){
+      document.getElementById(`scrolltotask${task.id}`).scrollIntoView({
+        //behavior: "smooth",
         block: "start",
         inline: "start"
       })
+    }
+    
   }
   const preventPropagation = (e) => {
     e.stopPropagation();
     e.preventDefault();
   }
-
+  
   return(
     <Paper className={classes.root} elevation={5} style={{marginRight: 0}} id={`taskHeader-${task.id}`}>
       <Accordion TransitionProps={{ unmountOnExit: true, onEntered: scrollContent }} defaultExpanded={false} onChange={toggleTaskDropdown} expanded={dropdownOpen} >
@@ -498,7 +497,7 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
           id={`panel1c-header-${task.id}`}
           classes={accordionClasses}
         >  
-          <ColoredTaskDisplay task={task} theme={theme}>
+          <ColoredTaskDisplay task={task} theme={theme}  >
               <div id={'scrolltotask' + task.id} style={{width: "100%"}}>
                 {displayComment ? (
                     <React.Fragment>
@@ -507,7 +506,7 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
                     </React.Fragment>
                   ) : (null)}
                   <div >
-                    <Typography className={classes.taskAndTimeDisplay} onClick={preventPropagation}>[{toLocalTime(task.timestamp, me.user.view_utc_time)}] / {task.id} {initialHideUsernameValue ? '' : `/ ${task.operator.username}`}
+                    <Typography className={classes.taskAndTimeDisplay} onClick={preventPropagation}>[{toLocalTime(task.timestamp, me?.user?.view_utc_time || false)}] / {task.display_id} {initialHideUsernameValue ? '' : `/ ${task.operator.username}`}
                     </Typography>
                     <TaskStatusDisplay task={task} theme={theme}/>
                     <TaskTagDisplay task={task} />
@@ -519,7 +518,7 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
                           </div>
                       ) : (null)}
                     <div className={classes.column} onClick={preventPropagation}>
-                        <Badge badgeContent={alertBadges} color="success" anchorOrigin={{vertical: 'top', horizontal: 'left'}}>
+                        <Badge badgeContent={alertBadges} color="warning" anchorOrigin={{vertical: 'top', horizontal: 'left'}}>
                           <Typography className={classes.heading} >
                             {(task?.command?.cmd || task.command_name) + " " + task.display_params}
                           </Typography>
@@ -530,7 +529,7 @@ const TaskLabel = ({task, dropdownOpen, toggleTaskDropdown}) => {
           </ColoredTaskDisplay>          
         </AccordionSummary>
         <AccordionDetails style={{cursor: "default"}}>
-          <TaskDisplayContainer task={task}/>
+          <TaskDisplayContainer me={me} task={task} />
         </AccordionDetails>
       </Accordion>
   </Paper>

@@ -18,9 +18,12 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import { MythicStyledTooltip } from '../../MythicComponents/MythicStyledTooltip';
 import Paper from '@mui/material/Paper';
+import MythicStyledTableCell from '../../MythicComponents/MythicTableCell';
+import {Typography} from '@mui/material';
 
-export function CreatePayloadParameter({onChange, parameter_type, default_value, name, required, verifier_regex, id, description, value: passedValue, returnAllDictValues}){
+export function CreatePayloadParameter({onChange, parameter_type, default_value, name, required, verifier_regex, id, description, initialValue, choices, trackedValue, returnAllDictValues}){
     const [value, setValue] = React.useState("");
+    const [valueNum, setValueNum] = React.useState(0);
     const [multiValue, setMultiValue] = React.useState([]);
     const [dictValue, setDictValue] = React.useState([]);
     const [dictOptions, setDictOptions] = React.useState([]);
@@ -30,153 +33,61 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
     const [dateValue, setDateValue] = React.useState(new Date());
     const [arrayValue, setArrayValue] = React.useState([""]);
     const submitDictChange = (list) => {
-        const condensed = list.reduce( (prev, opt) => {
-            return [...prev, {
-                custom: opt.name === "*" ? true : false,
-                ...opt
-            }];
-            
-        }, []);
-        onChange(name, condensed, false);
+        onChange(name, list, false);
     };
     useEffect( () => {
         if(parameter_type === "ChooseOne"){
-            if(default_value){
-                const options = default_value.split("\n");
-                setValue(options[0]);
-                setChooseOptions(options); 
-            }
-            if(passedValue !== "" && passedValue !== undefined){
-                setValue(passedValue);
-                onChange(name, passedValue, "");
-            }
+            setValue(trackedValue);
+            setChooseOptions(choices); 
+        }else if(parameter_type === "Number"){
+            setValueNum(trackedValue);
+        }else if(parameter_type === "String"){
+            setValue(trackedValue);
         }else if(parameter_type === "ChooseMultiple"){
-            if(default_value){
-                const options = default_value.split("\n");
-                setMultiValue([options[0]]);
-                setChooseOptions(options); 
-            }
-            if(passedValue !== "" && passedValue !== undefined){
-                //console.log("setting passed value", passedValue);
-                if(typeof passedValue === "string"){
-                    const options = default_value.split("\n");
-                    setMultiValue([options[0]]);
-                    setChooseOptions(options); 
-                } else {
-                    setMultiValue(passedValue);
-                    onChange(name, passedValue, "");
-                }
-                
-            }
+            setMultiValue(trackedValue);
+            setChooseOptions(choices); 
         }else if(parameter_type === "Date"){
-            if(default_value !== ""){
-                var tmpDate = new Date();
-                tmpDate.setDate(tmpDate.getDate() + parseInt(default_value));
-                setDateValue(tmpDate);
-                onChange(name, (new Date(tmpDate)).toISOString().slice(0,10), "");
-                setValue(-1);
-            }
-            if(passedValue !== "" && passedValue !== undefined && passedValue.includes("-")){
-                setDateValue(new Date(passedValue));
-                setValue(-1);
-                onChange(name, (new Date(passedValue)).toISOString().slice(0,10), "");
-            }
+            setDateValue(trackedValue);
+            onChange(name, trackedValue, "");
         }else if(parameter_type === "Dictionary" ){
-            if(passedValue !== "" && passedValue !== undefined && typeof passedValue === "object"){
-                let initial = passedValue.reduce( (prev, op) => {
-                    // find all the options that have a default_show of true
-                    if(op.default_show || op.value !== ""){
-                        return [...prev, {...op} ];
-                    }else{
-                        return [...prev];
-                    }
-                }, [] );
-                submitDictChange(initial);
-                setDictValue(initial);
-                setDictOptions(passedValue);
-                let originalOptions = JSON.parse(default_value);
-                let dictSelectOptionsInitial = [];
-                originalOptions.forEach( (v, i, a) => {
-                    // loop through all of the original values and see if we need to add any to the bottom options to add
-                    if(v.max === -1){
-                        dictSelectOptionsInitial.push(v);
-                    }else{
-                        const count = initial.reduce( (preCount, cur) => {
-                            if(cur.name === v.name){return preCount + 1}
-                            return preCount;
-                        }, 0);
-                        if(v.max > count){
-                            dictSelectOptionsInitial.push(v);
-                        }
-                    }
-                });
-                setDictSelectOptions(dictSelectOptionsInitial);
-                if (dictSelectOptionsInitial.length > 0){
-                    setDictSelectOptionsChoice(dictSelectOptionsInitial[0]);
-                }
-            }else{
-                const options = JSON.parse(default_value);
-                setDictOptions(options);
-                let initial = options.reduce( (prev, op) => {
+                setDictOptions(choices);
+                let initial = trackedValue.reduce( (prev, op) => {
                     // find all the options that have a default_show of true
                     if(op.default_show){
-                        return [...prev, {...op, value: op.default_value, key: op.name === "*" ? "": op.name} ];
+                        if(op.value){
+                            return [...prev, {...op, value: op.value} ];
+                        } else {
+                            return [...prev, {...op, value: op.default_value} ];
+                        }
+                        
                     }else{
                         return [...prev];
                     }
                 }, [] );
                 submitDictChange(initial);
                 setDictValue(initial);
-                let dictSelectOptionsInitial = options.reduce( (prev, op) => {
+                let dictSelectOptionsInitial = choices.reduce( (prev, op) => {
                     //for each option, check how many instances of it are allowed
                     // then check how many we have currently
                     const count = initial.reduce( (preCount, cur) => {
                         if(cur.name === op.name){return preCount + 1}
                         return preCount;
                     }, 0);
-                    if(op.max === -1 || op.max > count){
-                        return [...prev, {...op, value: op.default_value, key: op.name === "*" ? "": op.name} ];  
+                    if(count === 0){
+                        return [{...op, value: op.default_value}, ...prev ];  
                     }else{
                         return [...prev]
                     }
-                }, []);
+                }, [{name: "Custom...", default_value: "", default_show: false}]);
                 setDictSelectOptions(dictSelectOptionsInitial);
-                if (dictSelectOptionsInitial.length > 0){
-                    setDictSelectOptionsChoice(dictSelectOptionsInitial[0]);
-                }
-            }
+                setDictSelectOptionsChoice(dictSelectOptionsInitial[0]);
+            
         }else if(parameter_type === "Boolean"){
-            if(default_value !== undefined){
-                setValue( default_value.toLowerCase() === "true" ? true : false);
-            }else{
-                setValue(true);
-            }
-            if(passedValue !== "" && passedValue !== undefined){
-                setValue(passedValue);
-            }
+            setValue( trackedValue );
         }else if(parameter_type === "Array"){
-            if(default_value !== ""){
-                setArrayValue(JSON.parse(default_value));
-            }
-            if(passedValue !== "" && passedValue !== undefined){
-                if(typeof passedValue === "string"){
-                    setArrayValue(JSON.parse(passedValue))
-                }else{
-                    setArrayValue(passedValue);
-                }
-                
-                onChange(name, passedValue, "");
-            }
+            setArrayValue(trackedValue);
         }else{
-            
-            if(default_value !== undefined){
-                setValue(default_value);
-            }
-            if(passedValue !== "" && passedValue !== undefined){
-                setValue(passedValue);
-                onChange(name, passedValue, "");
-            }
-            
+            console.log("hit an unknown parameter type")
         }
     }, [default_value, parameter_type, name]);
     
@@ -193,11 +104,14 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
           }
         }
         setMultiValue(tmpValue);
-        setValue(tmpValue);
         onChange(name, tmpValue, false);
     }
     const onChangeText = (name, value, error) => {
         setValue(value);
+        onChange(name, value, error);
+    }
+    const onChangeNumber = (name, value, error) => {
+        setValueNum(value);
         onChange(name, value, error);
     }
     const testParameterValues = (curVal) => {
@@ -212,7 +126,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
     const onChangeDictVal = (evt, opt) => {
         const updated = dictValue.map( (op, i) => {
             if(i === opt){
-                return {...op, value: evt.target.value};
+                return {...op, value: evt.target.value, default_show: true};
             }else{
                 return {...op}
             }
@@ -223,7 +137,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
     const onChangeDictKey = (evt, index) => {
         const updated = dictValue.map( (op, i) => {
             if(i === index){
-                return {...op, key: evt.target.value};
+                return {...op, name: evt.target.value, default_show: true};
             }else{
                 return {...op}
             }
@@ -233,12 +147,11 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
     }
     const addDictValEntry = () => {
         // add the selected value to our dict array
-        let choice = {...dictSelectOptionsChoice};
-        if(choice.name === "*"){
-            choice.key = "";
-            choice.value = "";
-        }
-        const newDictValue = [...dictValue, {...choice, default_show: true}]
+        let choice = {...dictSelectOptionsChoice, value: "", default_show: true, value: dictSelectOptionsChoice.default_value};
+        if(choice.name === "Custom..."){
+            choice.name = "";
+        } 
+        const newDictValue = [...dictValue, choice]
         setDictValue(newDictValue);
         // updated the dict array to the new set of options
         let dictSelectOptionsInitial = dictSelectOptions.reduce( (prev, op) => {
@@ -248,21 +161,21 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                 if(cur.name === op.name){return preCount + 1}
                 return preCount;
             }, 0);
-            if(choice.name === op.name){count += 1}
-            if(op.max === -1 || op.max > count){
+            if(count == 0){
                 return [...prev, {...op}];    
             }else{
                 return [...prev]
             }
         }, []);
+        if(dictSelectOptionsInitial.length === 0){
+            dictSelectOptionsInitial = [{name: "Custom...", default_show: false, value: ""}]
+        }
         submitDictChange(newDictValue);
         setDictSelectOptions(dictSelectOptionsInitial);
-        if (dictSelectOptionsInitial.length > 0){
-            setDictSelectOptionsChoice(dictSelectOptionsInitial[0]);
-        }
+        setDictSelectOptionsChoice(dictSelectOptionsInitial[0]);
+        
     }
     const removeDictEntry = (i) => {
-        const choice = dictValue[i];
         const newValues = dictValue.filter( (opt, index) => {
             if(i === index){return false};
             return true;
@@ -276,18 +189,15 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                 if(cur.name === op.name){return preCount + 1}
                 return preCount;
             }, 0);
-            if(choice.name === op.name){count -= 1}
-            if(op.max === -1 || op.max > count){
-                return [...prev, {...op}];    
+            if(count === 0){
+                return [{...op}, ...prev ];    
             }else{
                 return [...prev]
             }
-        }, []);
+        }, [{name: "Custom...", default_show: false, default_value: ""}]);
         submitDictChange(newValues);
         setDictSelectOptions(dictSelectOptionsInitial);
-        if (dictSelectOptionsInitial.length > 0){
-            setDictSelectOptionsChoice(dictSelectOptionsInitial[0]);
-        }
+        setDictSelectOptionsChoice(dictSelectOptionsInitial[0]);
     }
     const onChangeDate = (date) => {
         setDateValue(date)
@@ -335,7 +245,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                             margin="normal"
                             value={dateValue}
                             onChange={onChangeDate}
-                            renderInput={(params) => <TextField {...params} />}
+                            renderInput={(params) => <TextField {...params}/>}
                             />
                         </Grid>
                     </LocalizationProvider>
@@ -355,7 +265,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                         }
                         </Select>
                     </FormControl>
-                )
+                );
             case "ChooseMultiple":
                 return (
                     <FormControl>
@@ -372,48 +282,42 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                         }
                         </Select>
                     </FormControl>
-                )
+                );
             case "Array":
                 return (
                     <TableContainer component={Paper} className="mythicElement">
                         <Table size="small" style={{tableLayout: "fixed", maxWidth: "100%", "overflow": "auto"}}>
                             <TableBody>
                                 {arrayValue.map( (a, i) => (
-                                    <TableRow key={'array' + name + i} hover>
-                                        <TableCell style={{width: "4rem"}}>
+                                    <TableRow key={'array' + name + i} >
+                                        <MythicStyledTableCell style={{width: "3rem"}}>
                                             <IconButton onClick={(e) => {removeArrayValue(i)}} size="large"><DeleteIcon color="error" /> </IconButton>
-                                        </TableCell>
-                                        <TableCell>
+                                        </MythicStyledTableCell>
+                                        <MythicStyledTableCell>
                                             <MythicTextField required={required} fullWidth={true} placeholder={""} value={a} multiline={true}
                                                 onChange={(n,v,e) => onChangeArrayText(v, e, i)} display="inline-block"
                                                 validate={testParameterValues} errorText={"Must match: " + verifier_regex}
                                             />
-                                        </TableCell>
+                                        </MythicStyledTableCell>
                                     </TableRow>
                                 ))}
-                                <TableRow hover>
-                                    <TableCell style={{width: "5rem"}}>
+                                <TableRow >
+                                    <MythicStyledTableCell style={{width: "3rem"}}>
                                         <IconButton onClick={addNewArrayValue} size="large"> <AddCircleIcon color="success"  /> </IconButton>
-                                    </TableCell>
-                                    <TableCell></TableCell>
+                                    </MythicStyledTableCell>
+                                    <MythicStyledTableCell></MythicStyledTableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
                     </TableContainer>
-                )
+                );
             case "Dictionary":
                 return (
                     <React.Fragment>
                         {dictValue.map( (opt, i) => (
                             <div key={"dictval" + i}>
-                                <IconButton onClick={(e) => {removeDictEntry(i)}} size="large"><DeleteIcon color="error" /> </IconButton>
-                                {opt.name === "*" ? 
-                                    (
-                                        <Input style={{width:"20%"}} startAdornment={<Button disabled>Key</Button>} size="small" value={opt.key} onChange={(e) => onChangeDictKey(e, i)}></Input>
-                                    ) : (
-                                        <Input variant="outlined" size="small" style={{width:"20%"}} startAdornment={<Button disabled>key</Button>} value={opt.key} ></Input>
-                                    ) 
-                                }
+                                <IconButton style={{width: "5%"}} onClick={(e) => {removeDictEntry(i)}} size="large"><DeleteIcon color="error" /> </IconButton>
+                                <Input style={{width:"20%"}} startAdornment={<Button disabled>Key</Button>} size="small" value={opt.name} onChange={(e) => onChangeDictKey(e, i)}></Input>
                                 <Input style={{width:"75%"}} startAdornment={<Button disabled>value</Button>} size="small" value={opt.value} onChange={(e) => onChangeDictVal(e, i)}></Input>
                             </div>
                         )
@@ -423,7 +327,7 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                                 <IconButton onClick={addDictValEntry} size="large"> <AddCircleIcon color="success"  /> </IconButton>
                                 <Select size="small" value={dictSelectOptionsChoice} onChange={(e) => setDictSelectOptionsChoice(e.target.value)}>
                                     {dictSelectOptions.map( (selectOpt, i) => (
-                                        <MenuItem key={"selectopt" + name + i} value={selectOpt}>{selectOpt.name === "*" ? "Custom Key": selectOpt.name}</MenuItem>
+                                        <MenuItem key={"selectopt" + name + i} value={selectOpt}>{selectOpt.name}</MenuItem>
                                     ) )}
                                 </Select>
                                 
@@ -435,10 +339,17 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
             case "String":
                 return (
                     <MythicTextField required={required} value={value} multiline={true}
-                        onChange={onChangeText} display="inline-block" name={name}
+                        onChange={onChangeText} display="inline-block" name={name} showLabel={false}
                         validate={testParameterValues} errorText={"Must match: " + verifier_regex}
                     />
-                )
+                );
+            case "Number":
+                return (
+                    <MythicTextField required={required} value={valueNum} type={"number"}
+                        onChange={onChangeNumber} display="inline-block" name={name} showLabel={false}
+                        validate={testParameterValues} errorText={"Must match: " + verifier_regex}
+                    />
+                );
             case "Boolean":
                 return (
                       <Switch
@@ -446,9 +357,37 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                         onChange={toggleSwitchValue}
                         inputProps={{ 'aria-label': 'primary checkbox' }}
                       />
-                )
+                );
            default:
             return null
+        }
+    }
+    const modifiedValue = () => {
+        switch(parameter_type){
+            case "Date":
+                return (new Date(dateValue)).toISOString().slice(0,10) !== initialValue;
+            case "ChooseOne":
+                return value !== initialValue;
+            case "ChooseMultiple":
+                return multiValue.toString() !== initialValue.toString();
+            case "Array":
+                return arrayValue.toString() !== initialValue.toString();
+            case "Dictionary":
+                // quick check for the same object
+                const initialValueShow = initialValue.filter( c => c.default_show);
+                if(dictValue.length !== initialValueShow.length){return true}
+                for(let i = 0; i < dictValue.length; i++){
+                    if(JSON.stringify(dictValue[i], Object.keys(dictValue[i]).sort()) !== JSON.stringify(initialValueShow[i], Object.keys(initialValueShow[i]).sort())){return true}
+                }
+                return false;
+            case "String":
+                return value !== initialValue;
+            case "Number":
+                return (valueNum*1) !== (initialValue *1);
+            case "Boolean":
+                return Boolean(value) !== Boolean(initialValue);
+            default:
+                return true;
         }
     }
     
@@ -457,11 +396,14 @@ export function CreatePayloadParameter({onChange, parameter_type, default_value,
                 <TableCell>
                     <MythicStyledTooltip title={name.length > 0 ? name : "No Description"}>
                         {description}
+                        {modifiedValue() ? (
+                            <Typography color="warning.main">Modified</Typography>
+                        ) : (null)}
                     </MythicStyledTooltip>
                  </TableCell>
-                <TableCell>
+                <MythicStyledTableCell>
                     {getParameterObject()}
-                </TableCell>
+                </MythicStyledTableCell>
             </TableRow>
         )
 }
